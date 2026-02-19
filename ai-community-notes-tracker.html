@@ -177,12 +177,14 @@
     </div>
   </div>
 
-  <div class="footer">Last updated on: 2026-02-19 11:58 UTC · Built by Indicator</div>
+  <div class="footer">Last updated on: 2026-02-19 12:50 UTC · Built by Indicator</div>
 
   <div class="chart-section">
     <div class="chart-header">
       <div class="chart-title">Helpful Community Notes on X, by type of author</div>
       <div class="controls">
+        <button class="btn" id="view-7d-btn" onclick="setView('7d')">Past 7 days</button>
+        <button class="btn" id="view-30d-btn" onclick="setView('30d')">Past 30 days</button>
         <button class="btn active" id="view-ai-btn" onclick="setView('ai_era')">Since AI Launch</button>
         <button class="btn" id="view-full-btn" onclick="setView('full')">All Time</button>
       </div>
@@ -193,8 +195,12 @@
   </div>
 
   <div class="method-note">
-    <h3>Methodology</h3>
-    Notes are classified into three author types. <strong>AI</strong> are notes written by users whose <code>enrollmentState</code> is <code>apiEarnedIn</code> in the <code>userEnrollment</code> file. <strong>AI + Human</strong> are collaborative notes (identified by <code>isCollaborativeNote</code> in the <code>notes</code> file), which are initiated by AI at the request of high-impact users and then refined by human contributors. <strong>Human</strong> covers all remaining notes. A note is counted as "helpful" if its <code>currentStatus</code> in the <code>noteStatusHistory</code> file is <code>CURRENTLY_RATED_HELPFUL</code>. The AI Share line includes both AI and AI + Human notes. The date used is the note's creation date. The most recent day in the dataset is excluded from statistics and chart data as it is typically incomplete; peak AI share is calculated only from complete days. Data source: <a href="https://x.com/i/communitynotes/download-data">X Community Notes public data</a>.
+    <h3>Methodology and caveats</h3>
+    Data source: <a href="https://x.com/i/communitynotes/download-data">X Community Notes public data</a>. Please note X shares data with a lag and sometimes inconsistently. This chart is updated at least once a week, provided data is available.
+    <br><br>
+    Notes are classified into three author types. <strong>AI</strong> are notes written by users whose <code>enrollmentState</code> is <code>apiEarnedIn</code> in the <code>userEnrollment</code> file. <strong>AI + Human</strong> are collaborative notes (identified by <code>isCollaborativeNote</code> in the <code>notes</code> file), which are initiated by AI at the request of high-impact users and then refined by human contributors. <strong>Human</strong> covers all remaining notes. A note is counted as "helpful" if its <code>currentStatus</code> in the <code>noteStatusHistory</code> file is <code>CURRENTLY_RATED_HELPFUL</code>. The AI Share line includes both AI and AI + Human notes. The date used is the note's creation date.
+    <br><br>
+    The most recent day in the dataset is excluded from statistics and chart data as it is typically incomplete; peak AI share is calculated only from complete days. Please note that the last day will typically see a dip in helpful notes compared to the trend because it takes some time for notes to reach that status.
   </div>
 </div>
 
@@ -212,7 +218,11 @@ var currentView = 'ai_era';
 var comboChart = null;
 
 function getData(view) {
-  return view === 'ai_era' ? aiEraData : fullData;
+  if (view === 'full') return fullData;
+  if (view === 'ai_era') return aiEraData;
+  // For 7d / 30d, slice from the end of aiEraData
+  var days = view === '7d' ? 7 : 30;
+  return aiEraData.slice(-days);
 }
 
 function makeThinCallback(labels) {
@@ -390,6 +400,8 @@ function buildComboChart(view) {
 
 function setView(view) {
   currentView = view;
+  document.getElementById('view-7d-btn').classList.toggle('active', view === '7d');
+  document.getElementById('view-30d-btn').classList.toggle('active', view === '30d');
   document.getElementById('view-ai-btn').classList.toggle('active', view === 'ai_era');
   document.getElementById('view-full-btn').classList.toggle('active', view === 'full');
   buildComboChart(view);
