@@ -231,6 +231,8 @@
     Notes are classified into three author types. <strong>AI</strong> are notes written by users whose <code>enrollmentState</code> is <code>apiEarnedIn</code> in the <code>userEnrollment</code> file. <strong>AI + Human</strong> are collaborative notes (identified by <code>isCollaborativeNote</code> in the <code>notes</code> file), which are initiated by AI at the request of high-impact users and then refined by human contributors. <strong>Human</strong> covers all remaining notes. A note is counted as "helpful" if its <code>currentStatus</code> in the <code>noteStatusHistory</code> file is <code>CURRENTLY_RATED_HELPFUL</code>. The AI Share line includes both AI and AI + Human notes. The date used is the note's creation date.
     <br><br>
     The most recent day in the dataset is excluded from statistics and chart data as it is typically incomplete; peak AI share is calculated only from complete days. Please note that the last day will typically see a dip in helpful notes compared to the trend because it takes some time for notes to reach that status.
+    <br><br>
+    A small share of notes (~5%) that appear as helpful in the status history file are absent from the notes data files, perhaps because they were later deleted or removed by X. These notes are excluded from the tracker.
     </div>
   </details>
 </div>
