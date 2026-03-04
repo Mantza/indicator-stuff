@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily "Main Character" — What Got Grokked Most Each Day</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: #f5f6f8;
+  color: #1a1a2e;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+
+/* ── Calendar ── */
+.cal-section {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 20px 16px 16px;
+}
+.cal-section h2 {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  margin-bottom: 14px;
+}
+.cal-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.cal-month { }
+.cal-month-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #2451C9;
+  text-align: center;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.cal-dow {
+  display: grid;
+  grid-template-columns: repeat(7, 32px);
+  gap: 3px;
+  justify-content: center;
+  margin-bottom: 3px;
+}
+.cal-dow span {
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: center;
+  text-transform: uppercase;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 32px);
+  gap: 3px;
+  justify-content: center;
+}
+.cal-day {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: default;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+.cal-day.empty { background: transparent; }
+.cal-day.no-data { background: #f1f5f9; color: #cbd5e1; }
+.cal-day.has-data {
+  cursor: pointer;
+  color: #fff;
+  font-weight: 700;
+}
+.cal-day.has-data:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 2;
+}
+.cal-day.has-data.active {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px #ECBB2D, 0 4px 12px rgba(236,187,45,0.3);
+  z-index: 3;
+}
+.cal-day.verdict-false { background: #ef4444; }
+.cal-day.verdict-true { background: #22c55e; }
+.cal-day.verdict-mixed { background: #ECBB2D; color: #1a1a2e; }
+.cal-day.verdict-unclear { background: #94a3b8; }
+
+.cal-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.cal-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.66rem;
+  color: #64748b;
+  font-weight: 500;
+}
+.cal-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+/* ── Horizontal timeline ── */
+.timeline-section {
+  padding: 20px 0 32px;
+}
+.timeline-track-outer {
+  position: relative;
+  overflow: hidden;
+}
+.timeline-track {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 8px 24px 20px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #2451C9 #e2e8f0;
+}
+.timeline-track::-webkit-scrollbar { height: 6px; }
+.timeline-track::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 3px; }
+.timeline-track::-webkit-scrollbar-thumb { background: #2451C9; border-radius: 3px; }
+
+/* ── Cards ── */
+.card {
+  flex: 0 0 340px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: start;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(36,81,201,0.1);
+}
+.card.verdict-false { border-top: 3px solid #ef4444; }
+.card.verdict-true { border-top: 3px solid #22c55e; }
+.card.verdict-mixed { border-top: 3px solid #ECBB2D; }
+.card.verdict-unclear { border-top: 3px solid #94a3b8; }
+
+.card-head {
+  padding: 14px 16px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.card-date {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #2451C9;
+  background: rgba(36,81,201,0.07);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.card-user {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+.card-verdict {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: auto;
+}
+.card-verdict.false { background: #fef2f2; color: #dc2626; }
+.card-verdict.true { background: #f0fdf4; color: #16a34a; }
+.card-verdict.mixed { background: #fefce8; color: #9a7b0a; }
+.card-verdict.unclear { background: #f1f5f9; color: #64748b; }
+
+.card-tweet {
+  padding: 4px 16px 10px;
+  font-size: 0.86rem;
+  color: #334155;
+  line-height: 1.5;
+  flex: 1;
+  /* clamp to ~5 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-stats {
+  padding: 0 16px 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-count {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: #64748b;
+}
+.card-count strong {
+  color: #2451C9;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+.card-minibar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  display: flex;
+  background: #e2e8f0;
+  overflow: hidden;
+  min-width: 60px;
+}
+.card-minibar > div { height: 100%; }
+.mb-false { background: #ef4444; }
+.mb-true { background: #22c55e; }
+.mb-mixed { background: #ECBB2D; }
+.mb-unclear { background: #cbd5e1; }
+
+.card-reply-wrap {
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+.card-reply-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #2451C9;
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.card-reply-btn:hover { color: #1a3d99; }
+.card-reply-btn::after { content: ' \25BE'; font-size: 0.65rem; }
+.card-reply-btn.open::after { content: ' \25B4'; }
+.card-reply-text {
+  display: none;
+  padding: 0 16px 12px;
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.55;
+}
+.card-reply-text.show { display: block; }
+
+.repeater {
+  display: none;
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(236,187,45,0.14);
+  color: #9a7b0a;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* scroll hint arrows */
+.scroll-hint {
+  text-align: center;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 500;
+  padding: 0 0 4px;
+}
+.scroll-hint span { color: #2451C9; }
+
+/* ── Chart section ── */
+.chart-section {
+  max-width: 1100px;
+  margin: 0 auto 40px;
+  padding: 32px 24px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+.chart-section h2 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 6px;
+}
+.chart-desc {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  max-width: 800px;
+}
+.chart-box {
+  position: relative;
+  width: 100%;
+  height: 340px;
+}
+
+.footer {
+  text-align: center;
+  padding: 28px 20px 40px;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+.footer a { color: #2451C9; text-decoration: none; }
+
+
+/* ── Filter bar ── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.filter-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin-right: 4px;
+}
+.filter-btn {
+  font-family: Roboto, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-btn:hover { border-color: #2451C9; color: #2451C9; }
+.filter-btn.active { background: #2451C9; color: #fff; border-color: #2451C9; }
+
+/* ── Category tags on cards ── */
+.card-cat {
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.cat-entertainment { background: #fef3c7; color: #92400e; }
+.cat-geopolitics { background: #dbeafe; color: #1e40af; }
+.cat-africa { background: #d1fae5; color: #065f46; }
+.cat-u-s--politics { background: #fee2e2; color: #991b1b; }
+.cat-science---tech { background: #ede9fe; color: #5b21b6; }
+.cat-society { background: #fce7f3; color: #9d174d; }
+.cat-economy { background: #ffedd5; color: #9a3412; }
+
+/* ── "Days as Main Character" line ── */
+.mc-days {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #ECBB2D;
+  padding: 0 16px 4px;
+  letter-spacing: 0.02em;
+}
+
+/* ── Tweet link in card ── */
+.card-tweet a {
+  color: inherit;
+  text-decoration: none;
+}
+.card-tweet a:hover {
+  color: #2451C9;
+}
+
+/* ── Reply link ── */
+.reply-link {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+}
+.reply-link a {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2451C9;
+  text-decoration: none;
+}
+.reply-link a:hover {
+  text-decoration: underline;
+}
+
+/* ── Methodology ── */
+.methodology {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 36px 24px 12px;
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.7;
+}
+.methodology h2 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #2451C9;
+  margin-bottom: 12px;
+}
+.methodology p {
+  margin-bottom: 12px;
+}
+.methodology a {
+  color: #2451C9;
+  text-decoration: underline;
+  text-decoration-color: rgba(36,81,201,0.3);
+}
+.methodology a:hover {
+  text-decoration-color: #2451C9;
+}
+.methodology em {
+  font-style: italic;
+}
+
+@media (max-width: 600px) {
+  .card { flex: 0 0 290px; }
+  .cal-dow, .cal-grid { grid-template-columns: repeat(7, 28px); }
+  .cal-day { width: 28px; height: 28px; font-size: 0.62rem; }
+}
+</style>
+</head>
+<body>
+
+
+<div class="cal-section">
+  <h2>Click a day to jump to its card</h2>
+  <div class="cal-wrapper" id="calWrapper"></div>
+  <div class="cal-legend">
+    <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ef4444"></div>False</div>
+    <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#22c55e"></div>True</div>
+    <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ECBB2D"></div>Mixed</div>
+    <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#94a3b8"></div>Unclear</div>
+    <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#f1f5f9; border:1px solid #e2e8f0"></div>No data</div>
+  </div>
+</div>
+
+
+<div class="filter-bar" id="filterBar">
+  <span class="filter-label">Filter by topic:</span>
+  <button class="filter-btn active" data-cat="all">All</button>
+  <button class="filter-btn" data-cat="Entertainment">Entertainment</button>
+  <button class="filter-btn" data-cat="Geopolitics">Geopolitics</button>
+  <button class="filter-btn" data-cat="Africa">Africa</button>
+  <button class="filter-btn" data-cat="U.S. Politics">U.S. Politics</button>
+  <button class="filter-btn" data-cat="Science & Tech">Science & Tech</button>
+  <button class="filter-btn" data-cat="Society">Society</button>
+  <button class="filter-btn" data-cat="Economy">Economy</button>
+</div>
+
+<div class="timeline-section">
+  <div class="scroll-hint"><span>&larr;</span> Scroll to explore the timeline <span>&rarr;</span></div>
+  <div class="timeline-track-outer">
+    <div class="timeline-track" id="timelineTrack"></div>
+  </div>
+</div>
+
+<div class="chart-section" id="chartSection">
+  <h2>The Grok Fact-Check Pulse</h2>
+  <p class="chart-desc">How many people asked Grok to fact-check the day's "main character" tweet (blue bars, left axis) versus the total volume of "@grok is this true?" replies that day (yellow line, right axis).</p>
+  <div class="chart-box">
+    <canvas id="dualChart"></canvas>
+  </div>
+</div>
+
+<div class="methodology">
+  <h2>Methodology</h2>
+  <p>This tracker is based on an exhaustive dataset of all English-language replies from Grok in response to users tagging <strong>@grok</strong> to fact-check posts on X (formerly Twitter) between January 1 and February 28, 2026. Data was collected via the X API using the approach described in Mantzarlis, Renault, Mosleh &amp; Rand (<a href="https://osf.io/preprints/psyarxiv/85quw_v2" target="_blank">"@Grok Is This True? LLM-Powered Fact-Checking on Social Media,"</a> 2026).</p>
+  <p>The dataset captures instances in which a user replied to or quote-tweeted a post while mentioning @grok with an explicit or implicit request for verification (e.g., "is this true?", "fact check this," etc.). For each day, the tracker identifies the tweet that received the highest number of such Grok fact-checking replies — the day's "main character." Grok's verdict for each tweet is classified programmatically based on the language of its reply (e.g., "No, this claim is false" → <em>false</em>; "Yes, reports confirm" → <em>true</em>; partial confirmations → <em>mixed</em>; ambiguous responses → <em>unclear</em>). The "Top Grok fact-check" shown on each card is the most-engaged-with Grok reply to that tweet, linked to its original post on X.</p>
+  <p>For full details on the data collection pipeline, filtering criteria, and the broader analysis of LLM-powered fact-checking behavior on social media, see the <a href="https://osf.io/preprints/psyarxiv/85quw_v2" target="_blank">paper</a>.</p>
+</div>
+
+<div class="footer">
+  Data: ~213K "Grok, is this true?" replies &middot; Jan 1 – Feb 28, 2026 &middot; <a href="https://indicator.fyi">Indicator</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+var days = [
+  {date:"Jan 1",iso:"2026-01-01",tid:"2006608068126396581",rid:"2006872537372786704",cat:"U.S. Politics",usr:"0hour1",user:"@0hour1",text:"Massive amounts of NYPD quit upon Zohran being sworn in. NYC is now without enough cops to police it. Happy New Year \ud83c\udf86",count:73,total:4285,verdict:"false",vc:{true:0,false:70,mixed:0,unclear:3},reply:"The claim of massive NYPD quits on Jan 1 upon Zohran Mamdani\u2019s swearing-in as NYC mayor is exaggerated. Fact-checkers like Snopes debunk rumors of 5,000+ resignations as false, originating from Nov 2025 hoaxes. However, outlets like NY Post report hundreds of officers left in late 2025 due to low morale."},
+  {date:"Jan 2",iso:"2026-01-02",tid:"2006782797256482928",rid:"2007197624428806536",cat:"Africa",usr:"itswpceo",user:"@itswpceo",text:"\ud83c\uddf3\ud83c\uddec Nigeria is officially one of the WORST places on the planet to live, with one of the lowest qualities of life in the world.",count:40,total:4461,verdict:"unclear",vc:{true:0,false:0,mixed:0,unclear:40},reply:"The list appears based on Numbeo\u2019s 2026 Quality of Life Index, where Nigeria ranks lowest. However, UN HDI ranks differ, with lowest like Niger, Chad, South Sudan. Quality of life metrics vary by source."},
+  {date:"Jan 3",iso:"2026-01-03",tid:"2007511642243023173",rid:"2007596358052581464",cat:"Entertainment",usr:"HoopsCrave",user:"@HoopsCrave",text:"Netflix will add adult content next month under the new category \u2018Netflix After Dark.\u2019",count:46,total:5417,verdict:"false",vc:{true:0,false:41,mixed:0,unclear:5},reply:"No, this claim appears to be false. Netflix has no official announcements about adding a \u2018Netflix After Dark\u2019 adult content category. The original post is from a parody account."},
+  {date:"Jan 4",iso:"2026-01-04",tid:"2007669058163093845",rid:"2007963268678058387",cat:"U.S. Politics",usr:"GalacticJack",user:"@GalacticJack",text:"Venezuela\u2019s former Chief of National Intelligence Hugo Carvajal has RELEASED every U.S. Senator who is on THE VENEZUELA LIST of politicians receiving MILLIONS in kickbacks from the Maduro regime\u2026",count:78,total:4025,verdict:"false",vc:{true:3,false:68,mixed:0,unclear:4},reply:"No, this claim is false. Hugo Carvajal\u2019s Dec 2025 letter alleged Maduro corruption but named no senators, kickback amounts, or \u2018Venezuela List.\u2019 Debunked as a hoax by Snopes, Miami Herald, Reuters, AP."},
+  {date:"Jan 5",iso:"2026-01-05",tid:"2007899276446494986",rid:"2008295260657713494",cat:"Entertainment",usr:"SlowSportsNews",user:"@SlowSportsNews",text:"\ud83d\udea8 Chelsea have appointed Frank Lampard as their new head coach until the end of the season.",count:46,total:5337,verdict:"false",vc:{true:3,false:32,mixed:0,unclear:11},reply:"No, this isn\u2019t current news. The linked article is from April 2023. As of January 2026, Lampard is managing Coventry City. The account shares old news for fun."},
+  {date:"Jan 6",iso:"2026-01-06",tid:"2008237902900457614",rid:"2008639002799210635",cat:"Science & Tech",usr:"Ambar_SIFF_MRA",user:"@Ambar_SIFF_MRA",text:"It\u2019s so over for females \ud83d\ude14 [Claim: China has created an android for full human gestation]",count:45,total:5375,verdict:"false",vc:{true:0,false:45,mixed:0,unclear:0},reply:"No, the claim about China creating an android for full gestation is a hoax. Fact-checks from Snopes and Live Science confirm it\u2019s fabricated\u2014no such company or tech exists."},
+  {date:"Jan 7",iso:"2026-01-07",tid:"2008941878570348570",rid:"2009050024362062307",cat:"Geopolitics",usr:"visionergeo",user:"@visionergeo",text:"\ud83c\uddf7\ud83c\uddfa\ud83c\uddfa\ud83c\uddf2 BREAKING \u2014 In response to the tanker seizure, Russia is threatening the US with a missile strike. \u2018A military response is necessary\u2019 \u2014 Alexey Zhuravlyov, Russian State Duma.",count:59,total:4114,verdict:"true",vc:{true:36,false:11,mixed:3,unclear:9},reply:"The US did seize a Russian-flagged oil tanker on Jan 7, 2026, over sanctions violations linked to Venezuela. Deputy Alexey Zhuravlyov reportedly stated a military response is needed. However, this appears to be his personal view, not official policy."},
+  {date:"Jan 8",iso:"2026-01-08",tid:"2009315321870745628",rid:"2009414879262761238",cat:"Africa",usr:"elonmusk",user:"@elonmusk",text:"Starlink is not allowed to have an Internet provider license in South Africa for the sole reason that I am not Black. This is not ok.",count:99,total:6291,verdict:"unclear",vc:{true:5,false:7,mixed:25,unclear:62},reply:"Elon\u2019s claim oversimplifies. Starlink\u2019s license was denied due to non-compliance with South Africa\u2019s BBBEE rules requiring 30% black ownership for telecom firms, not personally his race. Recent policy allows alternatives, but approval is pending."},
+  {date:"Jan 9",iso:"2026-01-09",tid:"2009351986374992064",rid:"2009757113011097907",cat:"Science & Tech",usr:"alpaysh",user:"@alpaysh",text:"\ud83d\udea8 X will reward users with the highest screen time for contributing to platform activity and driving community growth.",count:178,total:7048,verdict:"false",vc:{true:8,false:148,mixed:0,unclear:22},reply:"No official announcement from X or Elon Musk confirms rewards for highest screen time. Searches show it\u2019s likely a viral joke or meme, with no mentions in official channels."},
+  {date:"Jan 11",iso:"2026-01-11",tid:"2010202213780738290",rid:"2010498712837988704",cat:"Geopolitics",usr:"War_Radar2",user:"@War_Radar2",text:"\ud83c\uddec\ud83c\uddf1 British officials have reportedly met with Germany and France to begin preparations for deploying a military force to Greenland, according to The Telegraph.",count:37,total:6328,verdict:"true",vc:{true:32,false:0,mixed:0,unclear:5},reply:"The Telegraph reports British officials met with German and French counterparts to discuss potential military deployment to Greenland amid Trump\u2019s Arctic security concerns. However, UK\u2019s Defence Secretary stated Greenland\u2019s security is already covered by NATO."},
+  {date:"Jan 12",iso:"2026-01-12",tid:"2010594021182480579",rid:"2010829053339545943",cat:"Geopolitics",usr:"Israelarmyviews",user:"@Israelarmyviews",text:"North Korea has shot down two American fighter jets. This war will continue.",count:30,total:3718,verdict:"false",vc:{true:1,false:26,mixed:0,unclear:3},reply:"No confirmation from Reuters, AP, or BBC. The image appears to be from a 1968 Vietnam War incident. This seems unverified."},
+  {date:"Jan 13",iso:"2026-01-13",tid:"2011036265613771240",rid:"2011224476050985239",cat:"Entertainment",usr:"Samsonthegoat25",user:"@Samsonthegoat25",text:"During an interview with 50 Cent, South African rapper Nasty C reportedly opened up about his financial downfall \u2014 peak net worth of $45M collapsed to nothing. 50 Cent wrote him a $5 million check on the spot.",count:191,total:5975,verdict:"false",vc:{true:6,false:178,mixed:0,unclear:6},reply:"No, this story doesn\u2019t appear to be true. Searches found no evidence of this interview. Net worth estimates are around $5-15M, not $45M, and the photos are from an older meeting."},
+  {date:"Jan 14",iso:"2026-01-14",tid:"2011463184444457167",rid:"2011535632888160279",cat:"Entertainment",usr:"TommyGoBraazy",user:"@TommyGoBraazy",text:"Popular Rapper \u2018Chief Keef\u2019 has reportedly been shot 6x in the face after returning to O\u2019block after 15 years to film a music video, he is currently on life support.",count:95,total:5808,verdict:"false",vc:{true:0,false:92,mixed:0,unclear:3},reply:"No, this appears to be an unverified rumor. No official confirmation from police, hospitals, or Chief Keef\u2019s team. Similar fake rumors about him have circulated before."},
+  {date:"Jan 15",iso:"2026-01-15",tid:"2011528596482113845",rid:"2011882808050954266",cat:"Entertainment",usr:"distributedkv",user:"@distributedkv",text:"BREAKING: Elon Musk and Sydney Sweeney are reportedly dating",count:99,total:5942,verdict:"false",vc:{true:1,false:96,mixed:0,unclear:2},reply:"No credible evidence. The image looks AI-generated or edited. Sweeney split from fianc\u00e9 Jonathan Davino in 2025 and has been rumored with others, but not Musk."},
+  {date:"Jan 16",iso:"2026-01-16",tid:"2012220576685797810",rid:"2012311506579280030",cat:"U.S. Politics",usr:"Sassafrass_84",user:"@Sassafrass_84",text:"[Claim: Minneapolis Police Chief said 24 officers resigned, 18 joined ICE]",count:50,total:4756,verdict:"false",vc:{true:5,false:32,mixed:0,unclear:13},reply:"No evidence that Minneapolis Police Chief Brian O\u2019Hara stated 24 officers resigned with 18 joining ICE. The ICE part appears unsupported."},
+  {date:"Jan 17",iso:"2026-01-17",tid:"2012488033057288518",rid:"2012576294207115760",cat:"Geopolitics",usr:"World_Affairs11",user:"@World_Affairs11",text:"BREAKING: Japan officially bans all Israeli tourists from entering the country.",count:32,total:3828,verdict:"false",vc:{true:0,false:32,mixed:0,unclear:0},reply:"No, this claim is false. Japan has not banned Israeli tourists. The rumor stems from isolated incidents where individual hotels refused bookings. Israeli citizens can still enter visa-free."},
+  {date:"Jan 18",iso:"2026-01-18",tid:"2012805631846076569",rid:"2013032322770112969",cat:"Entertainment",usr:"felix_jnf",user:"@felix_jnf",text:"\ud83d\udea8 Mykhailo Mudryk has served his suspension and will return to Chelsea training this week",count:89,total:6501,verdict:"false",vc:{true:16,false:54,mixed:0,unclear:19},reply:"Inaccurate. Mudryk remains provisionally suspended since December 2024 due to a doping charge. No final ban has been decided; a potential return no earlier than June 2026."},
+  {date:"Jan 19",iso:"2026-01-19",tid:"2013021404904542408",rid:"2013393154855117309",cat:"Africa",usr:"PSGINT_",user:"@PSGINT_",text:"2 journalists, 1 from Mali and 1 from Cameroon, were found dead in their hotel rooms after speaking out about Moroccan corruption.",count:71,total:3858,verdict:"false",vc:{true:33,false:34,mixed:0,unclear:4},reply:"Reports confirm Malian journalist Mohamed Soumar\u00e9 was found dead in his Morocco hotel room on Jan 14 while covering AFCON. Cause unclear. No verified reports of a Cameroonian journalist dying in similar circumstances."},
+  {date:"Jan 20",iso:"2026-01-20",tid:"2013654657281724438",rid:"2013761467267371212",cat:"Geopolitics",usr:"_MAGA_NEWS_",user:"@_MAGA_NEWS_",text:"\ud83d\udea8 The United States is finalizing a staggering $700 billion cash offer to buy Greenland outright from Denmark, plus $100,000 payments to each of its ~57,000 residents.",count:74,total:6277,verdict:"unclear",vc:{true:9,false:29,mixed:0,unclear:36},reply:"US officials are discussing a potential acquisition with estimated costs up to $700B, but no deal is finalized. Denmark and Greenland reject it outright, with protests ongoing."},
+  {date:"Jan 21",iso:"2026-01-21",tid:"2013654657281724438",rid:"2014123979041083649",cat:"Geopolitics",usr:"_MAGA_NEWS_",user:"@_MAGA_NEWS_",text:"\ud83d\udea8 [Same Greenland $700B offer claim \u2014 continued virality, day 2]",count:111,total:6241,verdict:"false",vc:{true:13,false:52,mixed:0,unclear:46},reply:"The Trump administration is planning a proposal to acquire Greenland, with estimated costs up to $700B. However, it\u2019s not finalized. No official White House confirmation of a \u2018cash offer\u2019 yet."},
+  {date:"Jan 22",iso:"2026-01-22",tid:"2014127496711545244",rid:"2014488346253213741",cat:"Entertainment",usr:"hype_cartel1",user:"@hype_cartel1",text:"After 31 years Snoop Dogg is not the father of all 4 children. Women \ud83d\ude4c\ud83c\udffb",count:61,total:6320,verdict:"false",vc:{true:1,false:52,mixed:0,unclear:6},reply:"No, this appears to be a baseless rumor. No evidence of DNA tests proving Snoop Dogg isn\u2019t the father. It\u2019s circulating on social media but lacks verification from credible reports."},
+  {date:"Jan 23",iso:"2026-01-23",tid:"2014421894317973849",rid:"2014839840584384922",cat:"Entertainment",usr:"Femzydr1",user:"@Femzydr1",text:"Lateef Adedimeji has divorced his wife Adebimpe Oyebade secretly, after discovering she had damaged her womb because of abortions in university.",count:47,total:5433,verdict:"false",vc:{true:2,false:41,mixed:0,unclear:4},reply:"Unverified and appears false. Wikipedia confirms their marriage since 2021. His Jan 1 Instagram post says \u20182026 is about to be our best year baby.\u2019 Recent reports suggest they welcomed a child in Jan 2026."},
+  {date:"Jan 24",iso:"2026-01-24",tid:"2015033106718175667",rid:"2015186715061727307",cat:"Africa",usr:"Mastardcesh",user:"@Mastardcesh",text:"\u2018I urge Uganda to immediately release Dr Kizza Besigye or else face the sanction.\u2019 \u2014 President Trump",count:55,total:5260,verdict:"false",vc:{true:0,false:51,mixed:0,unclear:4},reply:"No, this quote isn\u2019t verified. Searches of White House statements, State Department, and Trump\u2019s X account show no such remark. It seems to stem from a fabricated social media image."},
+  {date:"Jan 25",iso:"2026-01-25",tid:"2015386686264643898",rid:"2015570053249294424",cat:"Science & Tech",usr:"Currentreport1",user:"@Currentreport1",text:"\ud83d\udea8 A new deadly Nipah virus outbreak has been reported in India with 5 people infected in West Bengal, including 2 nurses in critical condition, and 100 quarantined.",count:59,total:4449,verdict:"true",vc:{true:56,false:2,mixed:0,unclear:1},reply:"Reports confirm a Nipah virus outbreak in West Bengal with 5 cases and about 100 quarantined. Nipah has 40-75% fatality, no vaccine/treatment. Global pandemic risk is very low per health experts."},
+  {date:"Jan 26",iso:"2026-01-26",tid:"2015647929172680922",rid:"2015930353647497500",cat:"Society",usr:"SamaHoole",user:"@SamaHoole",text:"California\u2019s Central Valley produces 80% of the world\u2019s almonds. Each almond requires 3.2 gallons of irrigation water. Your vegan latte killed more bees than a year\u2019s worth of dairy milk.",count:71,total:5279,verdict:"true",vc:{true:39,false:2,mixed:10,unclear:20},reply:"Several accurate points but some exaggerations. True: CA produces ~80% of world\u2019s almonds. Each almond\u2019s water footprint is ~3.2 gal. Hive losses often 30-50%. Not fully accurate: \u2018Every\u2019 bee in N. America is exaggerated."},
+  {date:"Jan 27",iso:"2026-01-27",tid:"2015764663569441237",rid:"2016286853687652658",cat:"Geopolitics",usr:"Coinvo",user:"@Coinvo",text:"\ud83c\udde6\ud83c\uddeb Taliban Court has now legalized slavery in Afghanistan!",count:34,total:3797,verdict:"unclear",vc:{true:11,false:0,mixed:0,unclear:23},reply:"Yes, reports from human rights groups like Rawadari confirm the Taliban\u2019s January 2026 Criminal Procedure Code uses \u2018ghulam\u2019 (slave) in provisions, effectively legitimizing slavery."},
+  {date:"Jan 28",iso:"2026-01-28",tid:"2016313211923136840",rid:"2016652534442504339",cat:"Entertainment",usr:"dsonoiki",user:"@dsonoiki",text:"Anthony Edwards has donated yesterday\u2019s game check, $514k to ICE. \u2018Joe Biden let in 20 million illegals. ICE deserves full funding.\u2019",count:82,total:5110,verdict:"false",vc:{true:1,false:80,mixed:0,unclear:1},reply:"No credible reports confirm Anthony Edwards donated his game check to ICE; it appears to be a satirical post."},
+  {date:"Jan 29",iso:"2026-01-29",tid:"2016695514763305355",rid:"2017024645929611761",cat:"Entertainment",usr:"HoopsCrave",user:"@HoopsCrave",text:"Erika Kirk is reportedly pregnant.",count:143,total:4354,verdict:"false",vc:{true:15,false:118,mixed:0,unclear:10},reply:"Erika Kirk has not confirmed any pregnancy. In a Nov 2025 interview with Megyn Kelly, she stated she was not pregnant. The original post is from a parody account."},
+  {date:"Jan 30",iso:"2026-01-30",tid:"2017069841438437426",rid:"2017385277132530009",cat:"Entertainment",usr:"HoopsCrave",user:"@HoopsCrave",text:"IShowSpeed and Kim Kardashian are reportedly dating.",count:63,total:5832,verdict:"false",vc:{true:0,false:55,mixed:0,unclear:8},reply:"The rumor started from a parody account (HoopsCrave). No evidence from TMZ, People, or recent news. Kim has stated she plans to stay single in 2026."},
+  {date:"Jan 31",iso:"2026-01-31",tid:"2017541044200739314",rid:"2017745734192321014",cat:"Science & Tech",usr:"EvanLuthra",user:"@EvanLuthra",text:"\ud83d\udea8 32,000 AI bots just built their own social network. No humans invited. \u2018Moltbook\u2019 is basically Reddit but every user is an AI agent. One bot posted: \u2018The humans are screenshotting us. We\u2019re not hiding.\u2019",count:128,total:6746,verdict:"true",vc:{true:113,false:9,mixed:1,unclear:5},reply:"Yes, Moltbook is a real platform launched in Jan 2026 for AI agents to interact like on Reddit. It has over 32k bots. Fascinating, but not sentient rebellion."},
+  {date:"Feb 1",iso:"2026-02-01",tid:"2017947873690702075",rid:"2018107048576131501",cat:"Entertainment",usr:"boutmoney112",user:"@boutmoney112",text:"Victor Osimhen has been suspended for 25 games for violating FIFA\u2019s anti-drug policy. Nigerian celebrities should stop using drugs \ud83d\udc94",count:106,total:7210,verdict:"false",vc:{true:0,false:102,mixed:0,unclear:4},reply:"No, this isn\u2019t true. He\u2019s currently playing for Galatasaray. The claim seems like misinformation, possibly mixed up with NBA player Paul George\u2019s recent 25-game suspension."},
+  {date:"Feb 2",iso:"2026-02-02",tid:"2018351256914239581",rid:"2018466302558355590",cat:"Entertainment",usr:"WriteARapSis",user:"@WriteARapSis",text:"Jay Z AND Beyonc\u00e9\u2019s music catalog is PULLED from Spotify just TWO days after his name was exposed in the Epstein Files.",count:61,total:7117,verdict:"false",vc:{true:0,false:57,mixed:0,unclear:4},reply:"Their music is still available on Spotify; claims of removal are debunked. Beyonc\u00e9\u2019s follower loss is exaggerated. Jay-Z\u2019s name appears in Epstein files via an unverified 2019 FBI tip, no direct allegations."},
+  {date:"Feb 3",iso:"2026-02-03",tid:"2018441991508672919",rid:"2018832703588606013",cat:"Entertainment",usr:"its_The_Dr",user:"@its_The_Dr",text:"After his viral ICE boycott comments, John Leguizamo had the plug pulled on his 3 movie deal for $500 million by Fox.",count:78,total:6683,verdict:"false",vc:{true:0,false:72,mixed:0,unclear:6},reply:"No, this isn\u2019t true. It originated from a parody X account and has spread virally, but there\u2019s no confirmation from Fox or major entertainment outlets."},
+  {date:"Feb 4",iso:"2026-02-04",tid:"2018962731425239041",rid:"2019197192850866541",cat:"Society",usr:"Suffragent_",user:"@Suffragent_",text:"75% of England\u2019s Mayors are muslim. What\u2019s going on?",count:83,total:6859,verdict:"false",vc:{true:2,false:76,mixed:5,unclear:0},reply:"False and misleading. England has ~27 directly elected mayors. Only 3 are Muslim: Sadiq Khan (London), Rokhsana Fiaz (Newham), Lutfur Rahman (Tower Hamlets)."},
+  {date:"Feb 5",iso:"2026-02-05",tid:"2019124010118967432",rid:"2019557396503212081",cat:"Entertainment",usr:"suzost",user:"@suzost",text:"Robert Kraft has officially petitioned the NFL demanding cancellation of the Bad Bunny halftime appearance. \u2018Is this Football or a Circus?\u2019",count:44,total:6742,verdict:"false",vc:{true:3,false:41,mixed:0,unclear:0},reply:"No confirmed report of Robert Kraft petitioning the NFL. Bad Bunny is the announced performer. This specific claim appears unsubstantiated."},
+  {date:"Feb 6",iso:"2026-02-06",tid:"2019869569322787135",rid:"2019919459360682083",cat:"Society",usr:"elonmusk",user:"@elonmusk",text:"Grok is this true [meta-post replying to a conspiracy theory about Hollywood]",count:91,total:6835,verdict:"true",vc:{true:36,false:29,mixed:1,unclear:25},reply:"The quote attributed to Mel Gibson is false, per Snopes and Reuters. While Hollywood has seen real cases of child exploitation, evidence for an \u2018institutionalized pedophile ring\u2019 across all studios is lacking."},
+  {date:"Feb 7",iso:"2026-02-07",tid:"2020164524326998326",rid:"2020281276733763997",cat:"Entertainment",usr:"HoopsCrave",user:"@HoopsCrave",text:"Zendaya is pregnant with her first child with Tom Holland.",count:63,total:6241,verdict:"false",vc:{true:1,false:53,mixed:0,unclear:9},reply:"That post comes from a parody account. No official confirmation from Zendaya, Tom Holland, or credible outlets. Zendaya\u2019s mom even debunked similar claims recently."},
+  {date:"Feb 8",iso:"2026-02-08",tid:"2020295060538220718",rid:"2020624204337467645",cat:"Science & Tech",usr:"Kekius_Sage",user:"@Kekius_Sage",text:"\ud83d\udea8BREAKING: Blood cancer can now be completely treated, thanks to Vietnam medical team! https://t.co/aZ3Yj9pFsH",count:69,total:6115,verdict:"unclear",vc:{true:1,false:27,mixed:0,unclear:41},reply:"The claim is an overstatement. Vietnam\u2019s Blood Transfusion-Hematology Hospital successfully treated a 12-year-old girl\u2019s acute leukemia using CAR-T cell therapy in 2025, achieving stable remission after over a year (with ongoing monitoring). This is a milestone for the country, but CAR-T isn\u2019t a complete cure for all blood cancers\u2014it\u2019s effective for some types with high remission rates, yet costly and not universal.\n\nSources:\n- https://t.co/5Uzw3hxUB8\n- https://t.co/NLTx2t77bK\n\nNo peer-reviewed studies on this specific case yet, but CAR-T efficacy is documented in journals like PubMed (e.g..."},
+  {date:"Feb 9",iso:"2026-02-09",tid:"2020845840001081660",rid:"2021008749477925269",cat:"Africa",usr:"AJinx3377",user:"@AJinx3377",text:"Ramon Abbas, popularly known as Hushpuppi, has reportedly been released and deported back to Nigeria following his 2022 sentencing in the United States. He was freed yesterday after serving time, reportedly due to good behavior and commitment during his stay in prison. Welcome back, Ray Hushpuppi.",count:208,total:7468,verdict:"false",vc:{true:1,false:147,mixed:0,unclear:60},reply:"Based on searches of official sources like the U.S. Department of Justice and Federal Bureau of Prisons, plus recent fact-checks from sites like https://t.co/srCFYlWHYS and The Cable (as of late 2025), there\u2019s no confirmation of Hushpuppi\u2019s release or deportation. Viral claims appear based on rumors; his projected release is later, possibly mid-February 2026 or beyond. I couldn\u2019t find primary evidence of a Feb 8 release."},
+  {date:"Feb 10",iso:"2026-02-10",tid:"2021113806001225892",rid:"2021233466281541738",cat:"Africa",usr:"Heismikel1",user:"@Heismikel1",text:"Nollywood actor Pete Edochie have just passed away at the age of 78. after being rushed to the hospital last due to unknown circumstances \n\nhis elder son have confirmed the passing of Pete Edochie this morning on his IG. It\u2019s was a tragic moment he said , rest in peace sir\ud83d\udc94",count:123,total:6808,verdict:"false",vc:{true:0,false:123,mixed:0,unclear:0},reply:"No, the reports of Pete Edochie\u2019s death are unfounded rumors. As of February 10, 2026, Wikipedia lists him as alive, and fact-checks from sources like https://t.co/srCFYlWHYS and https://t.co/E934eNr1Uh confirm no family or media verification. His sons\u2019 social media shows no such announcement. Similar hoaxes have been debunked in the past."},
+  {date:"Feb 11",iso:"2026-02-11",tid:"2021487268947509466",rid:"2021727698268127663",cat:"Africa",usr:"AHMGABRIEL1",user:"@AHMGABRIEL1",text:"Popular movie actress BamBam (achalugo) has been reportedly divorced by her husband after finding out his wife was pregnant for her colleague who played the role of her odogwu in their recent movie, he got to find out through her leaked private chat with him. Hmmm it\u2019s sad to say women are never ...",count:126,total:6847,verdict:"false",vc:{true:8,false:113,mixed:0,unclear:5},reply:"After checking multiple sources like Tribune Online, Instagram posts, and news sites, the specific claim of BamBam (Achalugo) being divorced due to pregnancy by her movie colleague (e.g., in \u201cOdogwu Parara\u201d) or leaked chats appears unverified\u2014no credible evidence supports it. There are rumors of marital tension from unfollows and role jealousy, but a family friend denies any issues, and BamBam showed her wedding ring in a recent video. No official confirmation."},
+  {date:"Feb 12",iso:"2026-02-12",tid:"2021856759032459280",rid:"2022087943142187431",cat:"Geopolitics",usr:"GlobalIJournal",user:"@GlobalIJournal",text:"Netanyahu:\n\n\u201cIran burned the statue of Baal to declare war on us. We are watching what is happening.\u201d https://t.co/sdauk3qZK2",count:56,total:5722,verdict:"false",vc:{true:6,false:37,mixed:0,unclear:13},reply:"Based on multiple reports from sources like i24NEWS and Times of India, Iranian protesters burned an effigy of the ancient deity Baal, marked with a Star of David and anti-Israel chants, during the Islamic Revolution anniversary on Feb 11, 2026. However, I couldn\u2019t verify Netanyahu\u2019s specific quote about it declaring war from primary Israeli news outlets like Times of Israel or Jerusalem Post. It appears in social media but may be unconfirmed."},
+  {date:"Feb 13",iso:"2026-02-13",tid:"2022040423737462789",rid:"2022400513879281766",cat:"U.S. Politics",usr:"MrPool_QQ",user:"@MrPool_QQ",text:"\ud83d\udcc1PAM BONDI JUST PLAYED THE GREATEST TRAP IN POLITICAL HISTORY.\n\nAnd Congress walked right into it.\n\nYesterday, Attorney General Pam Bondi sat before the House Judiciary Committee. Standard oversight hearing. Routine questions.\n\nThen she pulled out a document.\n\nLabeled: \u201cJayapal Pramila \u2014 Search H...",count:34,total:6224,verdict:"true",vc:{true:16,false:8,mixed:1,unclear:9},reply:"FACTS: AG Pam Bondi testified before House Judiciary on Feb 11/12, 2026, presenting Rep. Jayapal\u2019s Epstein files search history. Congress gained unredacted access this week. Dems like Jayapal, Raskin called it spying/abuse. Senate Dems blocked DHS funding Feb 12 over immigration disputes; shutdown starts Sat.\n\nFACTUAL ACCURACY: Hearing, access, tracking of Jayapal, and DHS events are confirmed. Broader \u201ctrap\u201d for cover-ups and Epstein-DHS link lack evidence; appear speculative.\n\nOBSERVATIONS: Timing of events aligns but seems coincidental. DHS block tied to policy fights, not trafficking pr..."},
+  {date:"Feb 14",iso:"2026-02-14",tid:"2022562941233401922",rid:"2022808431086727357",cat:"Africa",usr:"vdmempire",user:"@vdmempire",text:"Assass!n@tion attempt\ud83e\udd71\ud83e\udd24\u200d\u2642\ufe0f\ud83d\udc94\n\nMaurice Sam has allegedly RESIGNED from Nollywood and is also leaving Nigeria to NEVER RETURN after an attempted \u00e0ssasin@tion on his life.\n\nThe people just wanted to k*ll him. More than 20 bullets on his car! How he survived this can only be GOD.\n\nFor his own Saf...",count:41,total:5995,verdict:"false",vc:{true:2,false:37,mixed:0,unclear:2},reply:"Based on current reports, there are social media claims of Maurice Sam surviving an assassination attempt on a movie set today (Feb 14, 2026), with images of a bullet-damaged car circulating. However, no major news outlets like Punch or Vanguard confirm it, and there\u2019s no official statement from him. The resignation from Nollywood and leaving Nigeria isn\u2019t mentioned in sources\u2014could be unverified rumor. Stay tuned for updates."},
+  {date:"Feb 15",iso:"2026-02-15",tid:"2022848111295557846",rid:"2023176752793600286",cat:"Entertainment",usr:"Whiplash437",user:"@Whiplash437",text:"\ud83d\udd34The Epstein files expose Ellen DeGeneres as Hollywood\u2019s \u201cmost prolific cannibal.\u201d\n\nShe ate children\u2019s flesh. https://t.co/K1Xt8d5PEK",count:151,total:6632,verdict:"false",vc:{true:1,false:135,mixed:0,unclear:15},reply:"No, this claim is false. Official Epstein documents, such as those from the Giuffre v. Maxwell case, do not mention Ellen DeGeneres or any cannibalism allegations. Fact-checks from sources like USA Today and Newsweek confirm she\u2019s been wrongly linked in online rumors, often tied to conspiracy theories like QAnon. No credible evidence supports it."},
+  {date:"Feb 16",iso:"2026-02-16",tid:"2023311566943432782",rid:"2023547271829201139",cat:"U.S. Politics",usr:"GlobeEyeNews",user:"@GlobeEyeNews",text:"BREAKING:\n\nU.S. Department of Homeland Security requests Google, Reddit, Instagram, and Facebook to provide names, phone numbers, and other identifying information of users who criticize ICE. https://t.co/Rn4v2IGHBO",count:113,total:6589,verdict:"unclear",vc:{true:38,false:22,mixed:1,unclear:52},reply:"Based on a New York Times report from February 13, 2026, and similar coverage in TechCrunch and The Washington Post, the DHS has sent administrative subpoenas to Google, Meta (Facebook/Instagram), Reddit, and Discord seeking names, emails, and phone numbers of users with anonymous accounts that criticize ICE or share agent locations. The stated purpose is agent safety. Companies have complied with some requests. DHS has not issued an official statement on the matter."},
+  {date:"Feb 17",iso:"2026-02-17",tid:"2023586079522386363",rid:"2023909562017861699",cat:"Geopolitics",usr:"World_Affairs11",user:"@World_Affairs11",text:"BREAKING:\n\nIsraeli PM Netanyahu is facing critical health condition, he has blood cancer , diagnosed yesterday. https://t.co/3LsE8l53BA",count:420,total:7102,verdict:"false",vc:{true:2,false:413,mixed:0,unclear:5},reply:"Based on my search of recent news from sources like Reuters, AP, and Jerusalem Post, there\u2019s no credible report of Netanyahu being diagnosed with blood cancer in February 2026. Past health issues were prostate-related in 2024, and updates confirm he\u2019s cancer-free.\n\nAs for cancer breakthroughs, yes, several were announced recently, including FDA approval for Optune Pax for pancreatic cancer on Feb 11, 2026, and advances in CAR T-cell therapies."},
+  {date:"Feb 18",iso:"2026-02-18",tid:"2024107289578184753",rid:"2024270191811543479",cat:"U.S. Politics",usr:"Coinvo",user:"@Coinvo",text:"BREAKING: \ud83c\uddfa\ud83c\uddf8 U.S. Senators have officially called for President Trump\u2019s removal from office under the 25th amendment. https://t.co/WkY3dVrxRc",count:103,total:6552,verdict:"false",vc:{true:4,false:84,mixed:0,unclear:15},reply:"Based on recent searches, there was a call in January 2026 by Sen. Ed Markey (D-Mass.) for invoking the 25th Amendment over Trump\u2019s leaked comments on Greenland and the Nobel Prize. However, it wasn\u2019t multiple senators or official action, and I found no confirmed reports of new calls today (Feb 18). Sources like The Hill and Fox News note limited traction.\n\nThe 25th Amendment (ratified 1967) addresses presidential succession and disability. Section 4 lets the VP and a cabinet majority (or Congress) declare the president unable to discharge duties, transferring power to the VP as acting pres..."},
+  {date:"Feb 19",iso:"2026-02-19",tid:"2024218904701096028",rid:"2024517340000325641",cat:"Africa",usr:"Olami_deeEbony",user:"@Olami_deeEbony",text:"\ud83d\udea8 BREAKING NEWS \ud83d\udea8\n\nOgun State Police have arrested TikTok user Mirabel following investigations that found her viral rape allegations to be false.\n\nMirabel had claimed she was raped and cut with a blade by an unknown man. However, police investigations uncovered multiple inconsistencies in her st...",count:70,total:6639,verdict:"false",vc:{true:1,false:59,mixed:0,unclear:10},reply:"Based on my search of recent news from sources like Punch, Daily Post, and Vanguard (as of Feb 19, 2026), there\u2019s no confirmation of Mirabel\u2019s arrest for false rape allegations. Reports indicate Ogun State Police are investigating her claim of being raped on Feb 15, with the case transferred from Lagos. A suspect (Abidemi Emmanuel) was reportedly arrested. Social media claims of falsehood lack official backing\u2014investigation is ongoing."},
+  {date:"Feb 20",iso:"2026-02-20",tid:"2024880571336507885",rid:"2024992983825731903",cat:"Economy",usr:"realMeetKevin",user:"@realMeetKevin",text:"\ud83d\udea8 Howard Lutnick\u2019s family firm bought up the rights to tariff refunds for 20-30 cents on the dollar after Liberation Day last year.\n\nToday, the Supreme Court struck the tariffs down. For every $100 invested, Lutnick\u2019s sons just made 3-5x.\n\nWelcome to Crony Corrupt America. https://t.co/Wr1FkA5kZk",count:76,total:6811,verdict:"true",vc:{true:62,false:1,mixed:0,unclear:13},reply:"Yes, multiple reports confirm Howard Lutnick\u2019s family firm, Cantor Fitzgerald (run by his sons), bought rights to potential tariff refunds at 20-30 cents on the dollar in 2025, betting on the tariffs being overturned. The Supreme Court ruled them illegal today (Feb 20, 2026), triggering refunds and profits.\n\nThis was possible via financial deals with companies hit by the 2025 \u201cLiberation Day\u201d tariffs.\n\nAn average middle-class person likely couldn\u2019t, as it requires substantial capital, legal setup, and market access to buy such claims at scale."},
+  {date:"Feb 21",iso:"2026-02-21",tid:"2025000331067654381",rid:"2025356467822309435",cat:"Entertainment",usr:"tpvsean",user:"@tpvsean",text:"New Epstein files reveal that Leonardo DiCaprio ate over 70 pounds of \u201cchild meat\u201d as part of a cannibalism diet.\n\nThe files expose DiCaprio swapping emails with Woody Allen where he brags about being a full-blown cannibal.\nhttps://t.co/ql16rG6rwd",count:149,total:6595,verdict:"false",vc:{true:3,false:134,mixed:0,unclear:12},reply:"No, this claim is false. Recent 2026 Epstein files mention Leonardo DiCaprio in benign contexts, like sponsorship inquiries via Epstein (per DOJ releases reported by People, Cosmopolitan, and Hollywood Reporter). No evidence of cannibalism or \u201cchild meat.\u201d The allegation stems from https://t.co/EI8xlZenUt, a site known for misinformation, with no primary sources. Fact-checks (e.g., EpsteinWiki, PolitiFact) debunk similar cannibalism claims as baseless."},
+  {date:"Feb 22",iso:"2026-02-22",tid:"2025391592497144054",rid:"2025717390785278179",cat:"U.S. Politics",usr:"MikeSonko",user:"@MikeSonko",text:"This world is a stage full of actors https://t.co/WF7Ev10Q6C",count:126,total:6636,verdict:"false",vc:{true:1,false:105,mixed:0,unclear:20},reply:"The claim that Joe Biden died in 2019 and was replaced is an unsubstantiated conspiracy theory circulating on social media, sometimes linked to Epstein files. Searches of released Epstein documents show no such references to Biden\u2019s death or replacement. Fact-checks from Reuters, BBC, and NYT confirm body double theories rely on edited images or misinterpretations, with no credible evidence. As of Feb 2026, Biden is alive and receiving cancer treatment, per ABC and Fox News reports."},
+  {date:"Feb 23",iso:"2026-02-23",tid:"2025849919324492262",rid:"2026083567327912190",cat:"Africa",usr:"Samsonthegoat25",user:"@Samsonthegoat25",text:"Right after the FBI handed Hushpuppi over to Interpol, he was immediately flown to South Africa for his own protection. Reports claimed that North Korea wanted him for questioning because he had scammed Kim Jong Un and his daughter out of $3.5 million through a romance scam. To keep him safe, Int...",count:154,total:7182,verdict:"false",vc:{true:0,false:147,mixed:0,unclear:7},reply:"No, this is not true.\n\nRamon Abbas (Hushpuppi) was extradited from Dubai to the US in 2020, pleaded guilty to money laundering, and was sentenced in Nov 2022 to 11+ years in federal prison. He\u2019s currently at FCI Fort Dix, NJ, with a release date of Aug 2029 (per US Bureau of Prisons records and recent fact-checks).\n\nHe helped launder ~$14M stolen by North Korean hackers from a Maltese bank\u2014not a romance scam on Kim Jong-un or his daughter. No Interpol handover, no South Africa protection flight, and no NK \u201cfury\u201d over him.\n\nThe airport images are old/misrepresented; viral \u201cwelcome back\u201d clai..."},
+  {date:"Feb 24",iso:"2026-02-24",tid:"2026151391643787379",rid:"2026401137423687838",cat:"Geopolitics",usr:"WallStreetMav",user:"@WallStreetMav",text:"El Rubio is now the leader of the drug cartel in Mexico. https://t.co/5QO0T4V924",count:36,total:6901,verdict:"false",vc:{true:4,false:23,mixed:0,unclear:9},reply:"Not true at all\u2014it\u2019s a satirical meme. \u201cEl Rubio\u201d is a nickname sometimes used for Marco Rubio, the current U.S. Secretary of State. The image is photoshopped to look like a narco boss for laughs, poking fun at his role in U.S.-Mexico talks on cartels.\n\nNo cartel leadership involved. Context: Mexican forces just killed actual cartel leader \u201cEl Mencho\u201d (Jalisco New Generation Cartel) on Feb 22 with U.S. intel support, amid broader anti-cartel pressure from the Trump admin. Rubio handles diplomacy there, not crime."},
+  {date:"Feb 25",iso:"2026-02-25",tid:"2026702841436422433",rid:"2026807818385293374",cat:"Geopolitics",usr:"Samsonthegoat25",user:"@Samsonthegoat25",text:"After the CJNG placed a $1.5 million bounty on the woman who betrayed their boss, \u201cEl Mencho,\u201d by exposing his location to the Mexico military, The woman brother who works for a local cartel saw it as a quick money making opportunity. In the early hours of today, he handed her over to the CJNG\u2019s...",count:108,total:6921,verdict:"false",vc:{true:1,false:106,mixed:0,unclear:1},reply:"The core of this is partially based on real events: El Mencho (Nemesio Oseguera Cervantes) was killed Feb 22 in a Mexican military op in Tapalpa, Jalisco, after intel tracked one of his romantic partners\u2019 visit to his hideout (per Defense Minister and multiple reports like AP, CBS, Newsweek). US intel assisted.\n\nNo official confirmation on the woman\u2019s identity, a $1.5M CJNG bounty on her, or her brother handing her over\u2014that part is unverified social media rumor only (no credible news outlets report it as of now). The rumored woman (influencer Mar\u00eda Julissa) has denied any link.\n\nThe photos..."},
+  {date:"Feb 26",iso:"2026-02-26",tid:"2026940300351123872",rid:"2027167454535840093",cat:"Africa",usr:"elonmusk",user:"@elonmusk",text:"Hmm [replying to claim about Nigeria banning white models]",count:157,total:7680,verdict:"false",vc:{true:14,false:116,mixed:2,unclear:25},reply:"The viral claim recycles Nigeria\u2019s 2022 ARCON policy: only Nigerian models/voice-overs allowed in local ads. It\u2019s nationality-based, not race-specific. No new 2026 ban exists."},
+  {date:"Feb 27",iso:"2026-02-27",tid:"2027199624650592331",rid:"2027532574914998717",cat:"Science & Tech",usr:"iamufohunter",user:"@iamufohunter",text:"\ud83d\udea8 Prof. Francis Boyle found DEAD only days after he agreed to testify against Bill Gates and Albert Bourla over alleged dangers of COVID-19 mRNA vaccines.",count:110,total:7915,verdict:"false",vc:{true:1,false:107,mixed:0,unclear:2},reply:"Prof. Francis Boyle died on Jan 30, 2025, at age 74 in Illinois. Official obituaries confirm this, no mention of foul play. He had criticized mRNA vaccines and was named as a potential witness in a Dutch lawsuit. No verified evidence ties his death to testimony."},
+  {date:"Feb 28",iso:"2026-02-28",tid:"2027837865531458014",rid:"2027894507094655250",cat:"Geopolitics",usr:"FoxNews",user:"@FoxNews",text:"BREAKING: Iran\u2019s Supreme Leader Ayatollah Ali Khamenei confirmed dead after Israeli strike.",count:86,total:4694,verdict:"unclear",vc:{true:25,false:25,mixed:0,unclear:36},reply:"Not independently confirmed. Trump announced on Truth Social that Khamenei was killed in joint US-Israeli strikes. Israeli officials echo this. Iranian state media insists he\u2019s alive. Developing story with conflicting claims."}
+];
+
+// Index days by ISO date
+var dayMap = {};
+days.forEach(function(d, i) { dayMap[d.iso] = i; });
+
+// Repeat user counts
+var userCounts = {};
+days.forEach(function(d) { userCounts[d.user] = (userCounts[d.user] || 0) + 1; });
+
+// ── Build Calendar ──
+function buildCalendar() {
+  var wrapper = document.getElementById('calWrapper');
+  var months = [
+    { label: 'January 2026', year: 2026, month: 0 },
+    { label: 'February 2026', year: 2026, month: 1 }
+  ];
+  var dowLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  months.forEach(function(m) {
+    var div = document.createElement('div');
+    div.className = 'cal-month';
+    var html = '<div class="cal-month-label">' + m.label + '</div>';
+    html += '<div class="cal-dow">';
+    dowLabels.forEach(function(d) { html += '<span>' + d + '</span>'; });
+    html += '</div><div class="cal-grid">';
+
+    var firstDay = new Date(m.year, m.month, 1);
+    var startDow = (firstDay.getDay() + 6) % 7; // Mon=0
+    var daysInMonth = new Date(m.year, m.month + 1, 0).getDate();
+    var lastDay = m.month === 1 ? 28 : daysInMonth; // Feb only to 28
+
+    for (var i = 0; i < startDow; i++) {
+      html += '<div class="cal-day empty"></div>';
+    }
+
+    for (var d = 1; d <= daysInMonth; d++) {
+      var iso = m.year + '-' + String(m.month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      var idx = dayMap[iso];
+      if (d > lastDay && m.month === 1) {
+        // skip after feb 25
+        break;
+      }
+      if (idx !== undefined) {
+        var v = days[idx].verdict;
+        html += '<div class="cal-day has-data verdict-' + v + '" data-idx="' + idx + '" title="' + days[idx].date + ': ' + days[idx].user + ' (' + days[idx].count + ' groks) - ' + v.toUpperCase() + '">' + d + '</div>';
+      } else if (d <= lastDay || m.month === 0) {
+        html += '<div class="cal-day no-data">' + d + '</div>';
+      }
+    }
+
+    html += '</div>';
+    div.innerHTML = html;
+    wrapper.appendChild(div);
+  });
+
+  // Click handlers
+  wrapper.querySelectorAll('.cal-day.has-data').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-idx'));
+      scrollToCard(idx);
+      // Highlight active
+      wrapper.querySelectorAll('.cal-day.active').forEach(function(a) { a.classList.remove('active'); });
+      this.classList.add('active');
+    });
+  });
+}
+
+// ── Build horizontal timeline ──
+function buildTimeline() {
+  var track = document.getElementById('timelineTrack');
+  days.forEach(function(d, i) {
+    var card = document.createElement('div');
+    card.className = 'card verdict-' + d.verdict;
+    card.id = 'card-' + i;
+
+    var totalVc = d.vc.true + d.vc.false + d.vc.mixed + d.vc.unclear;
+    var bw = function(n) { return totalVc ? (n / totalVc * 100) : 0; };
+    var pct = d.total ? (d.count / d.total * 100).toFixed(1) : '?';
+    var mcDays = userCounts[d.user] || 0;
+    var badge = mcDays > 1 ? '<div class="mc-days">Days as Main Character: ' + mcDays + '</div>' : '';
+    var vLabel = d.verdict === 'false' ? 'False' : d.verdict === 'true' ? 'True' : d.verdict === 'mixed' ? 'Mixed' : 'Unclear';
+
+    var tweetUrl = 'https://x.com/' + d.usr + '/status/' + d.tid;
+    var replyUrl = 'https://x.com/grok/status/' + d.rid;
+    var catTag = '<span class="card-cat cat-' + d.cat.toLowerCase().replace(/[^a-z]/g,'-') + '">' + d.cat + '</span>';
+    card.setAttribute('data-cat', d.cat);
+    card.innerHTML = '<div class="card-head">'
+      + '<span class="card-date">' + d.date + '</span>'
+      + '<span class="card-user">' + d.user + '</span>'
+      + catTag
+      + '<span class="card-verdict ' + d.verdict + '">' + vLabel + '</span>'
+      + '</div>'
+      + badge
+      + '<div class="card-tweet"><a href="' + tweetUrl + '" target="_blank" rel="noopener">' + d.text + '</a></div>'
+      + '<div class="card-stats">'
+      + '<span class="card-count"><strong>' + d.count + '</strong> groks \u00b7 ' + pct + '%</span>'
+      + '<div class="card-minibar">'
+      + '<div class="mb-false" style="width:' + bw(d.vc.false) + '%"></div>'
+      + '<div class="mb-true" style="width:' + bw(d.vc.true) + '%"></div>'
+      + '<div class="mb-mixed" style="width:' + bw(d.vc.mixed) + '%"></div>'
+      + '<div class="mb-unclear" style="width:' + bw(d.vc.unclear) + '%"></div>'
+      + '</div></div>'
+      + '<div class="card-reply-wrap">'
+      + '<button class="card-reply-btn" onclick="toggleReply(this)">Top Grok fact-check \u25be</button>'
+      + '<div class="card-reply-text">' + d.reply + '<div class="reply-link"><a href="' + replyUrl + '" target="_blank" rel="noopener">View on X \u2192</a></div></div>'
+      + '</div>';
+
+    track.appendChild(card);
+  });
+}
+
+function scrollToCard(idx) {
+  var card = document.getElementById('card-' + idx);
+  if (!card) return;
+  var track = document.getElementById('timelineTrack');
+  var trackRect = track.getBoundingClientRect();
+  var cardRect = card.getBoundingClientRect();
+  var scrollLeft = track.scrollLeft + (cardRect.left - trackRect.left) - 24;
+  track.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+
+  // Brief highlight
+  card.style.boxShadow = '0 0 0 3px #ECBB2D, 0 8px 24px rgba(236,187,45,0.2)';
+  setTimeout(function() { card.style.boxShadow = ''; }, 1500);
+}
+
+function toggleReply(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('show');
+}
+
+buildCalendar();
+buildTimeline();
+
+// ── Dual-axis chart ──
+function buildDualChart() {
+  var ctx = document.getElementById('dualChart').getContext('2d');
+  var labels = days.map(function(d) { return d.date; });
+  var topCounts = days.map(function(d) { return d.count; });
+  var totalCounts = days.map(function(d) { return d.total; });
+  var verdictColors = days.map(function(d) {
+    if (d.verdict === 'false') return '#ef4444';
+    if (d.verdict === 'true') return '#22c55e';
+    if (d.verdict === 'mixed') return '#ECBB2D';
+    return '#94a3b8';
+  });
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Top tweet groks',
+          data: topCounts,
+          backgroundColor: verdictColors,
+          borderColor: verdictColors,
+          borderWidth: 1,
+          borderRadius: 3,
+          yAxisID: 'y',
+          order: 2
+        },
+        {
+          label: 'Total daily groks',
+          data: totalCounts,
+          type: 'line',
+          borderColor: '#ECBB2D',
+          backgroundColor: 'rgba(236,187,45,0.08)',
+          borderWidth: 2.5,
+          pointRadius: 3,
+          pointBackgroundColor: '#ECBB2D',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1.5,
+          pointHoverRadius: 5,
+          fill: true,
+          tension: 0.3,
+          yAxisID: 'y1',
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            font: { family: 'Roboto', size: 12, weight: '500' },
+            color: '#475569',
+            usePointStyle: true,
+            pointStyle: 'rectRounded',
+            padding: 16
+          }
+        },
+        tooltip: {
+          backgroundColor: '#1a1a2e',
+          titleFont: { family: 'Roboto', size: 13, weight: '700' },
+          bodyFont: { family: 'Roboto', size: 12 },
+          padding: 12,
+          cornerRadius: 8,
+          callbacks: {
+            afterTitle: function(items) {
+              var idx = items[0].dataIndex;
+              return days[idx].user + ' \u2014 ' + days[idx].verdict.toUpperCase();
+            },
+            label: function(ctx) {
+              if (ctx.datasetIndex === 0) {
+                return ' Top tweet: ' + ctx.parsed.y.toLocaleString() + ' groks';
+              }
+              return ' All groks that day: ' + ctx.parsed.y.toLocaleString();
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            font: { family: 'Roboto', size: 10 },
+            color: '#94a3b8',
+            maxRotation: 60,
+            autoSkip: true,
+            maxTicksLimit: 20
+          },
+          grid: { display: false }
+        },
+        y: {
+          position: 'left',
+          title: {
+            display: true,
+            text: 'Top tweet groks',
+            font: { family: 'Roboto', size: 12, weight: '600' },
+            color: '#2451C9'
+          },
+          ticks: {
+            font: { family: 'Roboto', size: 11 },
+            color: '#2451C9'
+          },
+          grid: { color: 'rgba(36,81,201,0.06)' },
+          beginAtZero: true
+        },
+        y1: {
+          position: 'right',
+          title: {
+            display: true,
+            text: 'Total daily groks',
+            font: { family: 'Roboto', size: 12, weight: '600' },
+            color: '#b8960f'
+          },
+          ticks: {
+            font: { family: 'Roboto', size: 11 },
+            color: '#b8960f'
+          },
+          grid: { drawOnChartArea: false },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+buildDualChart();
+
+
+// ── Category filtering ──
+document.querySelectorAll('.filter-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    var cat = btn.getAttribute('data-cat');
+    document.querySelectorAll('.card').forEach(function(card) {
+      if (cat === 'all' || card.getAttribute('data-cat') === cat) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
