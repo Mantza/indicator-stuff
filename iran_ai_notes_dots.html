@@ -205,8 +205,14 @@ document.querySelectorAll('.dot').forEach(dot => {
     tooltip.innerHTML = html;
     tooltip.style.display = 'block';
     const rect = e.target.getBoundingClientRect();
+    const field = document.querySelector('.field-container').getBoundingClientRect();
+    const midY = field.top + field.height / 2;
     tooltip.style.left = Math.min(rect.left, window.innerWidth - 300) + 'px';
-    tooltip.style.top = (rect.top - tooltip.offsetHeight - 8) + 'px';
+    if (rect.top < midY) {
+      tooltip.style.top = (rect.bottom + 8) + 'px';
+    } else {
+      tooltip.style.top = (rect.top - tooltip.offsetHeight - 8) + 'px';
+    }
   });
   dot.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
 });
