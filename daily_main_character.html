@@ -331,11 +331,14 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 24px;
+  padding: 14px 24px 8px;
   background: #fff;
-  border-bottom: 1px solid #e2e8f0;
   flex-wrap: wrap;
   justify-content: center;
+}
+.filter-bar:last-of-type {
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
 }
 .filter-label {
   font-size: 0.72rem;
@@ -359,6 +362,17 @@ body {
 }
 .filter-btn:hover { border-color: #2451C9; color: #2451C9; }
 .filter-btn.active { background: #2451C9; color: #fff; border-color: #2451C9; }
+.filter-btn .filter-count { font-weight: 400; opacity: 0.85; margin-left: 2px; }
+
+/* Verdict filter buttons */
+.filter-btn.verdict-false.active { background: #ef4444; border-color: #ef4444; color: #fff; }
+.filter-btn.verdict-false:hover { border-color: #ef4444; color: #ef4444; }
+.filter-btn.verdict-true.active { background: #22c55e; border-color: #22c55e; color: #fff; }
+.filter-btn.verdict-true:hover { border-color: #22c55e; color: #22c55e; }
+.filter-btn.verdict-mixed.active { background: #ECBB2D; border-color: #ECBB2D; color: #1a1a2e; }
+.filter-btn.verdict-mixed:hover { border-color: #ECBB2D; color: #ECBB2D; }
+.filter-btn.verdict-unclear.active { background: #94a3b8; border-color: #94a3b8; color: #fff; }
+.filter-btn.verdict-unclear:hover { border-color: #94a3b8; color: #94a3b8; }
 
 /* ── Category tags on cards ── */
 .card-cat {
@@ -525,6 +539,14 @@ body {
   <button class="filter-btn" data-cat="Crime">Crime</button>
   <button class="filter-btn" data-cat="Science & Tech">Science & Tech</button>
   <button class="filter-btn" data-cat="Sports">Sports</button>
+</div>
+<div class="filter-bar" id="verdictBar">
+  <span class="filter-label">Filter by Grok rating:</span>
+  <button class="filter-btn active" data-verdict="all">All</button>
+  <button class="filter-btn verdict-false" data-verdict="false">False</button>
+  <button class="filter-btn verdict-true" data-verdict="true">True</button>
+  <button class="filter-btn verdict-mixed" data-verdict="mixed">Mixed</button>
+  <button class="filter-btn verdict-unclear" data-verdict="unclear">Unclear</button>
 </div>
 
 <div class="timeline-section">
@@ -719,6 +741,7 @@ function buildTimeline() {
       viewsHtml = '<span class="card-views"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>' + viewStr + ' views</span>';
     }
     card.setAttribute('data-cat', d.cat);
+    card.setAttribute('data-verdict', d.verdict);
     card.innerHTML = '<div class="card-head">'
       + '<span class="card-date">' + d.date + '</span>'
       + '<span class="card-user">' + d.user + checkBadge + '</span>'
@@ -781,19 +804,101 @@ buildTimeline();
 
 
 
-// ── Category filtering ──
-document.querySelectorAll('.filter-btn').forEach(function(btn) {
+// ── Combined filtering (category + verdict) ──
+var activeCat = 'all';
+var activeVerdict = 'all';
+
+// Store original button labels
+var btnLabels = {};
+document.querySelectorAll('#filterBar .filter-btn').forEach(function(b) {
+  btnLabels['cat-' + (b.getAttribute('data-cat') || '')] = b.textContent;
+});
+document.querySelectorAll('#verdictBar .filter-btn').forEach(function(b) {
+  btnLabels['v-' + (b.getAttribute('data-verdict') || '')] = b.textContent;
+});
+
+function applyFilters() {
+  var cards = document.querySelectorAll('.card');
+  var visibleCount = 0;
+  cards.forEach(function(card) {
+    var catMatch = (activeCat === 'all' || card.getAttribute('data-cat') === activeCat);
+    var vMatch = (activeVerdict === 'all' || card.getAttribute('data-verdict') === activeVerdict);
+    if (catMatch && vMatch) {
+      card.style.display = '';
+      visibleCount++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  // Update category button labels with counts
+  document.querySelectorAll('#filterBar .filter-btn').forEach(function(b) {
+    var cat = b.getAttribute('data-cat');
+    var base = btnLabels['cat-' + cat];
+    if (b.classList.contains('active') && cat !== 'all') {
+      // Count cards matching this cat AND current verdict filter
+      var n = 0;
+      cards.forEach(function(c) {
+        var catOk = (c.getAttribute('data-cat') === cat);
+        var vOk = (activeVerdict === 'all' || c.getAttribute('data-verdict') === activeVerdict);
+        if (catOk && vOk) n++;
+      });
+      b.innerHTML = base + ' <span class="filter-count">(' + n + ')</span>';
+    } else if (cat === 'all' && b.classList.contains('active')) {
+      // "All" when active — show total visible
+      var n = 0;
+      cards.forEach(function(c) {
+        var vOk = (activeVerdict === 'all' || c.getAttribute('data-verdict') === activeVerdict);
+        if (vOk) n++;
+      });
+      b.innerHTML = base + ' <span class="filter-count">(' + n + ')</span>';
+    } else {
+      b.textContent = base;
+    }
+  });
+
+  // Update verdict button labels with counts
+  document.querySelectorAll('#verdictBar .filter-btn').forEach(function(b) {
+    var v = b.getAttribute('data-verdict');
+    var base = btnLabels['v-' + v];
+    if (b.classList.contains('active') && v !== 'all') {
+      var n = 0;
+      cards.forEach(function(c) {
+        var vOk = (c.getAttribute('data-verdict') === v);
+        var catOk = (activeCat === 'all' || c.getAttribute('data-cat') === activeCat);
+        if (vOk && catOk) n++;
+      });
+      b.innerHTML = base + ' <span class="filter-count">(' + n + ')</span>';
+    } else if (v === 'all' && b.classList.contains('active')) {
+      var n = 0;
+      cards.forEach(function(c) {
+        var catOk = (activeCat === 'all' || c.getAttribute('data-cat') === activeCat);
+        if (catOk) n++;
+      });
+      b.innerHTML = base + ' <span class="filter-count">(' + n + ')</span>';
+    } else {
+      b.textContent = base;
+    }
+  });
+}
+
+// Category filter clicks
+document.querySelectorAll('#filterBar .filter-btn').forEach(function(btn) {
   btn.addEventListener('click', function() {
-    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('#filterBar .filter-btn').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
-    var cat = btn.getAttribute('data-cat');
-    document.querySelectorAll('.card').forEach(function(card) {
-      if (cat === 'all' || card.getAttribute('data-cat') === cat) {
-        card.style.display = '';
-      } else {
-        card.style.display = 'none';
-      }
-    });
+    activeCat = btn.getAttribute('data-cat');
+    applyFilters();
+  });
+});
+
+// Verdict filter clicks
+document.querySelectorAll('#verdictBar .filter-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('#verdictBar .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    activeVerdict = btn.getAttribute('data-verdict');
+    applyFilters();
   });
 });
 </script>
