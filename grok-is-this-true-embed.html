@@ -138,14 +138,6 @@ body {
   overflow: hidden;
   position: relative;
 }
-.card-tweet.clamped::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 2.5em;
-  background: linear-gradient(transparent, #fff);
-  pointer-events: none;
-}
 
 /* ── View on X link ── */
 .reply-link { margin-top: 4px; padding: 4px 16px 0; }
@@ -177,22 +169,17 @@ body {
 .mb-true  { background: #22c55e; }
 .mb-mixed { background: #ECBB2D; }
 
-/* ── Grok reply toggle ── */
+/* ── Grok reply ── */
 .card-reply-wrap { border-top: 1px solid #e2e8f0; background: #f8fafc; }
-.card-reply-btn {
+.card-reply-label {
   display: block; width: 100%; text-align: left;
-  background: none; border: none; color: #2451C9;
-  font-family: inherit; font-size: 0.74rem; font-weight: 600;
-  padding: 8px 16px; cursor: pointer;
+  color: #2451C9; font-size: 0.74rem; font-weight: 600;
+  padding: 8px 16px 4px;
 }
-.card-reply-btn:hover { color: #1a3d99; }
-.card-reply-btn::before { content: '\25B8 '; font-size: 0.7rem; }
-.card-reply-btn.open::before { content: '\25BE '; }
 .card-reply-text {
-  display: none; padding: 0 16px 12px;
+  padding: 0 16px 12px;
   font-size: 0.8rem; color: #475569; line-height: 1.55;
 }
-.card-reply-text.show { display: block; }
 
 /* ── CTA ── */
 .cta-wrap { text-align: center; margin-top: 4px; }
@@ -217,7 +204,7 @@ body {
   .card-tweet { padding: 4px 12px 8px; font-size: 0.8rem; }
   .card-stats { padding: 0 12px 6px; }
   .card-verdict { margin: 0 12px; }
-  .card-reply-btn { padding: 6px 12px; font-size: 0.68rem; }
+  .card-reply-label { padding: 6px 12px 4px; font-size: 0.68rem; }
   .card-reply-text { padding: 0 12px 10px; font-size: 0.75rem; }
   .cta-btn { font-size: 0.75rem; padding: 9px 22px; }
 }
@@ -226,98 +213,92 @@ body {
 <body>
 
 <div class="embed-wrap">
-  <div id="cards" class="cards-row"></div>
+  <div class="cards-row">
+
+    <!-- Mar 8 — @RussiaSupportt -->
+    <div class="card verdict-false">
+      <div class="card-head">
+        <span class="card-date">Mar 8</span>
+        <span class="card-user"><a href="https://x.com/RussiaSupportt/status/2030577022968483845" target="_blank">@RussiaSupportt</a></span>
+        <span class="card-cat cat-geopolitics">Geopolitics</span>
+      </div>
+      <div class="card-status-row"><span class="card-status suspended">Suspended account</span></div>
+      <div class="card-tweet">BREAKING NEWS: Iran has shot down a American B-2 bomber and kidnapped the entire crew.<br><br>Iran is totally winning</div>
+      <div class="reply-link"><a href="https://x.com/RussiaSupportt/status/2030577022968483845" target="_blank" rel="noopener">View on X &#8594;</a></div>
+      <div class="card-grok-section">
+        <span class="card-verdict false">Grok&#8217;s rating: False</span>
+        <div class="card-stats">
+          <span class="card-count"><strong>98</strong> groks (1.0% of daily total)</span>
+          <div class="card-minibar">
+            <div class="mb-false" style="width:83.7%"></div>
+            <div class="mb-true" style="width:1%"></div>
+            <div class="mb-mixed" style="width:15.3%"></div>
+          </div>
+        </div>
+        <div class="card-reply-wrap">
+          <span class="card-reply-label">&#9662; Median Grok reply</span>
+          <div class="card-reply-text">No, this is not true. Fact-checks from multiple outlets (WION, Hindustan Times, Times Now, BBC Verify) confirm no evidence or official reports of Iran shooting down a US B-2 bomber or capturing any crew. US CENTCOM and Pentagon statements note B-2s conducted strikes on Iranian targets and all returned safely.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mar 7 — @QTHESTORMM -->
+    <div class="card verdict-false">
+      <div class="card-head">
+        <span class="card-date">Mar 7</span>
+        <span class="card-user"><a href="https://x.com/QTHESTORMM/status/2030072058533536076" target="_blank">@QTHESTORMM <span class="check blue"><svg viewBox="0 0 22 22"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.852-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.69-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.636.433 1.221.878 1.69.47.446 1.055.752 1.69.883.635.13 1.294.083 1.902-.143.271.586.702 1.084 1.24 1.438s1.167.55 1.813.569c.647-.02 1.277-.216 1.818-.569s.972-.852 1.245-1.438c.608.226 1.267.276 1.9.143.636-.13 1.22-.437 1.69-.883.445-.47.75-1.054.88-1.69.131-.633.08-1.29-.14-1.896.587-.273 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg></span></a></span>
+        <span class="card-cat cat-politics">Politics</span>
+        <span class="card-views"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>6.4M views</span>
+      </div>
+      <div class="card-tweet">&#128680;&#128680;MAJOR ALERT: DOJ RELEASES 2ND BATCH OF EPSTEIN FILES INCLUDING NEW EMAILS SHOWING &quot;TRUMP ALLEGEDLY HAD S*X WITH DAUGHTER IVANKA&quot;, EPSTEIN IN THE EMAIL CALLS TRUMP &quot;MOST EVIL&quot;</div>
+      <div class="reply-link"><a href="https://x.com/QTHESTORMM/status/2030072058533536076" target="_blank" rel="noopener">View on X &#8594;</a></div>
+      <div class="card-grok-section">
+        <span class="card-verdict false">Grok&#8217;s rating: False</span>
+        <div class="card-stats">
+          <span class="card-count"><strong>193</strong> groks (1.8% of daily total)</span>
+          <div class="card-minibar">
+            <div class="mb-false" style="width:56.5%"></div>
+            <div class="mb-mixed" style="width:43.5%"></div>
+          </div>
+        </div>
+        <div class="card-reply-wrap">
+          <span class="card-reply-label">&#9662; Median Grok reply</span>
+          <div class="card-reply-text">No, this specific claim isn&#8217;t supported. Recent DOJ Epstein file releases (including March 2026 batches under the Transparency Act) contain uncorroborated 2019 FBI interview notes alleging Trump abused a minor introduced by Epstein. No documents mention Trump having sex with Ivanka or Epstein calling Trump &#8220;most evil.&#8221; The post&#8217;s headline exaggerates beyond what the files contain.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mar 6 — @boutmoneey12 -->
+    <div class="card verdict-false">
+      <div class="card-head">
+        <span class="card-date">Mar 6</span>
+        <span class="card-user"><a href="https://x.com/boutmoneey12/status/2029965785058218322" target="_blank">@boutmoneey12 <span class="check blue"><svg viewBox="0 0 22 22"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.852-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.69-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.636.433 1.221.878 1.69.47.446 1.055.752 1.69.883.635.13 1.294.083 1.902-.143.271.586.702 1.084 1.24 1.438s1.167.55 1.813.569c.647-.02 1.277-.216 1.818-.569s.972-.852 1.245-1.438c.608.226 1.267.276 1.9.143.636-.13 1.22-.437 1.69-.883.445-.47.75-1.054.88-1.69.131-.633.08-1.29-.14-1.896.587-.273 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg></span></a></span>
+        <span class="card-cat cat-entertainment">Entertainment</span>
+        <span class="card-views"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>768K views</span>
+      </div>
+      <div class="card-tweet">Popular content creator kiriku have just passed away at the age of 8. after being rushed to the hospital last due to unknown circumstances.<br>His elder brother the umbrella boy just confirmed his passing via Ig story</div>
+      <div class="reply-link"><a href="https://x.com/boutmoneey12/status/2029965785058218322" target="_blank" rel="noopener">View on X &#8594;</a></div>
+      <div class="card-grok-section">
+        <span class="card-verdict false">Grok&#8217;s rating: False</span>
+        <div class="card-stats">
+          <span class="card-count"><strong>111</strong> groks (1.0% of daily total)</span>
+          <div class="card-minibar">
+            <div class="mb-false" style="width:100%"></div>
+          </div>
+        </div>
+        <div class="card-reply-wrap">
+          <span class="card-reply-label">&#9662; Median Grok reply</span>
+          <div class="card-reply-text">No, this isn&#8217;t true. Kiriku (Enorense Victory, born Dec 17 2014) is alive at age 11. It&#8217;s a recycled 2025 hoax using his old photo + this fake &#8220;Umbrella Boy&#8221; IG RIP graphic. His official kirikuofficial IG/YouTube have fresh 2026 posts. No family statement or credible news confirms any death. Just viral bait.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <div class="cta-wrap">
     <a class="cta-btn" href="https://indicator.media/grok-is-this-true-tracker" target="_top">Explore the full tracker &rarr;</a>
   </div>
 </div>
 
-<script>
-var checkSvg = '<svg viewBox="0 0 22 22"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.852-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.69-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.636.433 1.221.878 1.69.47.446 1.055.752 1.69.883.635.13 1.294.083 1.902-.143.271.586.702 1.084 1.24 1.438s1.167.55 1.813.569c.647-.02 1.277-.216 1.818-.569s.972-.852 1.245-1.438c.608.226 1.267.276 1.9.143.636-.13 1.22-.437 1.69-.883.445-.47.75-1.054.88-1.69.131-.633.08-1.29-.14-1.896.587-.273 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>';
-
-var cards = [
-  {date:"Mar 8",usr:"RussiaSupportt",user:"@RussiaSupportt",cat:"Geopolitics",tid:"2030577022968483845",
-   text:"BREAKING NEWS: Iran has shot down a American B-2 bomber and kidnapped the entire crew.\n\nIran is totally winning",
-   count:98,total:10301,verdict:"false",vc:{true:1,false:82,mixed:15},
-   reply:"No, this is not true. Fact-checks from multiple outlets (WION, Hindustan Times, Times Now, BBC Verify) confirm no evidence or official reports of Iran shooting down a US B-2 bomber or capturing any crew. US CENTCOM and Pentagon statements note B-2s conducted strikes on Iranian targets and all returned safely.",
-   status:"suspended"},
-  {date:"Mar 7",usr:"QTHESTORMM",user:"@QTHESTORMM",cat:"Politics",tid:"2030072058533536076",rid:"2030175929834578391",
-   text:"\ud83d\udea8\ud83d\udea8MAJOR ALERT: DOJ RELEASES 2ND BATCH OF EPSTEIN FILES INCLUDING NEW EMAILS SHOWING \"TRUMP ALLEGEDLY HAD S*X WITH DAUGHTER IVANKA\", EPSTEIN IN THE EMAIL CALLS TRUMP \"MOST EVIL\"",
-   count:193,total:10799,verdict:"false",vc:{true:0,false:109,mixed:84},check:"blue",views:6400000,
-   reply:"No, this specific claim isn\u2019t supported. Recent DOJ Epstein file releases (including March 2026 batches under the Transparency Act) contain uncorroborated 2019 FBI interview notes alleging Trump abused a minor introduced by Epstein. No documents mention Trump having sex with Ivanka or Epstein calling Trump \u201cmost evil.\u201d The post\u2019s headline exaggerates beyond what the files contain."},
-  {date:"Mar 6",usr:"boutmoneey12",user:"@boutmoneey12",cat:"Entertainment",tid:"2029965785058218322",rid:"2030025443051524123",
-   text:"Popular content creator kiriku have just passed away at the age of 8. after being rushed to the hospital last due to unknown circumstances.\nHis elder brother the umbrella boy just confirmed his passing via Ig story",
-   count:111,total:10962,verdict:"false",vc:{true:0,false:111,mixed:0},check:"blue",views:768000,
-   reply:"No, this isn\u2019t true. Kiriku (Enorense Victory, born Dec 17 2014) is alive at age 11. It\u2019s a recycled 2025 hoax using his old photo + this fake \u201cUmbrella Boy\u201d IG RIP graphic. His official kirikuofficial IG/YouTube have fresh 2026 posts. No family statement or credible news confirms any death. Just viral bait."}
-];
-
-function toggleReply(btn) {
-  btn.classList.toggle('open');
-  btn.nextElementSibling.classList.toggle('show');
-}
-
-(function() {
-  var wrap = document.getElementById('cards');
-  cards.forEach(function(d) {
-    var tweetUrl = 'https://x.com/' + d.usr + '/status/' + d.tid;
-    var replyUrl = d.rid ? 'https://x.com/grok/status/' + d.rid : '#';
-    var totalVc = d.vc.true + d.vc.false + d.vc.mixed;
-    var bw = function(n) { return totalVc ? (n / totalVc * 100) : 0; };
-    var pct = d.total ? (d.count / d.total * 100).toFixed(1) : '?';
-    var vLabel = "Grok\u2019s rating: " + (d.verdict === 'false' ? 'False' : d.verdict === 'true' ? 'True' : 'Mixed');
-    var catClass = 'cat-' + d.cat.toLowerCase().replace(/[^a-z]/g, '-');
-    var checkBadge = d.check ? ' <span class="check ' + d.check + '">' + checkSvg + '</span>' : '';
-
-    var viewsHtml = '';
-    if (d.views && d.views > 0) {
-      var vw = d.views;
-      var viewStr = vw >= 1000000 ? (vw / 1000000).toFixed(1).replace(/\.0$/, '') + 'M'
-                  : vw >= 1000 ? (vw / 1000).toFixed(1).replace(/\.0$/, '') + 'K'
-                  : vw.toString();
-      viewsHtml = '<span class="card-views"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>' + viewStr + ' views</span>';
-    }
-
-    var statusBadge = d.status === 'suspended'
-      ? '<div class="card-status-row"><span class="card-status suspended">Suspended account</span></div>'
-      : d.status === 'deleted'
-      ? '<div class="card-status-row"><span class="card-status deleted">Deleted tweet</span></div>'
-      : '';
-
-    var div = document.createElement('div');
-    div.className = 'card verdict-' + d.verdict;
-    div.innerHTML = '<div class="card-head">'
-      + '<span class="card-date">' + d.date + '</span>'
-      + '<span class="card-user"><a href="' + tweetUrl + '" target="_blank">' + d.user + checkBadge + '</a></span>'
-      + '<span class="card-cat ' + catClass + '">' + d.cat + '</span>'
-      + viewsHtml
-      + '</div>'
-      + statusBadge
-      + '<div class="card-tweet">' + d.text + '</div>'
-      + '<div class="reply-link"><a href="' + tweetUrl + '" target="_blank" rel="noopener">View on X \u2192</a></div>'
-      + '<div class="card-grok-section">'
-      + '<span class="card-verdict ' + d.verdict + '">' + vLabel + '</span>'
-      + '<div class="card-stats">'
-      + '<span class="card-count"><strong>' + d.count + '</strong> groks (' + pct + '% of daily total)</span>'
-      + '<div class="card-minibar">'
-      + '<div class="mb-false" style="width:' + bw(d.vc.false) + '%"></div>'
-      + '<div class="mb-true" style="width:' + bw(d.vc.true) + '%"></div>'
-      + '<div class="mb-mixed" style="width:' + bw(d.vc.mixed) + '%"></div>'
-      + '</div></div>'
-      + '<div class="card-reply-wrap">'
-      + '<button class="card-reply-btn" onclick="toggleReply(this)">Median Grok reply</button>'
-      + '<div class="card-reply-text">' + d.reply + '</div>'
-      + '</div>'
-      + '</div>';
-    wrap.appendChild(div);
-  });
-
-  // Add clamp fade to overflowing tweets
-  document.querySelectorAll('.card-tweet').forEach(function(el) {
-    if (el.scrollHeight > el.clientHeight + 2) {
-      el.classList.add('clamped');
-    }
-  });
-})();
-</script>
 </body>
 </html>
