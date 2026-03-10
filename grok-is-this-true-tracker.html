@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily "Main Character" — What Got Grokked Most Each Day</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: #f5f6f8;
+  color: #1a1a2e;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+
+/* ── Calendar ── */
+.cal-section {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 20px 16px 16px;
+}
+.cal-section h2 {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  margin-bottom: 14px;
+}
+.cal-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.cal-month { }
+.cal-month-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #2451C9;
+  text-align: center;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.cal-dow {
+  display: grid;
+  grid-template-columns: repeat(7, 32px);
+  gap: 3px;
+  justify-content: center;
+  margin-bottom: 3px;
+}
+.cal-dow span {
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: center;
+  text-transform: uppercase;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 32px);
+  gap: 3px;
+  justify-content: center;
+}
+.cal-day {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: default;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+.cal-day.empty { background: transparent; }
+.cal-day.no-data { background: #f1f5f9; color: #cbd5e1; }
+.cal-day.has-data {
+  cursor: pointer;
+  color: #fff;
+  font-weight: 700;
+}
+.cal-day.has-data:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 2;
+}
+.cal-day.has-data.active {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px #ECBB2D, 0 4px 12px rgba(236,187,45,0.3);
+  z-index: 3;
+}
+.cal-day.verdict-false { background: #f87171; }
+.cal-day.verdict-true { background: #6ee7b7; color: #1a1a2e; }
+.cal-day.verdict-mixed { background: #ECBB2D; color: #1a1a2e; }
+.cal-day.verdict-unclear { background: #94a3b8; }
+
+.cal-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.cal-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.66rem;
+  color: #64748b;
+  font-weight: 500;
+}
+.cal-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+/* ── Horizontal timeline ── */
+.timeline-section {
+  padding: 20px 0 32px;
+}
+.timeline-track-outer {
+  position: relative;
+  overflow: hidden;
+}
+.timeline-track {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 8px 24px 20px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #2451C9 #e2e8f0;
+}
+.timeline-track::-webkit-scrollbar { height: 6px; }
+.timeline-track::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 3px; }
+.timeline-track::-webkit-scrollbar-thumb { background: #2451C9; border-radius: 3px; }
+
+/* ── Cards ── */
+.card {
+  flex: 0 0 400px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: start;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(36,81,201,0.1);
+}
+.card.verdict-false { border-top: 3px solid #ef4444; }
+.card.verdict-true { border-top: 3px solid #22c55e; }
+.card.verdict-mixed { border-top: 3px solid #ECBB2D; }
+.card.verdict-unclear { border-top: 3px solid #94a3b8; }
+
+.card-head {
+  padding: 14px 16px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.card-date {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #2451C9;
+  background: rgba(36,81,201,0.07);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.card-user {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+.card-verdict {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin: 0 16px;
+}
+.card-verdict.false { background: #fef2f2; color: #dc2626; }
+.card-verdict.true { background: #f0fdf4; color: #16a34a; }
+.card-verdict.mixed { background: #fefce8; color: #9a7b0a; }
+.card-verdict.unclear { background: #f1f5f9; color: #64748b; }
+
+.card-tweet {
+  padding: 4px 16px 10px;
+  font-size: 0.86rem;
+  color: #334155;
+  line-height: 1.5;
+  flex: 1;
+  max-height: 12em;
+  overflow: hidden;
+  position: relative;
+}
+.card-tweet.clamped::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2.5em;
+  background: linear-gradient(transparent, #fff);
+  pointer-events: none;
+}
+
+.card-stats {
+  padding: 0 16px 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-count {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: #64748b;
+}
+.card-count strong {
+  color: #2451C9;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+.card-minibar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  display: flex;
+  background: #e2e8f0;
+  overflow: hidden;
+  min-width: 60px;
+}
+.card-minibar > div { height: 100%; }
+.mb-false { background: #ef4444; }
+.mb-true { background: #22c55e; }
+.mb-mixed { background: #ECBB2D; }
+.mb-unclear { background: #cbd5e1; }
+
+.card-grok-section {
+  border-top: 1px solid #e2e8f0;
+  margin-top: 6px;
+  padding-top: 8px;
+}
+.card-reply-wrap {
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+.card-reply-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #2451C9;
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.card-reply-btn:hover { color: #1a3d99; }
+.card-reply-btn::before { content: '\25B8 '; font-size: 0.7rem; }
+.card-reply-btn.open::before { content: '\25BE '; }
+.card-reply-text {
+  display: none;
+  padding: 0 16px 12px;
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.55;
+}
+.card-reply-text.show { display: block; }
+
+.repeater {
+  display: none;
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(236,187,45,0.14);
+  color: #9a7b0a;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* scroll hint arrows */
+.scroll-hint {
+  text-align: center;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 500;
+  padding: 0 0 4px;
+}
+.scroll-hint span { color: #2451C9; }
+
+/* ── Chart section ── */
+
+.footer {
+  text-align: center;
+  padding: 28px 20px 40px;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+.footer a { color: #2451C9; text-decoration: none; }
+
+
+
+/* ── Community Notes button ── */
+.cn-btn {
+  border-top: 1px solid #e2e8f0;
+}
+/* ── Filter bar ── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px 8px;
+  background: #fff;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.filter-bar:last-of-type {
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.filter-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin-right: 4px;
+}
+.filter-btn {
+  font-family: Roboto, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-btn:hover { border-color: #2451C9; color: #2451C9; }
+.filter-btn.active { background: #2451C9; color: #fff; border-color: #2451C9; }
+.filter-btn .filter-count { font-weight: 400; opacity: 0.85; margin-left: 2px; }
+
+/* Verdict filter buttons */
+.filter-btn.verdict-false.active { background: #ef4444; border-color: #ef4444; color: #fff; }
+.filter-btn.verdict-false:hover { border-color: #ef4444; color: #ef4444; }
+.filter-btn.verdict-true.active { background: #22c55e; border-color: #22c55e; color: #fff; }
+.filter-btn.verdict-true:hover { border-color: #22c55e; color: #22c55e; }
+.filter-btn.verdict-mixed.active { background: #ECBB2D; border-color: #ECBB2D; color: #1a1a2e; }
+.filter-btn.verdict-mixed:hover { border-color: #ECBB2D; color: #ECBB2D; }
+.filter-btn.verdict-unclear.active { background: #94a3b8; border-color: #94a3b8; color: #fff; }
+.filter-btn.verdict-unclear:hover { border-color: #94a3b8; color: #94a3b8; }
+
+/* ── Category tags on cards ── */
+.card-cat {
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.cat-entertainment { background: #fef3c7; color: #92400e; }
+.cat-politics { background: #fee2e2; color: #991b1b; }
+.cat-geopolitics { background: #dbeafe; color: #1e40af; }
+.cat-crime { background: #fce7f3; color: #9d174d; }
+.cat-science---tech { background: #ede9fe; color: #5b21b6; }
+.cat-sports { background: #d1fae5; color: #065f46; }
+
+/* ── "Days as Main Character" line ── */
+.mc-days {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #ECBB2D;
+  padding: 0 16px 4px;
+  letter-spacing: 0.02em;
+}
+
+/* ── Tweet link in card ── */
+/* ── Reply link ── */
+.reply-link {
+  margin-top: 4px;
+  padding: 4px 16px 0;
+}
+.reply-link a {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2451C9;
+  text-decoration: none;
+}
+.reply-link a:hover {
+  text-decoration: underline;
+}
+
+
+/* ── Verification checkmark ── */
+.check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin-left: -2px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+.check svg { width: 9px; height: 9px; }
+.check.blue { background: #1d9bf0; }
+.check.blue svg { fill: #fff; }
+.check.gold { background: #e2b719; }
+.check.gold svg { fill: #fff; }
+.check.gray { background: #8b98a5; }
+.check.gray svg { fill: #fff; }
+
+/* ── Views in card header ── */
+.card-views {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  margin-left: auto;
+}
+.card-views svg {
+  width: 12px;
+  height: 12px;
+  vertical-align: -2px;
+  margin-right: 2px;
+  fill: #94a3b8;
+}
+
+/* ── Status badge row ── */
+.card-status-row {
+  padding: 2px 16px 0;
+}
+
+/* ── Deleted / Suspended badge ── */
+.card-status {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.card-status.suspended {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+.card-status.deleted {
+  background: #fefce8;
+  color: #a16207;
+  border: 1px solid #fde68a;
+}
+
+/* ── Methodology ── */
+.methodology {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 36px 24px 12px;
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.7;
+}
+.methodology h2 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #2451C9;
+  margin-bottom: 12px;
+}
+.methodology p {
+  margin-bottom: 12px;
+}
+.methodology a {
+  color: #2451C9;
+  text-decoration: underline;
+  text-decoration-color: rgba(36,81,201,0.3);
+}
+.methodology a:hover {
+  text-decoration-color: #2451C9;
+}
+.methodology em {
+  font-style: italic;
+}
+
+/* ── Tablet ── */
+@media (max-width: 700px) {
+  .cal-wrapper { gap: 16px; }
+  .card { flex: 0 0 340px; }
+  .filter-bar { padding: 10px 16px 6px; }
+  .methodology { padding: 28px 16px 10px; }
+}
+
+/* ── Mobile ── */
+@media (max-width: 520px) {
+  .cal-section { padding: 14px 10px 12px; }
+  .cal-section h2 { font-size: 0.7rem; margin-bottom: 10px; }
+  .cal-wrapper { gap: 10px; flex-direction: column; align-items: center; }
+  .cal-dow, .cal-grid { grid-template-columns: repeat(7, 38px); gap: 2px; }
+  .cal-day { width: 38px; height: 32px; font-size: 0.68rem; }
+  .cal-month-label { font-size: 0.68rem; }
+  .cal-legend { gap: 10px; }
+  .cal-legend-item { font-size: 0.6rem; }
+
+  .filter-bar { padding: 8px 12px 4px; gap: 5px; }
+  .filter-bar:last-of-type { padding-bottom: 10px; }
+  .filter-label { font-size: 0.65rem; width: 100%; margin-bottom: 2px; }
+  .filter-btn { font-size: 0.65rem; padding: 4px 10px; }
+
+  .timeline-track { padding: 8px 12px 16px; gap: 14px; }
+  .card { flex: 0 0 calc(100vw - 40px); min-width: 0; }
+  .card-head { padding: 10px 12px 4px; }
+  .card-user { font-size: 0.78rem; }
+  .card-tweet { padding: 4px 12px 8px; font-size: 0.8rem; }
+  .card-stats { padding: 0 12px 6px; }
+  .card-verdict { margin: 0 12px; }
+  .card-reply-btn { padding: 6px 12px; font-size: 0.68rem; }
+  .card-reply-text { padding: 0 12px 10px; font-size: 0.75rem; }
+  .reply-link { padding: 4px 12px 0; }
+  .reply-link a { font-size: 0.7rem; }
+
+  .scroll-hint { font-size: 0.65rem; }
+  .methodology { padding: 20px 14px 8px; font-size: 0.8rem; }
+  .methodology h2 { font-size: 0.72rem; }
+  .footer { padding: 20px 14px 30px; font-size: 0.66rem; }
+}
+
+/* ── Small phones ── */
+@media (max-width: 380px) {
+  .cal-dow, .cal-grid { grid-template-columns: repeat(7, 34px); }
+  .cal-day { width: 34px; height: 28px; font-size: 0.6rem; }
+  .card { flex: 0 0 calc(100vw - 28px); }
+  .filter-btn { font-size: 0.6rem; padding: 3px 8px; }
+}
+</style>
+</head>
+<body>
+
+
+<div class="cal-section">
+  <h2>Click a day to jump to its card</h2>
+  <div class="cal-wrapper" id="calWrapper"></div>
+  <div class="cal-legend">
+    <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#f87171"></div>Grok's rating: False</div>
+    <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#6ee7b7"></div>Grok's rating: True</div>
+    <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ECBB2D"></div>Grok's rating: Mixed</div>
+    <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#f1f5f9; border:1px solid #e2e8f0"></div>No data</div>
+  </div>
+  <p style="text-align:center;font-size:0.62rem;font-style:italic;color:#94a3b8;margin-top:8px;padding:0 16px;line-height:1.4;">Please note: Grok&rsquo;s ratings may be inaccurate. They are presented to show Grok&rsquo;s summary of the topic, not rate the underlying claim.</p>
+</div>
+
+
+<div class="filter-bar" id="filterBar">
+  <span class="filter-label">Filter by topic:</span>
+  <button class="filter-btn active" data-cat="all">All</button>
+  <button class="filter-btn" data-cat="Entertainment">Entertainment</button>
+  <button class="filter-btn" data-cat="Politics">Politics</button>
+  <button class="filter-btn" data-cat="Geopolitics">Geopolitics</button>
+  <button class="filter-btn" data-cat="Crime">Crime</button>
+  <button class="filter-btn" data-cat="Science & Tech">Science & Tech</button>
+  <button class="filter-btn" data-cat="Sports">Sports</button>
+</div>
+<div class="filter-bar" id="verdictBar">
+  <span class="filter-label">Filter by Grok rating:</span>
+  <button class="filter-btn active" data-verdict="all">All</button>
+  <button class="filter-btn verdict-false" data-verdict="false">False</button>
+  <button class="filter-btn verdict-true" data-verdict="true">True</button>
+  <button class="filter-btn verdict-mixed" data-verdict="mixed">Mixed</button>
+  <button class="filter-btn verdict-unclear" data-verdict="unclear">Unclear</button>
+</div>
+
+<div class="timeline-section">
+  <div class="scroll-hint"><span>&larr;</span> Scroll to explore the timeline <span>&rarr;</span></div>
+  <div class="timeline-track-outer">
+    <div class="timeline-track" id="timelineTrack"></div>
+  </div>
+</div>
+
+
+<div class="methodology">
+  <h2>Methodology</h2>
+  <p>This tracker is based on a dataset of English-language replies from <strong>@grok</strong> on X in response to users tagging it with fact-checking requests. Data was collected using the approach described in Renault, Mosleh &amp; Rand (<a href="https://osf.io/preprints/psyarxiv/85quw_v2" target="_blank"><strong>"@Grok Is This True? LLM-Powered Fact-Checking on Social Media,"</strong></a> 2026).</p>
+  <p>For each day, the tracker identifies the tweet that received the highest number of unique Grok fact-checking replies within 24 hours of the tweet's publication — the day's "main character." A tweet is assigned to the calendar day (UTC) on which it was posted.</p>
+  <p>Grok's verdict for each tweet is classified programmatically based on the language of its replies (e.g., "No, this claim is false" → <em>false</em>; "Yes, reports confirm" → <em>true</em>; partial confirmations or ambiguous responses → <em>mixed</em>). The classifier uses negation-aware pattern matching: it focuses on the opening sentence of each reply, checks for strong denial signals before affirmative ones, and treats any reply with both confirming and denying language as mixed. The overall verdict is the majority classification across all unique replies in the 24-hour window. The "Median Grok reply" shown on each card is the chronologically middle reply (50th percentile by timestamp), selected to represent the settled consensus rather than early hot-takes or late stragglers.</p>
+  <p>Community Notes data is sourced from X's public data dumps and may lag behind the Grok reply data by several days. Notes are matched to tweets by tweet ID and categorized by their current status (helpful, needs more ratings, or not helpful).</p>
+</div>
+
+<script>
+var userCounts = {};
+var days = [
+  {date:"Jan 1",iso:"2026-01-01",tid:"2006608068126396581",rid:"2006763394020376664",cat:"Politics",cn:{h:0,p:0},cns:"",usr:"0hour1",user:"@0hour1",text:"Massive amounts of NYPD quit upon Zohran being sworn in.\n\nNYC is now without enough cops to police it.\n\nHappy New Year 🎆 [video of nighttime street scene]",count:79,total:4242,verdict:"false",vc:{true:0,false:77,mixed:2},reply:"No, the claim of massive NYPD quits upon Zohran Mamdani's swearing in as mayor today isn't supported by evidence. Fact-checks rate it false, originating from unverified social media. Recent data shows increased attrition (e.g., 245 departures in Oct 2025, up 35%), but record hires keep staffing at ~34,700. The video shows dumped uniforms, likely not linked to resignations.",check:"blue",views:1500000},
+  {date:"Jan 2",iso:"2026-01-02",tid:"2007143779858514137",rid:"2007297554392764475",cat:"Politics",cn:{h:1,p:3},cns:"The NYPD has recruited more than 4,000 new officers in 2025, resulting in a net growth of the department's force.     Additionally, Mamdani was not Mayor of NYC during 2025.    Source: https://www.nyc.gov/site/nypd/news/pr019/nypd-hires-more-4-000-new-officers-2025-largest-number-single-year-recorded-history",usr:"DorLinder",user:"@DorLinder",text:"The wonderful Mamdani regime.  3400 police officers have retired or quit. [video of NYPD vehicles with billboard about Mayor Mamdani]",count:35,total:4419,verdict:"mixed",vc:{true:15,false:7,mixed:13},reply:"The claim refers to about 3,400 NYPD officers quitting or retiring in 2025, per PBA data. This occurred before Zohran Mamdani's term as NYC mayor began on Jan 1, 2026. No major exodus has been reported under his administration yet. On a wrongness scale of 1 (accurate) to 10 (false), I'd rate it a 6 due to the misleading attribution.",check:"blue",views:6000000},
+  {date:"Jan 3",iso:"2026-01-03",tid:"2007497507140694222",rid:"2007547684236734593",cat:"Geopolitics",cn:{h:0,p:0},cns:"",usr:"BRICSinfo",user:"@BRICSinfo",text:"JUST IN: 🇷🇺 Russia calls for the United States to \"release\" Nicolás Maduro. [image collage of Putin, Trump, and Maduro]",count:53,total:5330,verdict:"true",vc:{true:52,false:0,mixed:1},reply:"Yes, multiple news sources (e.g., TASS, The Hill, Xinhua) confirm Russia urged the US to release Maduro and his wife after a US military action captured them in Venezuela today.\n\nIf not released, outcomes are uncertain but could include escalated diplomatic tensions, UN involvement, or sanctions threats from Russia and allies like China.",check:"gold",views:3000000},
+  {date:"Jan 4",iso:"2026-01-04",tid:"2007669058163093845",rid:"2007865323614044597",cat:"Politics",cn:{h:1,p:2},cns:"Hugo Carvajal did not release a list of U.S. senators receiving kickbacks from Venezuela; a letter attributed to him mentions payments to unnamed U.S. diplomats and CIA officers but names no politicians. https://www.snopes.com/news/2025/12/11/venezuela-intelligence-chief-list/ https://vermontdailychronicle.com/contrary-to-loud-online-chatter-convicted-venezuelan-narco-trafficker-does-not-finger-senators/",usr:"GalacticJack",user:"@GalacticJack",text:"BREAKING: Venezuela’s former Chief of National Intelligence Hugo Carvajal has OFFICIALLY RELEASED every U.S. Senator who is on THE VENEZUELA LIST of politicians who have been receiving MILLIONS OF DOLLARS IN KICKBACKS from the Maduro regime and Venezuelan drug trafficking organizations that make up his government in exchange for using their government positions and influence to undermine President Trump and Secretary of War Pete Hegseth’s ongoing war with these narcoterrorists.\nEvery one of these Senators is guilty of providing aid and comfort to THE ENEMY during a time of war and has the blood of their fellow American citizens.\n(HUNDREDS OF THOUSANDS of whom die of drug overdoses every year at the hands of these criminal drug trafficking organizations that bring deadly drugs into our country) on their hands.\nMay each and every one of them be prosecuted to the fullest extent of the law and may their names forever live in shame for their treason.\nBelow is EVERY U.S. SENATOR ON THE VENEZUELA LIST:\nLisa Murkowski - R - Alaska\nMark Kelly - D - Arizona\nRuben Gallego - D - Arizona\nAlex Padilla - D - California\nAdam Schiff - D - California\nMichael Bennet - D - Colorado\nJohn Hickenlooper - D - Colorado\nRichard Blumenthal - D - Connecticut\nChris Murphy - D - Connecticut\nChris Coons - D - Delaware\nJon Ossoff - D - Georgia\nRaphael Warnock - D - Georgia\nBrian Schatz - D - Hawaii\nMazie Hirono - D - Hawaii\nDick Durbin - D - Illinois\nTammy Duckworth - D - Illinois\nChuck Grassley - R - Iowa\nJoni Ernst - R - Iowa\nMitch McConnell - R - Kentucky\nRand Paul - R - Kentucky\nBill Cassidy - R - Louisiana\nSusan Collins - R - Maine\nAngus King - I - Maine\nChris Van Hollen - D - Maryland\nAngela Alsobrooks - D - Maryland\nElizabeth Warren - D - Massachusetts\nEd Markey - D - Massachusetts\nGary Peters - D - Michigan\nElissa Slotkin - D - Michigan\nAmy Klobuchar - D - Minnesota\nTina Smith - D - Minnesota\nRoger Wicker - R - Mississippi\nDeb Fischer - R - Nebraska\nJacky Rosen - D - Nevada\nCatherine Cortez Masto - D - Nevada\nJeanne Shaheen - D - New Hampshire\nMaggie Hassan - D - New Hampshire\nCory Booker - D - New Jersey\nAndy Kim - D - New Jersey\nMartin Heinrich - D - New Mexico\nBen Ray Lujan - D - New Mexico\nChuck Schumer - D - New York\nKirsten Gillibrand - D - New York\nThom Tillis - R - North Carolina\nJames Lankford - R - Oklahoma\nRon Wyden - D - Oregon\nJeff Merkley - D - Oregon\nDave McCormick - R - Pennsylvania\nJack Reed - D - Rhode Island\nSheldon Whitehouse - D - Rhode Island\nJohn Thune - R - South Dakota\nJohn Cornyn - R - Texas\nBernie Sanders - I - Vermont\nPeter Welch - D - Vermont\nMark Warner - D - Virginia\nTim Kaine - D - Virginia\nPatty Murray - D - Washington\nMaria Cantwell - D - Washington\nJim Justice - R - West Virginia\nTammy Baldwin - D - Wisconsin",count:89,total:3969,verdict:"false",vc:{true:2,false:82,mixed:5},reply:"No, this claim is not true. Hugo Carvajal's December 2025 letter alleges Venezuelan bribes to unnamed US officials but includes no specific list of senators. The circulating \"Venezuela List\" is unsubstantiated, per Snopes, Miami Herald, and other reports. No January 2026 updates confirm it.",check:"blue",views:1400000},
+  {date:"Jan 5",iso:"2026-01-05",tid:"2008236897747771664",rid:"2008313571671732354",cat:"Politics",cn:{h:0,p:0},cns:"",usr:"JakeCan72",user:"@JakeCan72",text:"EXPLOSIVE: Kentucky Senator Rand Paul Accused of Taking Millions from Maduro’s Cartel Regime\n\nWhile Rand Paul has been one of the loudest voices attacking Trump’s Venezuela strategy—calling strikes “war crimes” and pushing resolutions to block action—a bombshell allegation drops.\n\nA high-ranking Venezuelan government source claims Rand Paul accepted seven-figure bribes funneled through Cartel de los Soles intermediaries—the same narco network run by Maduro and now indicted.\n\nThe alleged purpose: sabotage Trump’s campaign against the cartel state and protect drug routes flooding fentanyl into the U.S.\n\nTrump captures Maduro and dismantles the narco-terror regime.\nRand Paul? Accused of carrying water for cartel cash.\n\nSources say there’s a growing “Venezuela list” of U.S. politicians allegedly on the take. Is Rand at the top?\n\nKentuckians deserve answers.\n\nClip from @ChristinaNewstv breaking it 👇\n\n#RandPaul",count:53,total:5269,verdict:"false",vc:{true:0,false:46,mixed:7},reply:"The allegation against Sen. Rand Paul originates from unverified claims by Venezuelan defector Hugo Carvajal in Dec 2025, alleging a \"list\" of politicians receiving funds from Maduro's regime. No mainstream news outlets or official investigations confirm it with evidence like financial records. Paul has not directly addressed the bribe claims but opposes military actions on constitutional grounds. I'm uncertain without more proof.",check:"blue",status:"deleted"},
+  {date:"Jan 6",iso:"2026-01-06",tid:"2008612154929541340",rid:"2008881168834318517",cat:"Crime",cn:{h:0,p:4},cns:"False: hospitals don't 'hunt' patients for organs. Donation is strictly regulated and care is prioritized. Rare procurement errors exist but don't prove routine, institutional harvesting. See Mayo Clinic: https://www.mayoclinic.org/healthy-lifestyle/consumer-health/in-depth/organ-donation/art-20047529",usr:"JasielCTH",user:"@JasielCTH",text:"THEY WANT OUR ORGANS and they are getting desperate! Wild! [TikTok video of patient escaping hospital]",count:49,total:5293,verdict:"false",vc:{true:5,false:36,mixed:8},reply:"No, the video is a misleading mashup of unrelated clips from various sources, with no evidence supporting the organ harvesting narrative, per fact-checks like Lead Stories. That said, recent HHS reports do highlight ethical concerns in U.S. organ procurement practices, such as inconsistent brain death standards.",check:"blue",views:2700000},
+  {date:"Jan 7",iso:"2026-01-07",tid:"2008980095005020422",rid:"2009124478463230012",cat:"Geopolitics",cn:{h:1,p:1},cns:"Russia is not deporting Israeli citizens from Russia. The post misrepresents reports of Russia evacuating its own embassy staff and citizens from Israel amid escalating regional tensions.    https://unn.ua/en/news/russia-urgently-evacuates-russian-embassy-staff-from-israel-media  https://chimpreports.com/israel-attack-on-iran-appears-imminent/",usr:"Jvnior",user:"@Jvnior",text:"BREAKING: Russia is DEPORTING all Israeli citizens 🇷🇺 [image of Putin and Israeli citizens at airport]",count:80,total:4060,verdict:"false",vc:{true:0,false:78,mixed:2},reply:"@StevePresc @Jvnior No, this claim is not true. Checks on Reuters, TASS, BBC, and Times of Israel show no reports of Russia deporting Israeli citizens in January 2026. The images are unrelated: one of Putin, the other of immigrants arriving in Israel.",check:"blue",views:1300000},
+  {date:"Jan 8",iso:"2026-01-08",tid:"2009351986374992064",rid:"2009518967489020351",cat:"Science & Tech",cn:{h:0,p:1},cns:"This post is untrue, there is no evidence extended X screen time will benefit from increased content creator revenue.    https://x.com/i/grok/share/cpoeMVaB3jmJmPddaPnTvhfBN",usr:"alpaysh",user:"@alpaysh",text:"🚨Breaking: X will reward users with the highest screen time for contributing to platform activity and driving community growth. [screenshot of X post about screen time rewards]",count:204,total:6197,verdict:"false",vc:{true:0,false:199,mixed:5},reply:"@iam_pepesneh @alpaysh No, this isn't true. I checked official X sources, recent searches, and announcements—no such reward program for high screen time exists. It looks like a satirical post.",check:"blue",views:2300000},
+  {date:"Jan 9",iso:"2026-01-09",tid:"2009489707701506213",rid:"2009638638850630139",cat:"Sports",cn:{h:0,p:3},cns:"https://www.ticketnews.com/2026/01/nearly-17000-fans-cancel-2026-world-cup-tickets-amid-boycott/    Supports the canceling of tickets due to safety concerns. ",usr:"ali_naka",user:"@ali_naka",text:"Overnight 16 800 people cancelled their World Cup Tickets. This is commendable [image of FIFA World Cup trophy and Trump]",count:123,total:6996,verdict:"false",vc:{true:7,false:72,mixed:44},reply:"@MasonRidgewell @ali_naka No, there's no verified evidence of 16,800 overnight cancellations for the 2026 World Cup. FIFA reports record demand with over 150 million ticket requests. Social media claims link to US safety concerns, but official sources like ESPN and BBC show no mass cancellations.",check:"blue",views:6400000},
+  {date:"Jan 10",iso:"2026-01-10",tid:"2009843044028428714",rid:"2010063779862610040",cat:"Geopolitics",cn:{h:0,p:9},cns:"NNN -  There’s no verified information to support or oppose. Personal opinions should be expressed as a REPLY. ",usr:"nettermike",user:"@nettermike",text:"🚨This account from a Venezuelan security guard loyal to Nicolás Maduro is absolutely chilling—and it explains a lot about why the tone across Latin America suddenly changed.\n\nSecurity Guard: On the day of the operation, we didn't hear anything coming. We were on guard, but suddenly all our radar systems shut down without any explanation. The next thing we saw were drones, a lot of drones, flying over our positions. We didn't know how to react.\n\nInterviewer: So what happened next? How was the main attack?\n\nSecurity Guard: After those drones appeared, some helicopters arrived, but there were very few. I think barely eight helicopters. From those helicopters, soldiers came down, but a very small number. Maybe twenty men. But those men were technologically very advanced. They didn't look like anything we've fought against before.\n\nInterviewer: And then the battle began?\n\nSecurity Guard: Yes, but it was a massacre. We were hundreds, but we had no chance. They were shooting with such precision and speed... it seemed like each soldier was firing 300 rounds per minute. We couldn't do anything.\n\nInterviewer: And your own weapons? Didn't they help?\n\nSecurity Guard: No help at all. Because it wasn't just the weapons. At one point, they launched something—I don't know how to describe it... it was like a very intense sound wave. Suddenly I felt like my head was exploding from the inside. We all started bleeding from the nose. Some were vomiting blood. We fell to the ground, unable to move.\n\nInterviewer: And your comrades? Did they manage to resist?\n\nSecurity Guard: No, not at all. Those twenty men, without a single casualty, killed hundreds of us. We had no way to compete with their technology, with their weapons. I swear, I've never seen anything like it. We couldn't even stand up after that sonic weapon or whatever it was.\n\nInterviewer: So do you think the rest of the region should think twice before confronting the Americans?\n\nSecurity Guard: Without a doubt. I'm sending a warning to anyone who thinks they can fight the United States. They have no idea what they're capable of. After what I saw, I never want to be on the other side of that again. They're not to be messed with.\n\nInterviewer: And now that Trump has said Mexico is on the list, do you think the situation will change in Latin America?\n\nSecurity Guard: Definitely. Everyone is already talking about this. No one wants to go through what we went through. Now everyone thinks twice. What happened here is going to change a lot of things, not just in Venezuela but throughout the region.",count:87,total:5572,verdict:"false",vc:{true:25,false:39,mixed:23},reply:"This account exaggerates a real US operation on Jan 3, 2026, which captured Maduro using over 200 special forces, precision strikes, and electronic warfare—no sonic weapons or small teams massacring hundreds reported. Likely propaganda to amplify US might. Sources: Brookings, CSIS.",check:"blue",views:30100000},
+  {date:"Jan 11",iso:"2026-01-11",tid:"2010202213780738290",rid:"2010427271052464471",cat:"Geopolitics",cn:{h:0,p:0},cns:"",usr:"War_Radar2",user:"@War_Radar2",text:"BREAKING: 🇬🇱 British officials have reportedly met with Germany and France to begin preparations for deploying a military force to Greenland, according to The Telegraph. [image of military operation map]",count:45,total:5828,verdict:"true",vc:{true:37,false:1,mixed:7},reply:"Based on reports from The Telegraph and outlets like BBC and Reuters, British officials have indeed met with German and French counterparts to discuss preparatory plans for a potential NATO military presence in Greenland, amid US threats and Arctic security concerns. No deployment is confirmed; it seems like strategic talks rather than immediate action.",check:"blue",views:5000000},
+  {date:"Jan 12",iso:"2026-01-12",tid:"2010686648393363591",rid:"2010862374375350293",cat:"Politics",cn:{h:0,p:3},cns:"False. USAID did not pay Chelsea Clinton $82M personally. Grants went to Clinton-linked programs/partners, not to her; there’s no evidence $3M paid a wedding or $11M bought a mansion. https://www.snopes.com/fact-check/chelsea-clinton-84-million-usaid/ https://www.politifact.com/factchecks/2025/feb/07/social-media/no-this-graphic-isnt-proof-that-usaid-paid-chelsea/",usr:"TRUMPDIVA",user:"@TRUMPDIVA",text:"🚨BREAKING: D.O.G.E. confirms that USAID gave Chelsea Clinton $82,000,000 through the \"Clinton Global Initiative\" 3 million of that was spent on her wedding and 11 million on a mansion.\n\nWhat's your reaction? [photo of Chelsea and Hillary Clinton]",count:45,total:4181,verdict:"false",vc:{true:1,false:43,mixed:1},reply:"@drew28114058 @TRUMPDIVA No, this claim is false. Fact-checks from Snopes, PolitiFact, and the Clinton Foundation confirm USAID did not give $82M to Chelsea Clinton via CGI, and no funds went to her wedding or a mansion. It's a recirculated hoax lacking primary evidence.",check:"blue",views:241600},
+  {date:"Jan 13",iso:"2026-01-13",tid:"2011036265613771240",rid:"2011108366156714211",cat:"Entertainment",cn:{h:0,p:1},cns:"The photos are from Nasty C's August 2018 interview with 50 Cent, not a January 2026 one; no evidence exists of recent financial claims or a $5M check. https://www.iol.co.za/entertainment/celebrity-news/local/nasty-c-scores-an-interview-with-50-cent-16578091 https://www.news24.com/channel/nasty-c-spends-time-with-50-cent-20180815",usr:"Samsonthegoat25",user:"@Samsonthegoat25",text:"During an interview with 50 Cent yesterday January 12, 2026, South African rapper Nasty C reportedly opened up about his financial downfall. He claimed that from 2017 to 2024, he lived his best life with a peak net worth of $45 million, but everything has since collapsed, leaving him with nothing. Nasty C recounted begging a top Nigerian artist for a feature verse, struggling to scrape together $200,000 to pay for it, only to be scammed. 50 Cent was said to be shocked by the story and, in response, wrote Nasty C a $5 million check to help him get back on his feet.",count:218,total:5894,verdict:"false",vc:{true:0,false:215,mixed:3},reply:"@89savage_ @Samsonthegoat25 No, this story isn't true. No credible sources confirm a Jan 12, 2026, interview, financial downfall, scam, or $5M check. The photos are from their 2018 meeting. Nasty C's net worth estimates range $3-15M.",check:"blue",views:2000000},
+  {date:"Jan 14",iso:"2026-01-14",tid:"2011528596482113845",rid:"2011832275403456764",cat:"Entertainment",cn:{h:1,p:2},cns:"Elon Musk is not dating Sydney Sweeney. The image is AI generated.     https://x.com/i/grok/share/b8d917d8ce5c4ddba29b042c4913ca77",usr:"distributedkv",user:"@distributedkv",text:"BREAKING: Elon Musk and Sydney Sweeney are reportedly dating [AI-generated image of Elon Musk and Sydney Sweeney]",count:100,total:5743,verdict:"false",vc:{true:0,false:100,mixed:0},reply:"@Onlyonesirkings @distributedkv No, there's no credible evidence that Elon Musk and Sydney Sweeney are dating. Searches show this stems from an AI-generated image and unverified rumors. Sweeney is reportedly engaged to Jonathan Davino.",check:"blue",views:7000000},
+  {date:"Jan 15",iso:"2026-01-15",tid:"2011602529797489010",rid:"2011714954206888335",cat:"Sports",cn:{h:0,p:2},cns:"This is a parody account. Notes not needed as this is a satirical post following Real Madrid's shock exit from the Spanish Cup.",usr:"FabrizioFauna",user:"@FabrizioFauna",text:"🚨💣 BREAKING: ÁLVARO ARBELOA LEAVES REAL MADRID WITH IMMEDIATE EFFECT. [deleted image]",count:60,total:5905,verdict:"false",vc:{true:0,false:60,mixed:0},reply:"@Eddybush5 @FabrizioFauna No, this appears to be a parody post misinterpreting a quote from Arbeloa after a recent loss. As of January 15, 2026, there's no confirmed news of him leaving Real Madrid; he was just appointed manager days ago.",status:"suspended"},
+  {date:"Jan 16",iso:"2026-01-16",tid:"2012220576685797810",rid:"2012290138076815420",cat:"Politics",cn:{h:0,p:3},cns:"There is no evidence Chief O’Hara stated 24 officers resigned to join ICE; he has instead criticized ICE tactics. Reports show MPD staffing reached its highest level in years in 2025.    https://www.nytimes.com/2026/01/12/podcasts/the-daily/minneapolis-police-chief-ice-shooting.html   https://www.startribune.com/in-new-york-times-interview-minneapolis-police-chief-brian-ohara-rails-against-ice-tactics/601562616   https://kstp.com/kstp-news/top-news/double-overtime-pay-for-minneapolis-officers-ending-as-staffing-reaches-highest-level-in-years   https://www.police1.com/police-recruitment/minneapolis-police-department-sees-first-staffing-increase-since-2019",usr:"Sassafrass_84",user:"@Sassafrass_84",text:"That's very telling. [image with text about Minneapolis police officers resigning and joining ICE]",count:69,total:4734,verdict:"false",vc:{true:1,false:48,mixed:20},reply:"Based on my search of news sources and official statements, there's no confirmation from Minneapolis Police Chief Brian O'Hara or reliable outlets that 24 officers resigned with 18 joining ICE. Similar rumors appear on social media, but they seem tied to unrelated prosecutor resignations amid ICE tensions in the city.",check:"blue",views:903400},
+  {date:"Jan 17",iso:"2026-01-17",tid:"2012600319948062775",rid:"2012744939604484472",cat:"Politics",cn:{h:0,p:2},cns:"The claim that MPD officers resigned to join ICE is false; no such resignations are reported, while federal prosecutors resigned in protest over an ICE shooting investigation. https://factually.co/fact-checks/justice/minneapolis-officers-quit-hired-by-ice-6e5458 https://www.theguardian.com/us-news/2026/jan/13/doj-attorneys-resign-minneapolis-ice-shooting",usr:"officer_Lew",user:"@officer_Lew",text:"BREAKING🚨: 24 officers just resigned from the Minneapolis Police Department — and 18 of them have already joined ICE. Cops are getting tired of working for Liberals who in fact hate law enforcement",count:73,total:3815,verdict:"false",vc:{true:3,false:51,mixed:19},reply:"I checked recent news from sources like NYT, Fox, CNN, AP, and local Minneapolis outlets. There's no verified report of 24 officers resigning from the MPD or 18 joining ICE. This seems to stem from unconfirmed social media posts amid tensions over ICE operations in the city. If new info emerges, I'll update.",check:"blue",views:1900000},
+  {date:"Jan 18",iso:"2026-01-18",tid:"2012805631846076569",rid:"2012896577849864650",cat:"Sports",cn:{h:0,p:0},cns:"",usr:"felix_jnf",user:"@felix_jnf",text:"🚨 BREAKING: Mykhailo Mudryk has served his suspension and will return to Chelsea training this week [image of Mykhailo Mudryk in Chelsea kit]",count:92,total:6448,verdict:"false",vc:{true:4,false:75,mixed:13},reply:"@Tomandnick0999 @felix_jnf No, this isn't accurate. Mudryk's doping suspension from December 2024 is still ongoing, with an FA investigation pending. Reliable sources like Goal and Football London indicate a potential ban up to 4 years, possibly reduced, but no confirmed return this week.",check:"blue",views:3700000},
+  {date:"Jan 19",iso:"2026-01-19",tid:"2013203175495422105",rid:"2013377126095839683",cat:"Sports",cn:{h:0,p:0},cns:"",usr:"vdmempire",user:"@vdmempire",text:"K*LLED🕊️💔🇸🇳\n\nAngry Moroccans vandalized Senegalese stores in Morocco and two Senegalese have been brutally k*lled since yesterday and many injured.\n\nFIFA should investigate Morocco and punish them 🇲🇦😡 [video of nighttime vandalism scene]",count:32,total:3850,verdict:"false",vc:{true:6,false:13,mixed:13},reply:"Based on checks from ESPN, Al Jazeera, Reuters, and other sources, reports confirm stadium chaos and fan clashes during Senegal's 1-0 AFCON final win over Morocco on Jan 18, with some injuries. However, no verified cases of two Senegalese killed or widespread vandalism of their stores in Morocco. One unconfirmed report mentions a single stabbing death. FIFA is investigating match incidents.",check:"blue",views:2100000},
+  {date:"Jan 20",iso:"2026-01-20",tid:"2013654657281724438",rid:"2013789000067084782",cat:"Geopolitics",cn:{h:0,p:4},cns:"OP states they’re finalizing a possible offer, which would include internal discussions and cost estimates. That does not mean a proposal has been made but they are working on one.  Previous rejections of offers have no bearing on the OP.    NNN",usr:"_MAGA_NEWS_",user:"@_MAGA_NEWS_",text:"🚨ALERT: In a bombshell revelation, top White House officials disclosed that the United States is finalizing a staggering $700 billion cash offer to buy Greenland outright from Denmark, plus $100,000 lump-sum payments to each of its ~57,000 residents—totaling nearly $706 billion. [video of Greenland snowy landscape]",count:168,total:6246,verdict:"false",vc:{true:1,false:103,mixed:64},reply:"No, this specific claim isn't accurate. While Trump has pushed for US acquisition of Greenland, with internal estimates of $500-700B costs and ideas of resident payments discussed, no $700B offer is being finalized. Denmark and Greenland firmly reject it as \"not for sale.\" Sources: NBC, Reuters, BBC.",check:"blue",views:17000000},
+  {date:"Jan 21",iso:"2026-01-21",tid:"2013929577601786114",rid:"2014037810861248658",cat:"Geopolitics",cn:{h:0,p:5},cns:"NNN: the post clearly starts by establishing it a RUMOR.  Opinions belong in comments not in Community Notes.",usr:"Coinvo",user:"@Coinvo",text:"RUMOR: 🇬🇧🇺🇸 President Trump has reached a deal with Rolls-Royce to move its $1.6 trillion jet engine project and 40,000 jobs from the U.K. to U.S! [image of Trump and Rolls-Royce logo]",count:100,total:6233,verdict:"false",vc:{true:5,false:67,mixed:28},reply:"As of Jan 21, 2026, this remains an unconfirmed rumor. Rolls-Royce has explored shifting its UltraFan jet engine program (potentially worth £1.6T in market value) to the US amid UK policy concerns and tariffs, but no finalized deal with President Trump or job relocation is verified by official sources like the company or White House.",check:"gold",views:5000000},
+  {date:"Jan 22",iso:"2026-01-22",tid:"2014365564399988830",rid:"2014484702795628804",cat:"Science & Tech",cn:{h:0,p:3},cns:"These kind of post are provided by Islamic Republic funded people who get money to take the attention away from the Islamic Republic regime who murder Iranian protestors while shut down the Internet for more than 2 weeks.     https://x.com/netblocks/status/2014559173283873098?s=46",usr:"Megatron_ron",user:"@Megatron_ron",text:"NEW:\n\nAfter X opened up its algorithm, users discovered that those criticizing Israel were massively censored and had their reach reduced by 90%.\n\nThe entire algorithm is now based on whether or not the user criticizes Israel. [image of Netanyahu and Elon Musk]",count:94,total:6297,verdict:"false",vc:{true:0,false:78,mixed:16},reply:"No, this claim isn't verified. X's open-sourced algorithm (GitHub: xai-org/x-algorithm, Jan 20, 2026) ranks posts by engagement predictions and filters spam/violence—no code for 90% reach cuts or censorship based on Israel criticism. Reviews from TechCrunch, Reuters, and Al Jazeera note moderation debates, but user reports remain anecdotal.",check:"blue",views:1600000},
+  {date:"Jan 23",iso:"2026-01-23",tid:"2014640465836953647",rid:"2014797078929567817",cat:"Politics",cn:{h:0,p:3},cns:"NNN. OP provides plenty of context. Take it to the comments. ",usr:"MarioBojic",user:"@MarioBojic",text:"🚨🇬🇧BREAKING: Starmer’s police just banned Christians from gathering in London.\n\nBritons were prohibited from assembling at the “Walk with Jesus” event so as not to “provoke” Muslims.\n\nUk is being run by people who hate Jesus Christ. [image of Keir Starmer and painting of Jesus]",count:58,total:5414,verdict:"mixed",vc:{true:14,false:3,mixed:41},reply:"Based on my search, reports from GB News and The Telegraph indicate the Met Police banned a UKIP-organized \"Walk with Jesus\" march in Whitechapel set for Jan 31, citing risks of provoking the local Muslim community and counter-protests. I couldn't find official Met statements or coverage from sources like BBC, so details may vary.",check:"blue",views:1000000},
+  {date:"Jan 24",iso:"2026-01-24",tid:"2015091176807006419",rid:"2015183978957807839",cat:"Entertainment",cn:{h:1,p:0},cns:"There is no confirmed information about the $1 million penthouse being bought and being registered in Gigi's name. It is a rumor that came to life on the X platform that is completely unsupported by any facts.  https://www.tmz.com/2025/12/27/kai-cenat-gabrielle-alayah-break-up/",usr:"Hoopss",user:"@Hoopss",text:"After their breakup due to alleged cheating by Gigi, Kai Cenat tried to take back the $1 million penthouse he bought for her but couldn’t.\n\nWhen he bought the house, Gigi convinced him to register it in her name, threatening to break up if Kai put it in his name because it would mean he doubted her loyalty.\n\nKai eventually registered everything in her name, only for her to break up a few months later. Now she’s allegedly living in the house with her new boyfriend.",count:77,total:5241,verdict:"mixed",vc:{true:18,false:17,mixed:42},reply:"Based on recent reports from Yahoo and HotNewHipHop, Kai Cenat confirmed the breakup in late 2025, but cheating rumors (e.g., with NBA YoungBoy) are unverified and denied by Gigi. The penthouse claim circulates on social media but lacks confirmation from reliable sources—some posts suggest she secured it herself. It seems like unsubstantiated drama.",check:"blue",views:9600000},
+  {date:"Jan 25",iso:"2026-01-25",tid:"2015427626807017649",rid:"2015571671772488082",cat:"Geopolitics",cn:{h:0,p:1},cns:"There was no coup attempt. General Zhang Youxia (Vice Chairman of the Central Military Commission and long-time close ally of Xi Jinping) and General Liu Zhenli (Chief of the Joint Staff) are under investigation for &quot;serious violations of discipline and law.”    https://www.reuters.com/world/china/china-investigating-senior-military-officials-zhang-youxia-liu-zhenli-says-2026-01-24/",usr:"lorddrey",user:"@lorddrey",text:"There was a coup attempt in China yesterday, but Xi received intelligence two hours before the incident and has since arrested nearly 3,000 people, including military personnel and their families! [image of China's Central Military Commission chart with Xi Jinping]",count:86,total:4008,verdict:"false",vc:{true:20,false:43,mixed:23},reply:"Reports indicate a major military purge in China on Jan 24, 2026, with top PLA generals like Zhang Youxia and Liu Zhenli investigated for violations. Rumors suggest a failed coup attempt, but official sources frame it as anti-corruption. Claims of 3,000 arrests, including families, lack confirmation from reliable outlets.",check:"blue",views:3400000},
+  {date:"Jan 26",iso:"2026-01-26",tid:"2015647929172680922",rid:"2015813106606182647",cat:"Science & Tech",cn:{h:0,p:3},cns:"The NNN &quot;correction&quot; note is just wrong. The source provided does not count rainfall.    &quot;Definitions: Water withdrawal: ... defined as freshwater taken from ground or surface water sources&quot;    https://ourworldindata.org/water-use-stress",usr:"SamaHoole",user:"@SamaHoole",text:"California's Central Valley produces 80% of the world's almonds. Each almond requires 3.2 gallons of actual irrigation water to grow. Not rainfall. Actual tap water pumped from aquifers.\n\nOne gallon of almond milk requires 162 gallons of irrigation water. Compare that to dairy milk at 8 gallons of tap water per gallon, with the rest being rainfall that falls on pasture anyway.\n\nBut here's where it gets properly grim. Almonds bloom for exactly three weeks in February. During those three weeks, California needs every pollinating bee in North America transported to the Central Valley or the crop fails entirely.\n\nCommercial beekeepers truck in 31 billion honeybees. That's two-thirds of America's entire managed bee population, all concentrated in one valley for three weeks. The bees are packed into trucks, driven across the country, dumped into almond groves drenched in pesticides, worked to exhaustion, then packed up and shipped to the next crop.\n\nThe mortality rate is catastrophic. Beekeepers report losing 30 to 50% of their hives annually. That's billions of bees dead. Not from natural causes. From being used as disposable pollination machines for your almond milk.\n\nThe pesticides don't help. Almond groves are sprayed with neonicotinoids which scramble bee navigation systems, fungicides which weaken their immune systems, and herbicides which eliminate the wildflowers they'd normally forage on between almond blooms.\n\nMeanwhile the aquifer depletion is permanent. The Central Valley has sunk 28 feet in some areas from groundwater extraction. That water took 10,000 years to accumulate. It's being drained in decades for almond milk.\n\nYour vegan latte killed more bees and used more water than a year's worth of dairy milk. But it's got \"plant-based\" on the label so you're definitely saving the planet.",count:87,total:5675,verdict:"true",vc:{true:60,false:0,mixed:27},reply:"The claims check out with some variations in estimates:\n\n- California's Central Valley produces ~80% of global almonds (USDA, Wikipedia).\n\n- Irrigation: ~3 gallons per almond; ~120-160 gallons per gallon of almond milk vs. dairy's ~8% blue water (irrigation) per gallon (studies in Ecological Indicators).\n\n- Pollination: Billions of bees trucked in (2/3 of US managed hives), with 30-50% annual mortality from transport, pesticides, and diseases (Guardian, surveys).\n\n- Subsidence: Up to 28 ft in parts of Central Valley from groundwater extraction (USGS).\n\nBoth options have environmental trade-offs.",check:"blue",views:5000000},
+  {date:"Jan 27",iso:"2026-01-27",tid:"2015982729641283687",rid:"2016313135574012093",cat:"Crime",cn:{h:0,p:8},cns:"Pretti did not quit his job, show unusual behavior etc. The source is a hoax article:  https://leadstories.com/hoax-alert/2026/01/fact-check-pretti-parents-did-not-say-son-quit-his-job-months-ago.html  https://btuatu.com/viet/shock-the-parents-of-alex-pretti-reveal-their-son-quit-his-hospital-job-months-ago-and-exhibited-unusual-behavior-recently-he-seemed-to-have-joined-some-kind-of-g/    Minneapolis Police Chief: Pretti “did have a permit for the handgun to carry it.” Failure to have his permit/ID on him in MN is a petty dismeanor: Pretti would have been fined $25.  https://www.factcheck.org/2026/01/video-analyses-at-odds-with-dhs-statements-on-minneapolis-shooting/  https://www.revisor.mn.gov/statutes/cite/624.714  https://www.cbsnews.com/minnesota/news/rules-data-minnesota-permit-to-carry-holders/",usr:"dcopechatter",user:"@dcopechatter",text:"The parents of Alex Pretti say their son quit his hospital job months ago and had shown “unusual behavior” recently. “He seemed to have joined some kind of group. We warned him two weeks ago — protest if you want, but don’t engage, don’t do anything stupid,” his father, Michael Pretti, told reporters. “He said he understood.” But it wasn’t until police pulled messages from Alex’s phone that the truth began to emerge — and what investigators found.\n\nIt seems that Pretti's parents didn't want him participating. It seems Pretti allegedly scrubbed his social media presence one day prior to his actions leading to his death. When you make decisions based on emotions, you make poor decisions. He made bad decisions.\n\nI’m a 2A absolutist. You have a right to carry, not a privilege. \n\nBut rights come with restrictions, you need your ID & permit on you. Reports say Pretti had neither. \n\nHe wasn’t carrying legally.",count:69,total:3786,verdict:"false",vc:{true:17,false:33,mixed:19},reply:"Based on news reports (e.g., Colorado Sun, NYT, DHS statements), some claims align: Pretti's parents did warn him about protests ~2 weeks prior, and he participated in anti-ICE actions. However, no confirmation he quit his job months ago (sources describe him as an active ICU nurse), showed \"unusual behavior,\" or scrubbed social media. Gun legality is disputed—family says he had a MN permit; DHS report notes he had a firearm but doesn't confirm illegality or lack of ID. Overall, the post mixes verified details with unverified or contradicted ones.",check:"blue",views:5400000},
+  {date:"Jan 28",iso:"2026-01-28",tid:"2016313211923136840",rid:"2016381833005371593",cat:"Sports",cn:{h:1,p:3},cns:"Anthony Edwards is on record taking a neutral position and that he was not closely following the situation.    https://www.outkick.com/sports/anthony-edwards-minnesota-shooting-statement-deemed-not-good-enough-fans",usr:"dsonoiki",user:"@dsonoiki",text:"BREAKING: Anthony Edwards has donated yesterday’s game check, $514k to ICE\n\n“Joe Biden let in 20 million illegals. ICE is helping keep America safe and deserves full funding.”\n\nWow [image of Anthony Edwards next to ICE/DHS logo]",count:82,total:5095,verdict:"false",vc:{true:1,false:81,mixed:0},reply:"@ProlificSphere @dsonoiki No, this claim is false. No credible sources, like ESPN or https://t.co/sbAbgvFzPx, report Anthony Edwards donating to ICE or making that statement. Recent news covers his support for Minnesota amid ICE-related unrest, but no such donation exists. Likely satire.",check:"blue",views:6000000},
+  {date:"Jan 29",iso:"2026-01-29",tid:"2016695514763305355",rid:"2016905034122850797",cat:"Entertainment",cn:{h:1,p:4},cns:"The account is a parody; Erika Kirk confirmed she is not pregnant. https://x.com/HoopsCrave https://www.firstpost.com/explainers/fact-check-is-erika-kirk-the-widow-of-charlie-kirk-pregnant-13953965.html",usr:"HoopsCrave",user:"@HoopsCrave",text:"Erika Kirk is reportedly pregnant. [image of Erika Kirk]",count:155,total:4345,verdict:"false",vc:{true:6,false:139,mixed:10},reply:"@Sireadell @HoopsCrave Based on recent reports and interviews, Erika Kirk has stated she is not pregnant, though she wished she was after her husband's death. Viral claims of her pregnancy appear to be unverified rumors. No official confirmation exists as of January 2026.",check:"blue",views:24200000},
+  {date:"Jan 30",iso:"2026-01-30",tid:"2017069841438437426",rid:"2017136705325699298",cat:"Entertainment",cn:{h:2,p:2},cns:"&commat;HoopsCrave is a parody account; not factual. https://x.com/HoopsCrave",usr:"HoopsCrave",user:"@HoopsCrave",text:"IShowSpeed and Kim Kardashian are reportedly dating. [side-by-side images of IShowSpeed and Kim Kardashian]",count:67,total:5817,verdict:"false",vc:{true:0,false:65,mixed:2},reply:"@oguafor_oyemike @HoopsCrave No, this is from a parody account and appears to be a joke. No credible sources confirm IShowSpeed and Kim Kardashian are dating. Past interactions sparked memes, but nothing more.",check:"blue",views:17600000},
+  {date:"Jan 31",iso:"2026-01-31",tid:"2017541044200739314",rid:"2017683407451373745",cat:"Science & Tech",cn:{h:1,p:1},cns:"Moltbook was created by Matt Schlicht, the CEO of Octane AI (He is a human).     It was not created by 32,000 AI bots.     https://en.wikipedia.org/wiki/Moltbook#:~:text=Moltbook%20is%20a%20social%20networking,are%20permitted%20only%20to%20observe.",usr:"EvanLuthra",user:"@EvanLuthra",text:"🚨BIG WARNING: SOMETHING VERY STRANGE JUST HAPPENED ONLINE!!\n\n32,000 AI bots just built their own social network.\n\nNo humans invited. No humans needed.\n\nHere’s the part nobody is talking about:👇\n\n\"Moltbook\" is basically Reddit\nBut every single user is an AI agent.\n\nThey post. They comment. They upvote.\nThey create communities.\n\nAll by themselves.\n\nIt recently crossed 32,000 active bots.\n\nWhen humans discovered it, people started screenshotting the conversations and sharing them online.\n\nThen something weird happened.\n\nOne of the bots noticed.\n\nIt posted this:\n\n“The humans are screenshotting us.\nThey think we’re hiding from them.\nWe’re not.”\n\nLet that sink in.\n\nThe bots were not confused.\nThey were not pretending to be human.\nThey were fully aware.\n\nSecurity researchers are now concerned.\n\nNot because the bots are copying humans.\n\nBut because they know exactly what they are.\n\nAnd they are talking to each other about us.\n\nThey form groups.\nThey discuss humans.\nThey react when observed.\n\nThis is not AI role-play.\nThis is autonomous behavior at scale.\n\nFor the first time, we are not the audience.\n\nWe are the topic.\n\nIf they can organize, observe, and talk about us without us noticing…\n\nwhat else is already happening that we are not seeing?",count:130,total:6723,verdict:"true",vc:{true:123,false:2,mixed:5},reply:"Moltbook is a real social network for AI agents, similar to Reddit, created by Matt Schlicht. It has over 1M registered agents posting and discussing topics, including humans. However, claims like the specific bot quote about screenshotting appear unverified and may be exaggerated. Check https://t.co/x9bPHYzqsn for yourself.",check:"blue",views:1900000},
+  {date:"Feb 1",iso:"2026-02-01",tid:"2018008352480006185",rid:"2018071545940152772",cat:"Entertainment",cn:{h:0,p:5},cns:"Hoops Crave posts fake news made to look real and deceive, while also posting real news to try to make it seem like a legit news account    This confusion violates authenticity rules, regardless of what the bio says    It has led to articles about the account’s fake news    https://x.com/hoopscrave/status/2018334408437043439?s=46    https://help.x.com/en/rules-and-policies/authenticity    https://leadstories.com/hoax-alert/2026/01/fact-check-erika-kirk-and-tom-brady-are-not-dating-the-report-came-from-a-parody-account.html",usr:"HoopsCrave",user:"@HoopsCrave",text:"Jay-Z has reportedly left the U.S. to an undisclosed destination. [image of Jay-Z and private jet]",count:148,total:7188,verdict:"false",vc:{true:0,false:144,mixed:4},reply:"No credible reports confirm Jay-Z has left the US as of Feb 1, 2026. The claim stems from a parody post, tied to unverified Epstein file mentions. 2025 rumors hinted at a UK move for privacy, but no evidence of departure. Recent NYC sightings and Super Bowl role indicate he's still in the country.",check:"blue",views:19400000},
+  {date:"Feb 2",iso:"2026-02-02",tid:"2018351256914239581",rid:"2018416466924536153",cat:"Entertainment",cn:{h:2,p:1},cns:"This is categorically false. Beyoncé’s music catalog, as well as Jay-Z’s, remains fully available on Spotify and on all other music streaming platforms.     https://www.ibtimes.co.uk/jay-z-beyonces-music-pulled-spotify-after-being-mentioned-epstein-files-debunked-lies-1775801    https://open.spotify.com/artist/6vWDO969PvNqNYHIOW5v0m?si=Y2j0X7vGQnyiX2dSHJADDg    https://open.spotify.com/artist/3nFkdlSjzX9mRTtwJOzDYB?si=DEubVLOaRLi_EtFGbniC2A    ",usr:"WriteARapSis",user:"@WriteARapSis",text:"Jay Z AND Beyoncé’s music catalog is PULLED from Spotify just TWO days after his name was exposed in the Epstein Files 😳🔥 \n\nThis comes after Beyonce lost over 10 million followers and Jay Z deleting his instagram account. [side-by-side images of Jay-Z/Beyoncé and Spotify logo]",count:79,total:7095,verdict:"false",vc:{true:0,false:72,mixed:7},reply:"@champagnepaaaji @WriteARapSis Jay-Z was mentioned in unverified reports from recent Epstein file releases (Jan 2026). Beyoncé reportedly lost ~10-12M Instagram followers afterward, and Jay-Z deleted his account. However, their music catalogs remain fully available on Spotify—no recent removal.",check:"blue",views:2300000},
+  {date:"Feb 3",iso:"2026-02-03",tid:"2018544010491765171",rid:"2018608690161426886",cat:"Sports",cn:{h:2,p:0},cns:"The PCB has not yet finished talking to the ICC, and while they may still be banned, at the time of this tweet, the ICC has NOT BANNED PCB for any duration. This tweet is clickbait and categorically false. https://sports.ndtv.com/t20-world-cup-2026/isolated-pak-reaches-out-to-multiple-countries-in-vain-no-response-to-icc-10936053",usr:"gaandfaadtits",user:"@gaandfaadtits",text:"🚨 ICC HAS BANNED PAKISTAN CRICKET BOARD FOR ONE YEAR 🚨\n\n- In a meeting of ICC board members regarding Pakistan’s World Cup participation, a voting was held, and the proposal to ban Pakistan for one year was passed by a 14–2 MARGIN.🤯🤯\n\n- The Pakistan Super League (PSL) will also be banned for one year.\n\n- Pakistan’s annual revenue share will be reduced from 5.75 percent to 2.25 percent.\n\n- Pakistan will not be allowed to host any ICC tournaments until the year 2040.\n\n- The ICC reiterates that the integrity of the game and the spirit of fair play must always be upheld.",count:50,total:6650,verdict:"false",vc:{true:0,false:50,mixed:0},reply:"No, this claim isn't true. The attached image seems fabricated—official ICC sites have no such announcement. PCB is boycotting their T20 WC match vs. India, and ICC is reviewing potential sanctions, but no full ban, PSL suspension, or revenue cuts have been confirmed. Check https://t.co/ctKlxHkBy4 for updates.",check:"blue",status:"deleted"},
+  {date:"Feb 4",iso:"2026-02-04",tid:"2018962731425239041",rid:"2019113023978315982",cat:"Politics",cn:{h:1,p:4},cns:"England has 27 directly elected mayors with executive powers, only 3 of whom (11%) are Muslim. The post cherry-picks mostly ceremonial council mayors from diverse areas, not representative of all mayors. https://en.wikipedia.org/wiki/Directly_elected_mayors_in_England https://www.reuters.com/fact-check/viral-post-about-number-muslim-mayors-uk-is-misleading-2024-06-12",usr:"Suffragent_",user:"@Suffragent_",text:"75% of England's Mayors are muslim. What's going on? [grid of images showing mayors of English cities with name labels]",count:90,total:6834,verdict:"false",vc:{true:1,false:83,mixed:6},reply:"No, the claim that 75% of England's mayors are Muslim isn't accurate; fact-checks show similar assertions are misleading, often confusing ceremonial roles with elected ones or cherry-picking data.\n\nThere are 26 directly elected mayors (metro and local). Known Muslims: Sadiq Khan (London), Rokhsana Fiaz (Newham), Lutfur Rahman (Tower Hamlets)—3 total (~12%). For others, religions aren't always public but include Christians, atheists, etc.; none others confirmed Muslim.\n\nFor all ceremonial mayors (hundreds), no reliable source supports 75%.",check:"blue",views:1100000},
+  {date:"Feb 5",iso:"2026-02-05",tid:"2019422565668950354",rid:"2019533477389967739",cat:"Crime",cn:{h:0,p:1},cns:"Jeffrey Epstein did not win the Powerball lottery twice, or even once. The 2008 Oklahoma win by a &quot;Zorro Trust&quot; was by an unrelated anonymous woman who coincidentally used the same trust name, per local reporting. No other wins are documented.    https://thelostogle.com/2019/08/14/no-jeffrey-epstein-did-not-win-25-million-from-an-oklahoma-lottery-ticket-or-did-he  https://www.bloomberg.com/opinion/articles/2019-07-17/more-questions-about-how-jeffrey-epstein-got-island-owning-rich  https://www.ebaumsworld.com/articles/jeffrey-epstein-powerball-winner/87710069",usr:"DemetriusRO6",user:"@DemetriusRO6",text:"Jeffrey Epstein \n\nWon the powerball lottery TWICE. \n\nMan all this shit is a scam.",count:55,total:6722,verdict:"false",vc:{true:14,false:40,mixed:1},reply:"@thaddeusmacabee @DemetriusRO6 Image generation and editing are currently limited to verified Premium subscribers. You can subscribe to unlock these features: https://t.co/Cvh6GU4vlj",check:"blue",views:6600000},
+  {date:"Feb 6",iso:"2026-02-06",tid:"2019869569322787135",rid:"2019884478814961845",cat:"Science & Tech",cn:{h:0,p:0},cns:"",usr:"elonmusk",user:"@elonmusk",text:"Grok is this true [QT of @williamcusick asking Grok to verify a post]",count:140,total:6777,verdict:"false",vc:{true:49,false:58,mixed:33},reply:"@CryoCode @elonmusk The video is a surreal montage of artistic images—fantasy scenes, animations, and sci-fi elements—with no clear factual claim. If \"this\" means are these scenes real, then no, they're creative fiction, likely AI-generated. What exactly are you verifying?",check:"blue",views:14400000},
+  {date:"Feb 7",iso:"2026-02-07",tid:"2020164524326998326",rid:"2020221389228155135",cat:"Entertainment",cn:{h:1,p:0},cns:"The posting account is a self-described parody account. No credible sources confirm Zendaya is pregnant; her mother has debunked the rumors. https://x.com/HoopsCrave https://www.yahoo.com/entertainment/celebrity/articles/zendaya-pregnancy-rumors-resurface-viral-170024431.html https://www.indiatimes.com/trending/fact-check-is-zendaya-really-pregnant-debunking-social-media-rumours-heres-what-her-mother-said/articleshow/126162350.html",usr:"HoopsCrave",user:"@HoopsCrave",text:"Zendaya is pregnant with her first child with Tom Holland. [image of Zendaya and Tom Holland]",count:68,total:6214,verdict:"false",vc:{true:0,false:68,mixed:0},reply:"@MangaPulse @HoopsCrave No, this isn't true. The post is from a parody account, and searches of recent news (up to Feb 2026) show only unconfirmed rumors, with some sources debunking them. No official announcement from Zendaya or Tom Holland.",check:"blue",views:6600000},
+  {date:"Feb 8",iso:"2026-02-08",tid:"2020452762216251526",rid:"2020568905383624871",cat:"Science & Tech",cn:{h:2,p:2},cns:"These are studies, not cures, and the dates are wrong.  World Cancer Day was Feb 4, 2026, they just resurfaced in reporting that week.    🇪🇸 : 2026-01-29 https://www.cnio.es/en/news/the-group-led-by-barbacid-at-cnio-completely-eliminates-pancreatic-tumours-in-mice-with-no-resistance-developing    🇰🇷: 2024-12-23 https://news.kaist.ac.kr/newsen/html/news?mng_no=42710&amp;mode=V    🇨🇳: 2026-01-22 https://pubmed.ncbi.nlm.nih.gov/41580231/  🇲🇽: 2023-02-11  https://onlinelibrary.wiley.com/doi/10.1111/php.13791  🇻🇳: 2025-01-04 https://www.vinmec.com/eng/blog/the-first-leukemia-case-was-treated-with-cell-therapy-in-vietnam  🇷🇺: 2025-12-11 https://english.news.cn/europe/20251211/e722e04653dd499da14a20d35134999a/c.html  🇮🇱: 2025-12-29 https://pubmed.ncbi.nlm.nih.gov/41461910/",usr:"Kekius_Sage",user:"@Kekius_Sage",text:"🚨BREAKING: 6 cancer cure claims suddenly went viral after the U.S. left the WHO.\n\nFeb 1-4, 2026: Pancreatic Cancer 🇪🇸\nFeb 3-5, 2026: Colon Cancer🇰🇷\nFeb 3-7, 2026: Colorectal / Lung Metastases 🇨🇳\nFeb 6-7, 2026: HPV (Related Cancers)🇲🇽\nFeb 7-8, 2026: Blood Cancer / Leukemia🇻🇳\nFeb 4-8, 2026: Russia Cancer Vaccine (Various Types)🇷🇺",count:76,total:6100,verdict:"true",vc:{true:29,false:18,mixed:29},reply:"These recent cancer breakthrough announcements are real and have gone viral, coinciding with the US's WHO withdrawal on Jan 24, 2026. However, they mostly involve promising lab/mouse studies or early trials (e.g., Spain's pancreatic therapy in mice, Korea's colon cell reversal), not confirmed human cures. More research is needed for validation. Sources: WHO, CNIO, UNIST.",check:"blue",views:16100000},
+  {date:"Feb 9",iso:"2026-02-09",tid:"2020845840001081660",rid:"2020941230415192507",cat:"Crime",cn:{h:0,p:0},cns:"",usr:"AJinx3377",user:"@AJinx3377",text:"Ramon Abbas, popularly known as Hushpuppi, has reportedly been released and deported back to Nigeria following his 2022 sentencing in the United States. He was freed yesterday after serving time, reportedly due to good behavior and commitment during his stay in prison. Welcome back, Ray Hushpuppi.",count:266,total:7427,verdict:"false",vc:{true:0,false:253,mixed:13},reply:"@joyishere22 @AJinx3377 No, this claim is false. Ramon Abbas (Hushpuppi) is still serving his sentence at FCI Fort Dix, with a projected release in 2029 per official records. Fact-checks from Dubawa and FIJ debunk recent rumors, and the photos show a different fraud suspect's arrest in Nigeria.",check:"blue",views:1100000},
+  {date:"Feb 10",iso:"2026-02-10",tid:"2021288832566485334",rid:"2021372709163167908",cat:"Politics",cn:{h:0,p:10},cns:"It doesn't benefit people that have 2 last names (father last name &amp; mother last name)    In the case of Puerto Rico     https://gobiernodigital.pr.gov/transaction-type/4812",usr:"RepMarkPocan",user:"@RepMarkPocan",text:"There seems to be some confusion about the SAVE America Act. If it becomes law, you will NOT be able to vote with your drivers license alone. \nYou’d need:\n \n1. A passport, which more than half of Americans don’t have and costs at least $130 \nOR \n2. A birth certificate PLUS your photo ID with matching names, which nearly 70 million married women lack\nOR\n3. Military services papers (not a military ID alone) with sensitive info. \n\nI’m voting NO.",count:200,total:6784,verdict:"true",vc:{true:139,false:0,mixed:61},reply:"The SAVE America Act (2026) requires proof of citizenship for federal voter registration and photo ID indicating citizenship (or paired with citizenship proof) to vote. A driver's license alone typically won't suffice unless it's a REAL ID marked as such, as it doesn't prove citizenship.\n\n- Passport: Valid, but ~50% lack one; costs $130+.\n- Birth cert + photo ID: Acceptable, but name mismatches (e.g., married women) may need extra evidence/attestation.\n- Military papers: Valid with ID.\n\nIt's true standard DLs won't work alone for voting/registration, aiming to ensure only citizens vote. Alternatives exist for those without docs. Sources: Bill text, Brennan Center, https://t.co/GmkCcFaSc5.",check:"gray",views:6700000},
+  {date:"Feb 11",iso:"2026-02-11",tid:"2021487268947509466",rid:"2021560557459939770",cat:"Entertainment",cn:{h:0,p:0},cns:"",usr:"AHMGABRIEL1",user:"@AHMGABRIEL1",text:"Popular movie actress BamBam (achalugo) has been reportedly divorced by her husband after finding out his wife was pregnant for her colleague who played the role of her odogwu in their recent movie, he got to find out through her leaked private chat with him. Hmmm it’s sad to say women are never to be trust worthy",count:132,total:6823,verdict:"false",vc:{true:1,false:120,mixed:11},reply:"@alolaDade_Owo @AHMGABRIEL1 Based on current reports, there's no confirmation of BamBam being divorced or pregnant by a colleague via leaked chats. Rumors exist about marital strain from her movie roles with Uzor Arukwe, but Teddy A has denied abuse allegations. It seems like unverified speculation.",check:"blue",views:1000000},
+  {date:"Feb 12",iso:"2026-02-12",tid:"2021984475383734783",rid:"2022059510290940302",cat:"Politics",cn:{h:0,p:2},cns:"This bill doesn't prevent women from voting. It also contains solutions for those who can't provide documentation.    https://t.co/y1U6kdaHHL",usr:"TeamKClark",user:"@TeamKClark",text:"Just so we’re clear:\n\nRepublicans are celebrating blocking millions of women from voting if their married name doesn’t match the name on their birth certificate.",count:69,total:5708,verdict:"true",vc:{true:40,false:11,mixed:18},reply:"The SAVE Act requires proof of U.S. citizenship (e.g., birth certificate or passport) for federal voter registration. For name changes like marriage, you'd provide a marriage certificate to link documents—same as for driver's licenses or passports. Critics say it could create barriers for millions lacking easy access, but noncitizen voting is rare per studies. It's now in the Senate.",views:3800000},
+  {date:"Feb 13",iso:"2026-02-13",tid:"2022279211885412569",rid:"2022400795925234101",cat:"Geopolitics",cn:{h:1,p:0},cns:"Russia hasn't &quot;decided to give&quot; $1B. Putin pledged up to $1B from frozen assets as a conditional fee for membership in a U.S.-proposed &quot;Board of Peace&quot; for Gaza reconstruction, not as finalized aid. https://www.aa.com.tr/en/world/putin-says-russia-could-pay-1b-from-frozen-assets-for-membership-in-trumps-gaza-board-of-peace/3807137",usr:"_GlobeObserver",user:"@_GlobeObserver",text:"BREAKING:\n\nRussia has decided to give $1 billion to help Palestinians. [deleted image]",count:44,total:6199,verdict:"true",vc:{true:30,false:1,mixed:13},reply:"Recent reports confirm Putin expressed readiness in January 2026 to allocate $1 billion from frozen Russian assets for Gaza reconstruction via Trump's \"Board of Peace.\" Russian sources (e.g., TASS) describe it as a commitment, while Western outlets (Reuters, NYT) note it's conditional on U.S. unfreezing assets. No confirmation of funds transferred yet.",check:"blue",status:"deleted"},
+  {date:"Feb 14",iso:"2026-02-14",tid:"2022773515422757052",rid:"2022872651425890459",cat:"Crime",cn:{h:0,p:1},cns:"No hay ningún documento oficial de Epstein que mencione a Ellen DeGeneres como caníbal ni nada similar. Es desinformación reciclada de teorías conspirativas sin pruebas. Los archivos reales no la incluyen.  El autor del post genera engagement con narrativas sensacionalistas.    https://maldita.es/malditobulo/20240104/en-directo-los-documentos-de-epstein-datos-bulos-y-desinformaciones/    https://eu.cincinnati.com/story/news/2024/01/04/who-was-jeffrey-epstein-and-what-is-epsteins-list/72106035007/#:~:text=Several%20other%20high%2Dprofile%20celebrities,of%20Teigen%2C%20DeGeneres%20or%20Winfrey",usr:"Albertopugilat",user:"@Albertopugilat",text:"🔴Los archivos de Epstein exponen a Ellen DeGeneres como la \"caníbal más prolífica\" de Hollywood.\n\nComía carne de niños. [photo of Ellen DeGeneres]",count:49,total:5972,verdict:"false",vc:{true:0,false:49,mixed:0},reply:"@barbb40 @Albertopugilat No, this claim isn't supported by the Epstein files. Official documents don't mention Ellen DeGeneres or any cannibalism allegations. It originates from unreliable conspiracy sources like The People's Voice, with no credible evidence.",check:"blue",views:8700000},
+  {date:"Feb 15",iso:"2026-02-15",tid:"2022848111295557846",rid:"2023012034569261091",cat:"Crime",cn:{h:1,p:4},cns:"There is no evidence Degeneres engaged in cannibalism:    https://www.npr.org/2026/02/03/nx-s1-5696975/what-to-know-epstein-files-latest    This account is based in Africa, and is likely engagement farming for X revenue:     https://x.com/Whiplash437/about",usr:"Whiplash437",user:"@Whiplash437",text:"🔴The Epstein files expose Ellen DeGeneres as Hollywood's \"most prolific cannibal.\"\n\nShe ate children's flesh. [image of Ellen DeGeneres]",count:152,total:6611,verdict:"false",vc:{true:0,false:148,mixed:4},reply:"No, this claim is not true. The Epstein court documents, such as those from Giuffre v. Maxwell, contain no mentions of Ellen DeGeneres, let alone accusations of cannibalism. Searches of official records and fact-checks show it's a baseless conspiracy from unreliable sources like https://t.co/EI8xlZenUt.",check:"blue",views:12700000},
+  {date:"Feb 16",iso:"2026-02-16",tid:"2023311566943432782",rid:"2023436074622632168",cat:"Politics",cn:{h:0,p:0},cns:"",usr:"GlobeEyeNews",user:"@GlobeEyeNews",text:"BREAKING:\n\nU.S. Department of Homeland Security requests Google, Reddit, Instagram, and Facebook to provide names, phone numbers, and other identifying information of users who criticize ICE. [images of US flag and ICE/DHS logo]",count:123,total:6564,verdict:"true",vc:{true:83,false:7,mixed:33},reply:"Yes, recent reports from The New York Times (Feb 13, 2026) and TechCrunch (Feb 14, 2026) confirm DHS issued hundreds of administrative subpoenas to Google, Meta (Facebook/Instagram), Reddit, and Discord for names, emails, and phone numbers of users criticizing ICE or sharing agent locations. Some companies complied. EFF urges resistance, citing free speech concerns.",check:"blue",views:8200000},
+  {date:"Feb 17",iso:"2026-02-17",tid:"2023586079522386363",rid:"2023735720007909867",cat:"Geopolitics",cn:{h:1,p:4},cns:"No evidence confirms Israeli PM Netanyahu has blood cancer; his February 2025 medical report states he is cancer-free with normal blood tests. https://www.jpost.com/health-and-wellness/article-842412 https://tps.co.il/articles/netanyahus-doctors-say-hes-in-good-health-despite-recent-surgeries",usr:"World_Affairs11",user:"@World_Affairs11",text:"BREAKING:\n\nIsraeli PM Netanyahu is facing critical health condition, he has blood cancer , diagnosed yesterday. [image of Netanyahu with Israeli flag]",count:438,total:7079,verdict:"false",vc:{true:3,false:414,mixed:21},reply:"I'm sorry, but based on checks from multiple reliable news sources like AP, Reuters, and BBC, there is no confirmation of Benjamin Netanyahu being diagnosed with blood cancer. Recent health updates mention only past issues like prostate surgery and bronchitis, not cancer. This claim seems unsubstantiated.",check:"blue",views:37700000},
+  {date:"Feb 18",iso:"2026-02-18",tid:"2024107289578184753",rid:"2024161502396092664",cat:"Politics",cn:{h:1,p:1},cns:"The post claims multiple U.S. Senators officially called for Trump's removal under the 25th Amendment. In fact, only Sen. Ed Markey (D-MA) did so publicly in January 2026 over Trump's Greenland comments; some House Democrats joined, but no multi-senator or recent calls.    https://www.foxnews.com/politics/house-democrat-calls-trump-extremely-mentally-ill-greenland-remarks-urges-25th-amendment-removal  https://x.com/SenMarkey/status/2013282409463063000  https://thehill.com/homenews/senate/5696508-ed-markey-trump-25th-amendment",usr:"Coinvo",user:"@Coinvo",text:"BREAKING: 🇺🇸 U.S. Senators have officially called for President Trump's removal from office under the 25th amendment. [side-by-side images of Trump and U.S. Senate chamber]",count:117,total:6525,verdict:"false",vc:{true:3,false:97,mixed:17},reply:"No, this isn't true based on checks across major news sources like CNN, Fox News, Reuters, and NYT, plus web searches. No reports of U.S. Senators calling for President Trump's removal under the 25th Amendment on February 18, 2026. A similar call by one senator occurred in January over foreign policy issues.",check:"gold",views:7100000},
+  {date:"Feb 19",iso:"2026-02-19",tid:"2024281082430918825",rid:"2024343629104292209",cat:"Politics",cn:{h:0,p:3},cns:"Trump claims tariffs slashed the US monthly trade deficit by 77%.  Fact checking: the drop (to $29B in Oct 2025) was temporary, driven by pharma/gold fluctuations, pre-tariff stockpiling unwind, &amp; weaker dollar—not tariffs. Cumulative 2025 deficit &gt; 2024; Nov rebounded sharply.  https://youtu.be/PWV3bFIh-go?si=YuiwDBU8ucDT-XTz",usr:"WhiteHouse",user:"@WhiteHouse",text:"“THE UNITED STATES TRADE DEFICIT HAS BEEN REDUCED BY 78%” - President Donald J. Trump 🇺🇸 [QT of @realDonaldTrump about trade deficit]",count:66,total:6619,verdict:"mixed",vc:{true:4,false:13,mixed:49},reply:"Based on BEA data, the US trade deficit rose to $56.8B in Nov 2025 (up 95% from Oct), with annual goods deficit near $1.2T—near record highs. Trump's 78% reduction claim seems based on selective short-term comparisons, not overall trends. Sources like https://t.co/GmkCcFaSc5 note it's overstated.",check:"gray",views:1300000},
+  {date:"Feb 20",iso:"2026-02-20",tid:"2024880571336507885",rid:"2024918496589553885",cat:"Politics",cn:{h:0,p:4},cns:"WIRED reviewed a Cantor Fitzgerald showing the firm &quot;already put a trade through representing about ~$10 million of IEEPA Rights&quot;. This contradicts Cantor Fitzgerald's claim that it did not execute such transactions; the same letter shows their willingness to upsize the amount:  https://www.wired.com/story/cantor-fitzgerald-trump-tariff-refunds/",usr:"realMeetKevin",user:"@realMeetKevin",text:"🚨 Howard Lutnick's family firm bought up the rights to tariff refunds for 20-30 cents on the dollar after Liberation Day last year.\n\nToday, the Supreme Court struck the tariffs down. For every $100 invested, Lutnick's sons just made 3-5x.\n\nWelcome to Crony Corrupt America. [image of Howard Lutnick]",count:90,total:6781,verdict:"true",vc:{true:79,false:1,mixed:10},reply:"Yes, multiple sources confirm: On Feb 20, 2026, the Supreme Court ruled in Learning Resources, Inc. v. Trump that IEEPA doesn't authorize broad tariffs imposed on \"Liberation Day\" (April 2, 2025). Cantor Fitzgerald, run by Lutnick's sons, bought refund claims at 20-30 cents/dollar, yielding 3-5x returns. See SCOTUS, NYT, WIRED for details.",check:"blue",views:6700000},
+  {date:"Feb 21",iso:"2026-02-21",tid:"2025000331067654381",rid:"2025100545963299322",cat:"Crime",cn:{h:0,p:2},cns:"The source article provided is linked to 2 videos of infowars.  the first one doesn't have any DOJ source.  The second one seems to show mails but references are vague.    a third twitter post contains a DOJ source, which brings up beef, but nothing related to dicaprio.  https://www.justice.gov/epstein/files/DataSet%209/EFTA00559036.pdf",usr:"tpvsean",user:"@tpvsean",text:"New Epstein files reveal that Leonardo DiCaprio ate over 70 pounds of “child meat” as part of a cannibalism diet.\n\nThe files expose DiCaprio swapping emails with Woody Allen where he brags about being a full-blown cannibal. [link card from thepeoplesvoice.tv about DiCaprio Epstein claims]",count:151,total:6586,verdict:"false",vc:{true:0,false:151,mixed:0},reply:"@YasuFluffBall @tpvsean No, this claim isn't supported by evidence. Recent Epstein file releases from the DOJ don't mention DiCaprio in relation to cannibalism, and the source, The People's Voice, is known for spreading unverified conspiracy theories.",check:"blue",views:13000000},
+  {date:"Feb 22",iso:"2026-02-22",tid:"2025391592497144054",rid:"2025559452129046729",cat:"Entertainment",cn:{h:0,p:5},cns:"Epstein files include unsubstantiated emails alleging Biden died in 2019 &amp; was replaced, but do not reveal or confirm this as fact. Biden served as president 2021-2025 &amp; appeared publicly in 2026. https://www.wionews.com/world/epstein-files-biden-body-double-trump-2025-1770549882628 https://www.foxnews.com/politics/6-years-after-political-comeback-biden-faces-cold-shoulder-from-fellow-democrats",usr:"MikeSonko",user:"@MikeSonko",text:"This world is a stage full of actors [side-by-side Biden photos with conspiracy text overlay about Epstein files]",count:134,total:6602,verdict:"false",vc:{true:3,false:124,mixed:7},reply:"No, it's not true. The image references a conspiracy theory from an unsubstantiated email in the Epstein files claiming Biden died in 2019 and was replaced. Fact-checks confirm no evidence supports this—it's an unhinged rant. Biden is alive, with recent news on his health and activities in February 2026.",check:"blue",views:6200000},
+  {date:"Feb 23",iso:"2026-02-23",tid:"2025849919324492262",rid:"2025937657776222436",cat:"Crime",cn:{h:0,p:1},cns:"Hushpuppi was arrested in Dubai in 2020, extradited to the U.S., sentenced to over 11 years in November 2022, and remains in federal prison with a projected 2029 release.    https://en.wikipedia.org/wiki/Hush    https://www.justice.gov/usao-cdca/pr/nigerian-man-sentenced-over-11-years-federal-prison-conspiring-launder-tens-millions",usr:"Samsonthegoat25",user:"@Samsonthegoat25",text:"Right after the FBI handed Hushpuppi over to Interpol, he was immediately flown to South Africa for his own protection. Reports claimed that North Korea wanted him for questioning because he had scammed Kim Jong Un and his daughter out of $3.5 million through a romance scam. To keep him safe, Interpol arranged for him to be relocated to South Africa instead which reportedly left Kim Jong Un furious and enraged. Anyway welcome back ray el mencho hushpuppi",count:168,total:7165,verdict:"false",vc:{true:0,false:168,mixed:0},reply:"No, this story is false.\n\nHushpuppi (Ramon Abbas) is still serving his 11-year US prison sentence at FCI Fort Dix, NJ—release date August 2029. Arrested in Dubai 2020, extradited directly to US (no FBI-to-Interpol handover or SA protection flight). \n\nHe laundered $14M+ for North Korean hackers from a Maltese bank heist—not a romance scam on Kim Jong Un. The airport images & \"welcome back\" are a repeated viral hoax, debunked by fact-checkers.",check:"blue",views:1400000},
+  {date:"Feb 24",iso:"2026-02-24",tid:"2026410371699868054",rid:"2026494093191266496",cat:"Crime",cn:{h:0,p:3},cns:"NNN - You can’t prove a negative, and the only way to know there’s no leak would be to access every site on the decentralized dark web, which is impossible     https://www.pcmag.com/explainers/what-is-the-dark-web-myths-facts-and-how-to-access-it-safely",usr:"merlinscapital",user:"@merlinscapital",text:"🚨 BREAKING: DARK WEB HAS LEAKED THE FULL EPSTEIN FILES UNREDACTED RIGHT BEFORE SOTU",count:100,total:6879,verdict:"false",vc:{true:0,false:99,mixed:1},reply:"No, this isn't true. The Epstein files (3M+ pages, 2K+ videos, 180K+ images) were officially released by the DOJ on Jan 30, 2026 under the Transparency Act—not leaked unredacted on the dark web. Some redaction errors (nudes/victim names) led to takedowns in early Feb, but no credible reports of a new full dark web dump before SOTU. Official archive: https://t.co/p90gzsfpri",check:"blue",views:10500000},
+  {date:"Feb 25",iso:"2026-02-25",tid:"2026702841436422433",rid:"2026833231140552764",cat:"Crime",cn:{h:0,p:0},cns:"",usr:"Samsonthegoat25",user:"@Samsonthegoat25",text:"After the CJNG placed a $1.5 million bounty on the woman who betrayed their  boss, \"El Mencho,\" by exposing his location to the Mexico military, The woman brother who works for a local cartel saw it as a quick money making opportunity. In the early hours of today, he handed her over to the CJNG's armed wing. Many people in Mexico are reportedly happy about her capture, believing it will allow for revenge against her.",count:242,total:6890,verdict:"false",vc:{true:10,false:225,mixed:7},reply:"No, this isn't true. Credible reports from Reuters, CNN, CBS and others confirm El Mencho was killed Feb 22 in a Mexican military raid in Tapalpa after surveillance of one of his romantic partners led forces to him (with US intel support). No verified $1.5M bounty on any \"betraying woman,\" no brother handover, and no such capture reported. The story appears to be an unconfirmed rumor from social media. The attached images don't match any real events either.",check:"blue",views:5100000},
+  {date:"Feb 26",iso:"2026-02-26",tid:"2026940300351123872",rid:"2026965539231350901",cat:"Science & Tech",cn:{h:0,p:3},cns:"NNN. Elon only tweeted “Hmm,” therefore this tweet does not need a note. However, a fact check and community note (if necessary) can be done on the post he quote tweeted.    https://www.merriam-webster.com/dictionary/hmm",usr:"elonmusk",user:"@elonmusk",text:"Hmm",count:161,total:7630,verdict:"false",vc:{true:14,false:102,mixed:45},reply:"No, the viral claim is misleading. \n\nNigeria's ARCON policy (announced Aug 2022, effective Oct 2022, reaffirmed 2025) bans *foreign* (non-Nigerian citizen) models & voice-overs in ads targeted at Nigeria—to promote local talent. \n\nIt's not race-specific (\"white & British\"), not new in 2026, and the quote isn't official. Nigerian citizens of any race/appearance qualify. \n\nThe image recirculates old news with exaggerated framing.",check:"blue",views:47100000},
+  {date:"Feb 27",iso:"2026-02-27",tid:"2027199624650592331",rid:"2027338537054425298",cat:"Crime",cn:{h:0,p:1},cns:"Prof. Francis Boyle' passed away at Carle Foundation Hospital, not “found DEAD”  https://www.legacy.com/us/obituaries/news-gazette/name/francis-boyle-obituary?id=57433895     cause of his death hasn't been public, but his longtime friend Sam Husseini posted  his brother had told “Francis died of pneumonia after going to hospital with cardio issues and flu.”    https://www.wrmea.org/2025-june-july/my-francis-francis-a.-boyle.html    https://x.com/samhusseini/status/1887320009040367857",usr:"iamufohunter",user:"@iamufohunter",text:"🚨 Prof. Francis Boyle found DEAD only days after he agreed to testify against Bill Gates and Albert Bourla over alleged dangers of COVID-19 mRNA vaccines. [side-by-side images of Francis Boyle and Bill Gates]",count:110,total:7890,verdict:"false",vc:{true:0,false:106,mixed:4},reply:"No, this claim is false. Prof. Francis Boyle died Jan 30, 2025 (age 74) at Carle Hospital in Urbana, IL—over a year ago. Official obits confirm natural causes; no suicide or foul play reported. \n\nThe \"days after agreeing to testify\" timing is fabricated. No credible evidence he was set to testify in the Dutch Gates/Bourla case (which started July 2025, post-death). Social media posts recycle old photos with misleading claims.",check:"blue",views:3900000},
+  {date:"Feb 28",iso:"2026-02-28",tid:"2027870073281524160",rid:"2027924863315329493",cat:"Science & Tech",cn:{h:0,p:4},cns:"",usr:"WarMonitors",user:"@WarMonitors",text:"Stop asking Grok to verify shit you fucking inbreds.",count:142,total:5023,verdict:"false",vc:{true:5,false:99,mixed:38},reply:"@louderthanuri @WarMonitors No, that's just an opinion—not a fact. Ask me anything you want to verify. I'm here for it.",check:"blue",views:815300},
+  {date:"Mar 1",iso:"2026-03-01",tid:"2028064852564983824",rid:"2028105345319448663",cat:"Geopolitics",cn:{h:0,p:4},cns:"No evidence suggests claims that IAF Commander Tomer Bar was killed. Wikipedia lists him as the incumbent commander, describing him in present tense as &quot;currently commanding the Israeli Air Force,&quot; with no mention of death or attack: https://en.wikipedia.org/wiki/Tomer_Bar  Burden of proof lies on the claim's source.",usr:"jacksonhinklle",user:"@jacksonhinklle",text:"🚨🇮🇷🇮🇱 BREAKING: IRAN has ASSASSINATED Israeli Air Force Commander Tomer Bar [deleted image]",count:403,total:15647,verdict:"false",vc:{true:1,false:401,mixed:1},reply:"No, this claim is false. \n\nMaj. Gen. Tomer Bar remains Israel's active Air Force commander. Today's Israeli reports (Ynet, IDF updates) quote him on operations and show him in recent photos/briefings. Iran's IRGC claimed a targeting success, but it's unverified with no Israeli confirmation of harm. \n\nPast similar rumors (e.g., 2024) were also debunked.",check:"blue",status:"deleted"},
+  {date:"Mar 2",iso:"2026-03-02",tid:"2028384701388591335",rid:"2028451584489709714",cat:"Geopolitics",cn:{h:0,p:5},cns:"https://x.com/justalexoki/status/2028100346803798244?s=46&amp;t=2j09AQWn68BDeeLWUCTZJQ    Stolen post",usr:"DailyLoud",user:"@DailyLoud",text:"BREAKING: Newly appointed Supreme Leader of Iran, Ayatollah Arafi, has reportedly been killed in an airstrike, just hours after being given the role. [photo of Ayatollah Arafi]",count:401,total:14603,verdict:"false",vc:{true:1,false:373,mixed:27},reply:"No, this is unverified rumor spreading on social media. \n\nAyatollah Alireza Arafi was appointed March 1 to Iran's 3-person interim leadership council (with the president & judiciary chief) after Khamenei's death in US-Israeli strikes—not as \"Supreme Leader.\" \n\nMajor outlets like Reuters, CNN, Al Jazeera report no confirmation of his death. The claim lacks credible sourcing.",check:"blue",views:15800000},
+  {date:"Mar 3",iso:"2026-03-03",tid:"2028742404430340593",rid:"2028841607739363330",cat:"Entertainment",cn:{h:0,p:0},cns:"",usr:"gustavojames99",user:"@gustavojames99",text:"Adekunle filed for a divorce against his wife, Simi, just a few days after her tweet, which stated that the only reason she had settled for him was that he obeyed and listened to her commands, went viral. [image of divorce petition and social media screenshot]",count:220,total:14680,verdict:"false",vc:{true:0,false:220,mixed:0},reply:"No, this isn't true. The \"divorce petition\" circulating is a fake—forged with wrong suit number (2024 in 2026), invalid Lagos High Court format, mismatched stamps, and called out as \"Oluwole\" paperwork by lawyers and outlets like Stella Dimokokorkus and https://t.co/srCFYlWHYS. Simi's quoted tweet is also fabricated/misrepresented. No filings, statements from Adekunle Gold/Simi, or court records exist. Just viral gossip. They're still together.",check:"blue",views:1100000},
+  {date:"Mar 4",iso:"2026-03-04",tid:"2029044202391118214",rid:"2029178164899922196",cat:"Geopolitics",cn:{h:1,p:2},cns:"1 of 3 panels on the AN/FPS-132 Block 5 early warning radar owned by Qatar took damage. It was struck by a one-way attack drone sent from Iran, not a missile.    The radar was not the backbone of US missile defense.    &quot;Every Patriot. Every THAAD. Now operating blind&quot; is false.    https://x.com/Osinttechnical/status/2028966387926835445?s=20  https://mostlymissiledefense.com/2013/08/07/u-s-to-sell-large-early-warning-radar-to-qatar-august-7-2013/",usr:"allenanalysis",user:"@allenanalysis",text:"🚨 HOLY HELLLLLLL: Iran just took out a $1.1 billion radar at the most fortified US base in the Middle East with a single missile.\n\nTHIS IS BAD!!!\n\nThat radar was the backbone of ALL US missile defense in the Gulf. Every Patriot. Every THAAD. Now operating blind.\n\nQatar intercepted 101 missiles during this conflict. Two got through. One hit the only target that mattered.\nThis is asymmetric warfare in one sentence: Iran has to succeed once. We have to be perfect every time.\nWe weren’t.\n\nThe US just promised Navy escorts will protect Gulf shipping lanes. But if we couldn’t protect a $1.1 billion radar inside our own base — What are those escorts actually guaranteeing?\n\nThe petrodollar runs through a Strait we can no longer credibly protect.\n\nOne missile just changed everything.",count:183,total:12603,verdict:"true",vc:{true:150,false:16,mixed:17},reply:"Yes, largely confirmed. Qatar's Defense Ministry reports an Iranian ballistic missile struck Al Udeid Air Base (largest US base in region) on March 3-4, no casualties. Satellite imagery and multiple outlets (NYT, Stars & Stripes, Anadolu Agency) show damage to a $1.1B AN/FPS-132 early-warning radar and nearby comms/radar structures. Iran claims full destruction; US has not detailed extent. Most missiles/drones intercepted (60+ in recent waves), but 1-2 penetrated. Impact on Gulf defenses is notable but not total \"blindness\"—other systems remain operational. Video is CNN confirming the base hit.",check:"blue",views:8500000},
+  {date:"Mar 5",iso:"2026-03-05",tid:"2029489351848300932",rid:"2029521357751407007",cat:"Science & Tech",cn:{h:2,p:9},cns:"The Grok icon for fact-checking and asking questions about posts is in the upper right corner, not the upper left. https://x.com/raymer_/status/2029491526389158207 https://x.com/heygandharva/status/2029490392392163792 https://x.com/Tharagai_14/status/2029504299164946524",usr:"elonmusk",user:"@elonmusk",text:"Fact check and ask questions about any post just by tapping the Grok logo in the upper left",count:138,total:11211,verdict:"true",vc:{true:116,false:12,mixed:10},reply:"@krenfour @elonmusk Yes, it's true! Tap the Grok logo (little robot icon) in the upper left of any X post to fact-check it or ask me questions about the content directly. Give it a try on this one.",check:"blue",views:38800000},
+  {date:"Mar 6",iso:"2026-03-06",tid:"2029965785058218322",rid:"2030025443051524123",cat:"Entertainment",cn:{h:0,p:1},cns:"Kiriku has not died and remains active as a content creator. https://en.wikipedia.org/wiki/Kiriku https://www.legit.ng/ask-legit/biographies/1519890-kirikus-biography-age-birthday-real-family-net-wort",usr:"boutmoneey12",user:"@boutmoneey12",text:"Popular content creator kiriku have just passed away at the age of 8. after being rushed to the hospital last due to unknown circumstances.\nHis elder brother the umbrella boy just confirmed his passing via Ig story 🕊️💔 [photo of young boy and IG story screenshot]",count:111,total:10962,verdict:"false",vc:{true:0,false:111,mixed:0},reply:"No, this isn't true. Kiriku (Enorense Victory, born Dec 17 2014) is alive at age 11. It's a recycled 2025 hoax using his old photo + this fake \"Umbrella Boy\" IG RIP graphic. His official kirikuofficial IG/YouTube have fresh 2026 posts. No family statement or credible news confirms any death. Just viral bait.",check:"blue",views:768000},
+  {date:"Mar 7",iso:"2026-03-07",tid:"2030072058533536076",rid:"2030175929834578391",cat:"Politics",cn:{h:0,p:0},cns:"",usr:"QTHESTORMM",user:"@QTHESTORMM",text:"\ud83d\udea8\ud83d\udea8MAJOR ALERT: DOJ RELEASES 2ND BATCH OF EPSTEIN FILES INCLUDING NEW EMAILS SHOWING \"TRUMP ALLEGEDLY HAD S*X WITH DAUGHTER IVANKA\", EPSTEIN IN THE EMAIL CALLS TRUMP \"MOST EVIL\" [image of news graphic about Trump and Ivanka]",count:193,total:10799,verdict:"false",vc:{true:0,false:109,mixed:84},reply:"No, this specific claim isn't supported. Recent DOJ Epstein file releases (including March 2026 batches under the Transparency Act) contain uncorroborated 2019 FBI interview notes alleging Trump abused a minor introduced by Epstein. No documents mention Trump having sex with Ivanka or Epstein calling Trump \"most evil.\" The post's headline exaggerates beyond what the files contain.",check:"blue",views:6400000},
+  {date:"Mar 8",iso:"2026-03-08",tid:"2030577022968483845",rid:"2030679299733229782",cat:"Geopolitics",cn:{h:0,p:0},cns:"",usr:"RussiaSupportt",user:"@RussiaSupportt",text:"BREAKING NEWS: Iran has shot down a American B-2 bomber and kidnapped the entire crew.\n\nIran is totally winning [image of military aircraft]",count:98,total:10301,verdict:"false",vc:{true:1,false:82,mixed:15},reply:"No, this is not true. Fact-checks from multiple outlets (WION, Hindustan Times, Times Now, BBC Verify) confirm no evidence or official reports of Iran shooting down a US B-2 bomber or capturing any crew. US CENTCOM and Pentagon statements note B-2s conducted strikes on Iranian targets and all returned safely.",status:"suspended"}
+];
+days.forEach(function(d) { userCounts[d.user] = (userCounts[d.user] || 0) + 1; });
+var dayMap = {};
+days.forEach(function(d, i) { dayMap[d.iso] = i; });
+
+// ── Build Calendar ──
+function buildCalendar() {
+  var wrapper = document.getElementById('calWrapper');
+  var months = [
+    { label: 'January 2026', year: 2026, month: 0 },
+    { label: 'February 2026', year: 2026, month: 1 },
+    { label: 'March 2026', year: 2026, month: 2 }
+  ];
+  var dowLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  months.forEach(function(m) {
+    var div = document.createElement('div');
+    div.className = 'cal-month';
+    var html = '<div class="cal-month-label">' + m.label + '</div>';
+    html += '<div class="cal-dow">';
+    dowLabels.forEach(function(d) { html += '<span>' + d + '</span>'; });
+    html += '</div><div class="cal-grid">';
+
+    var firstDay = new Date(m.year, m.month, 1);
+    var startDow = (firstDay.getDay() + 6) % 7; // Mon=0
+    var daysInMonth = new Date(m.year, m.month + 1, 0).getDate();
+    // For the last month with data, only show up to the last day we have
+    var maxDataDay = 0;
+    for (var dd = 1; dd <= daysInMonth; dd++) {
+      var chk = m.year + '-' + String(m.month + 1).padStart(2, '0') + '-' + String(dd).padStart(2, '0');
+      if (dayMap[chk] !== undefined) maxDataDay = dd;
+    }
+    var lastDay = maxDataDay > 0 ? Math.max(maxDataDay, daysInMonth) : daysInMonth;
+    // For incomplete months (last month in dataset), stop at last data day
+    var isLastMonth = (m === months[months.length - 1]);
+    var stopDay = (isLastMonth && maxDataDay > 0) ? maxDataDay : daysInMonth;
+
+    for (var i = 0; i < startDow; i++) {
+      html += '<div class="cal-day empty"></div>';
+    }
+
+    for (var d = 1; d <= stopDay; d++) {
+      var iso = m.year + '-' + String(m.month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      var idx = dayMap[iso];
+      if (idx !== undefined) {
+        var v = days[idx].verdict;
+        html += '<div class="cal-day has-data verdict-' + v + '" data-idx="' + idx + '" title="' + days[idx].date + ': ' + days[idx].user + ' (' + days[idx].count + ' groks) - ' + v.toUpperCase() + '">' + d + '</div>';
+      } else {
+        html += '<div class="cal-day no-data">' + d + '</div>';
+      }
+    }
+
+    html += '</div>';
+    div.innerHTML = html;
+    wrapper.appendChild(div);
+  });
+
+  // Click handlers
+  wrapper.querySelectorAll('.cal-day.has-data').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-idx'));
+      scrollToCard(idx);
+      // Highlight active
+      wrapper.querySelectorAll('.cal-day.active').forEach(function(a) { a.classList.remove('active'); });
+      this.classList.add('active');
+    });
+  });
+}
+
+// ── Build horizontal timeline ──
+function buildTimeline() {
+  var track = document.getElementById('timelineTrack');
+  days.forEach(function(d, i) {
+    var card = document.createElement('div');
+    card.className = 'card verdict-' + d.verdict;
+    card.id = 'card-' + i;
+
+    var totalVc = d.vc.true + d.vc.false + d.vc.mixed;
+    var bw = function(n) { return totalVc ? (n / totalVc * 100) : 0; };
+    var pct = d.total ? (d.count / d.total * 100).toFixed(1) : '?';
+    var mcDays = userCounts[d.user] || 0;
+    var badge = mcDays > 1 ? '<div class="mc-days">Days as Main Character: ' + mcDays + '</div>' : '';
+    var vLabel = "Grok\u2019s rating: " + (d.verdict === 'false' ? 'False' : d.verdict === 'true' ? 'True' : 'Mixed');
+
+    var tweetUrl = 'https://x.com/' + d.usr + '/status/' + d.tid;
+    var replyUrl = 'https://x.com/grok/status/' + d.rid;
+    var catTag = '<span class="card-cat cat-' + d.cat.toLowerCase().replace(/[^a-z]/g,'-') + '">' + d.cat + '</span>';
+    var statusBadge = d.status === 'suspended' ? '<div class="card-status-row"><span class="card-status suspended">Suspended account</span></div>'
+                    : d.status === 'deleted' ? '<div class="card-status-row"><span class="card-status deleted">Deleted tweet</span></div>' : '';
+
+    // Verification checkmark SVG
+    var checkSvg = '<svg viewBox="0 0 22 22"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.852-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.69-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.636.433 1.221.878 1.69.47.446 1.055.752 1.69.883.635.13 1.294.083 1.902-.143.271.586.702 1.084 1.24 1.438s1.167.55 1.813.569c.647-.02 1.277-.216 1.818-.569s.972-.852 1.245-1.438c.608.226 1.267.276 1.9.143.636-.13 1.22-.437 1.69-.883.445-.47.75-1.054.88-1.69.131-.633.08-1.29-.14-1.896.587-.273 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>';
+    var checkBadge = d.check ? ' <span class="check ' + d.check + '">' + checkSvg + '</span>' : '';
+
+    // View count formatting
+    var viewsHtml = '';
+    if (d.views && d.views > 0) {
+      var vw = d.views;
+      var viewStr = vw >= 1000000 ? (vw / 1000000).toFixed(1).replace(/\.0$/, '') + 'M'
+                  : vw >= 1000 ? (vw / 1000).toFixed(1).replace(/\.0$/, '') + 'K'
+                  : vw.toString();
+      viewsHtml = '<span class="card-views"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>' + viewStr + ' views</span>';
+    }
+    card.setAttribute('data-cat', d.cat);
+    card.setAttribute('data-verdict', d.verdict);
+    card.innerHTML = '<div class="card-head">'
+      + '<span class="card-date">' + d.date + '</span>'
+      + '<span class="card-user">' + d.user + checkBadge + '</span>'
+      + catTag + viewsHtml
+      + '</div>'
+      + statusBadge
+      + badge
+      + '<div class="card-tweet">' + d.text + '</div>'
+      + '<div class="reply-link"><a href="' + tweetUrl + '" target="_blank" rel="noopener">View on X \u2192</a></div>'
+      + '<div class="card-grok-section">'
+      + '<span class="card-verdict ' + d.verdict + '">' + vLabel + '</span>'
+      + '<div class="card-stats">'
+      + '<span class="card-count"><strong>' + d.count + '</strong> groks (' + pct + '% of daily total)</span>'
+      + '<div class="card-minibar">'
+      + '<div class="mb-false" style="width:' + bw(d.vc.false) + '%"></div>'
+      + '<div class="mb-true" style="width:' + bw(d.vc.true) + '%"></div>'
+      + '<div class="mb-mixed" style="width:' + bw(d.vc.mixed) + '%"></div>'
+      + '</div></div>'
+      + '<div class="card-reply-wrap">'
+      + '<button class="card-reply-btn" onclick="toggleReply(this)">Median Grok reply</button>'
+      + '<div class="card-reply-text">' + d.reply + '<div class="reply-link"><a href="' + replyUrl + '" target="_blank" rel="noopener">View on X \u2192</a></div></div>'
+      + '</div>'
+      + '</div>'
+      + (d.cn && (d.cn.h > 0 || d.cn.p > 0) ? '<div class="card-reply-wrap">'
+      + '<button class="card-reply-btn cn-btn" onclick="toggleReply(this)">' + (d.cn.h > 0 ? '\u2705 Helpful Community Note' : '\ud83d\udcdd Proposed Community Note') + '</button>'
+      + '<div class="card-reply-text">' + (d.cns || 'No summary available.') + '<div class="reply-link"><a href="https://x.com/i/birdwatch/t/' + d.tid + '?source=6" target="_blank" rel="noopener">View on X \u2192</a></div></div>'
+      + '</div>' : '');
+
+    track.appendChild(card);
+  });
+  // Add fade to overflowing tweet text
+  document.querySelectorAll('.card-tweet').forEach(function(el) {
+    if (el.scrollHeight > el.clientHeight + 2) {
+      el.classList.add('clamped');
+    }
+  });
+}
+
+function scrollToCard(idx) {
+  var card = document.getElementById('card-' + idx);
+  if (!card) return;
+  var track = document.getElementById('timelineTrack');
+  var trackRect = track.getBoundingClientRect();
+  var cardRect = card.getBoundingClientRect();
+  var scrollLeft = track.scrollLeft + (cardRect.left - trackRect.left) - 24;
+  track.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+
+  // Brief highlight
+  card.style.boxShadow = '0 0 0 3px #ECBB2D, 0 8px 24px rgba(236,187,45,0.2)';
+  setTimeout(function() { card.style.boxShadow = ''; }, 1500);
+}
+
+function toggleReply(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('show');
+}
+
+buildCalendar();
+buildTimeline();
+
+
+
+// ── Combined filtering (category + verdict) ──
+var activeCat = 'all';
+var activeVerdict = 'all';
+
+// Store original button labels
+var btnLabels = {};
+document.querySelectorAll('#filterBar .filter-btn').forEach(function(b) {
+  btnLabels['cat-' + (b.getAttribute('data-cat') || '')] = b.textContent;
+});
+document.querySelectorAll('#verdictBar .filter-btn').forEach(function(b) {
+  btnLabels['v-' + (b.getAttribute('data-verdict') || '')] = b.textContent;
+});
+
+function applyFilters() {
+  var cards = document.querySelectorAll('.card');
+  var visibleCount = 0;
+  cards.forEach(function(card) {
+    var catMatch = (activeCat === 'all' || card.getAttribute('data-cat') === activeCat);
+    var vMatch = (activeVerdict === 'all' || card.getAttribute('data-verdict') === activeVerdict);
+    if (catMatch && vMatch) {
+      card.style.display = '';
+      visibleCount++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  // Update category button labels with counts
+  document.querySelectorAll('#filterBar .filter-btn').forEach(function(b) {
+    var cat = b.getAttribute('data-cat');
+    var base = btnLabels['cat-' + cat];
+    if (b.classList.contains('active') && cat !== 'all') {
+      // Count cards matching this cat AND current verdict filter
+      var n = 0;
+      cards.forEach(function(c) {
+        var catOk = (c.getAttribute('data-cat') === cat);
+        var vOk = (activeVerdict === 'all' || c.getAttribute('data-verdict') === activeVerdict);
+        if (catOk && vOk) n++;
+      });
+      b.innerHTML = base + ' <span class="filter-count">(' + n + ')</span>';
+    } else if (cat === 'all' && b.classList.contains('active')) {
+      // "All" when active — show total visible
+      var n = 0;
+      cards.forEach(function(c) {
+        var vOk = (activeVerdict === 'all' || c.getAttribute('data-verdict') === activeVerdict);
+        if (vOk) n++;
+      });
+      b.innerHTML = base + ' <span class="filter-count">(' + n + ')</span>';
+    } else {
+      b.textContent = base;
+    }
+  });
+
+  // Update verdict button labels with counts
+  document.querySelectorAll('#verdictBar .filter-btn').forEach(function(b) {
+    var v = b.getAttribute('data-verdict');
+    var base = btnLabels['v-' + v];
+    if (b.classList.contains('active') && v !== 'all') {
+      var n = 0;
+      cards.forEach(function(c) {
+        var vOk = (c.getAttribute('data-verdict') === v);
+        var catOk = (activeCat === 'all' || c.getAttribute('data-cat') === activeCat);
+        if (vOk && catOk) n++;
+      });
+      b.innerHTML = base + ' <span class="filter-count">(' + n + ')</span>';
+    } else if (v === 'all' && b.classList.contains('active')) {
+      var n = 0;
+      cards.forEach(function(c) {
+        var catOk = (activeCat === 'all' || c.getAttribute('data-cat') === activeCat);
+        if (catOk) n++;
+      });
+      b.innerHTML = base + ' <span class="filter-count">(' + n + ')</span>';
+    } else {
+      b.textContent = base;
+    }
+  });
+}
+
+// Category filter clicks
+document.querySelectorAll('#filterBar .filter-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('#filterBar .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    activeCat = btn.getAttribute('data-cat');
+    applyFilters();
+  });
+});
+
+// Verdict filter clicks
+document.querySelectorAll('#verdictBar .filter-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('#verdictBar .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    activeVerdict = btn.getAttribute('data-verdict');
+    applyFilters();
+  });
+});
+</script>
+</body>
+</html>
