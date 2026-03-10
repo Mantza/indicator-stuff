@@ -4,300 +4,102 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grok Is This True Tracker | Indicator</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  background: #fff;
-  color: #1a1a2e;
-  line-height: 1.5;
-}
-
-.embed-wrap {
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 20px 20px 16px;
-}
-
-.cards-row {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 14px;
-}
-
-/* ── Card ── */
-.card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 0;
-  min-width: 0;
-}
-.card.verdict-false { border-top: 3px solid #ef4444; }
-.card.verdict-true  { border-top: 3px solid #22c55e; }
-.card.verdict-mixed { border-top: 3px solid #ECBB2D; }
-
-/* ── Head row ── */
-.card-head {
-  padding: 14px 16px 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.card-date {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #2451C9;
-  background: rgba(36,81,201,0.07);
-  padding: 2px 8px;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-.card-user {
-  font-size: 0.84rem;
-  font-weight: 700;
-  color: #1a1a2e;
-}
-.card-user a { color: inherit; text-decoration: none; }
-.card-user a:hover { text-decoration: underline; }
-
-/* ── Checkmark ── */
-.check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  margin-left: -2px;
-  vertical-align: middle;
-  position: relative;
-  top: -1px;
-}
-.check svg { width: 9px; height: 9px; }
-.check.blue { background: #1d9bf0; }
-.check.blue svg { fill: #fff; }
-.check.gold { background: #e2b719; }
-.check.gold svg { fill: #fff; }
-
-/* ── Category pill ── */
-.card-cat {
-  font-size: 0.58rem;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.cat-entertainment { background: #fef3c7; color: #92400e; }
-.cat-politics { background: #fee2e2; color: #991b1b; }
-.cat-geopolitics { background: #dbeafe; color: #1e40af; }
-.cat-crime { background: #fce7f3; color: #9d174d; }
-.cat-science---tech { background: #ede9fe; color: #5b21b6; }
-.cat-sports { background: #d1fae5; color: #065f46; }
-
-/* ── Views ── */
-.card-views {
-  font-size: 0.65rem;
-  color: #94a3b8;
-  margin-left: auto;
-}
-.card-views svg {
-  width: 12px;
-  height: 12px;
-  vertical-align: -2px;
-  margin-right: 2px;
-  fill: #94a3b8;
-}
-
-/* ── Status badge ── */
-.card-status-row { padding: 2px 16px 0; }
-.card-status {
-  display: inline-block;
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-.card-status.suspended { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-.card-status.deleted { background: #fefce8; color: #a16207; border: 1px solid #fde68a; }
-
-/* ── Tweet text ── */
-.card-tweet {
-  padding: 4px 16px 10px;
-  font-size: 0.86rem;
-  color: #334155;
-  line-height: 1.5;
-  flex: 1;
-  max-height: 12em;
-  overflow: hidden;
-  position: relative;
-}
-
-/* ── View on X link ── */
-.reply-link { margin-top: 4px; padding: 4px 16px 0; }
-.reply-link a { font-size: 0.75rem; font-weight: 600; color: #2451C9; text-decoration: none; }
-.reply-link a:hover { text-decoration: underline; }
-
-/* ── Grok section ── */
-.card-grok-section { border-top: 1px solid #e2e8f0; margin-top: 6px; padding-top: 8px; }
-.card-verdict {
-  display: inline-block;
-  font-size: 0.62rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin: 0 16px;
-}
-.card-verdict.false { background: #fef2f2; color: #dc2626; }
-.card-verdict.true  { background: #f0fdf4; color: #16a34a; }
-.card-verdict.mixed { background: #fefce8; color: #9a7b0a; }
-
-.card-stats { padding: 0 16px 8px; display: flex; align-items: center; gap: 10px; }
-.card-count { font-size: 0.76rem; font-weight: 500; color: #64748b; }
-.card-count strong { color: #2451C9; font-weight: 800; font-size: 0.95rem; }
-.card-minibar { flex: 1; height: 4px; border-radius: 2px; display: flex; background: #e2e8f0; overflow: hidden; min-width: 60px; }
-.card-minibar > div { height: 100%; }
-.mb-false { background: #ef4444; }
-.mb-true  { background: #22c55e; }
-.mb-mixed { background: #ECBB2D; }
-
-/* ── Grok reply ── */
-.card-reply-wrap { border-top: 1px solid #e2e8f0; background: #f8fafc; }
-.card-reply-label {
-  display: block; width: 100%; text-align: left;
-  color: #2451C9; font-size: 0.74rem; font-weight: 600;
-  padding: 8px 16px 4px;
-}
-.card-reply-text {
-  padding: 0 16px 12px;
-  font-size: 0.8rem; color: #475569; line-height: 1.55;
-}
-
-/* ── CTA ── */
-.cta-wrap { text-align: center; margin-top: 4px; }
-.cta-btn {
-  display: inline-block; background: #2451C9; color: #fff;
-  font-family: inherit; font-size: 0.82rem; font-weight: 700;
-  padding: 10px 28px; border-radius: 8px; text-decoration: none;
-  transition: background 0.15s;
-}
-.cta-btn:hover { background: #1a3fa0; }
-
-/* ── Tablet ── */
-@media (max-width: 800px) {
-  .cards-row { flex-direction: column; }
-  .embed-wrap { max-width: 720px; }
-}
-/* ── Mobile ── */
-@media (max-width: 500px) {
-  .embed-wrap { padding: 14px 14px 12px; }
-  .card-head { padding: 10px 12px 4px; }
-  .card-user { font-size: 0.78rem; }
-  .card-tweet { padding: 4px 12px 8px; font-size: 0.8rem; }
-  .card-stats { padding: 0 12px 6px; }
-  .card-verdict { margin: 0 12px; }
-  .card-reply-label { padding: 6px 12px 4px; font-size: 0.68rem; }
-  .card-reply-text { padding: 0 12px 10px; font-size: 0.75rem; }
-  .cta-btn { font-size: 0.75rem; padding: 9px 22px; }
-}
-</style>
 </head>
-<body>
+<body style="margin:0;padding:0;font-family:Roboto,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:#fff;color:#1a1a2e;line-height:1.5;">
 
-<div class="embed-wrap">
-  <div class="cards-row">
+<div style="max-width:1160px;margin:0 auto;padding:20px 20px 16px;">
 
-    <!-- Mar 8 — @RussiaSupportt -->
-    <div class="card verdict-false">
-      <div class="card-head">
-        <span class="card-date">Mar 8</span>
-        <span class="card-user"><a href="https://x.com/RussiaSupportt/status/2030577022968483845" target="_blank">@RussiaSupportt</a></span>
-        <span class="card-cat cat-geopolitics">Geopolitics</span>
-      </div>
-      <div class="card-status-row"><span class="card-status suspended">Suspended account</span></div>
-      <div class="card-tweet">BREAKING NEWS: Iran has shot down a American B-2 bomber and kidnapped the entire crew.<br><br>Iran is totally winning</div>
-      <div class="reply-link"><a href="https://x.com/RussiaSupportt/status/2030577022968483845" target="_blank" rel="noopener">View on X &#8594;</a></div>
-      <div class="card-grok-section">
-        <span class="card-verdict false">Grok&#8217;s rating: False</span>
-        <div class="card-stats">
-          <span class="card-count"><strong>98</strong> groks (1.0% of daily total)</span>
-          <div class="card-minibar">
-            <div class="mb-false" style="width:83.7%"></div>
-            <div class="mb-true" style="width:1%"></div>
-            <div class="mb-mixed" style="width:15.3%"></div>
+  <!-- Cards row -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:12px 0;">
+    <tr valign="top">
+
+      <!-- Card 1: Mar 8 -->
+      <td width="33%" style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid #ef4444;border-radius:12px;padding:0;vertical-align:top;">
+        <div style="padding:14px 16px 6px;">
+          <span style="font-size:12px;font-weight:700;color:#2451C9;background:rgba(36,81,201,0.07);padding:2px 8px;border-radius:4px;">Mar 8</span>
+          <a href="https://x.com/RussiaSupportt/status/2030577022968483845" target="_blank" style="font-size:14px;font-weight:700;color:#1a1a2e;text-decoration:none;margin-left:6px;">@RussiaSupportt</a>
+          <span style="float:right;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#dbeafe;color:#1e40af;text-transform:uppercase;letter-spacing:0.05em;">Geopolitics</span>
+        </div>
+        <div style="padding:2px 16px 0;">
+          <span style="display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;">Suspended account</span>
+        </div>
+        <div style="padding:8px 16px 10px;font-size:14px;color:#334155;line-height:1.5;">BREAKING NEWS: Iran has shot down a American B-2 bomber and kidnapped the entire crew.<br><br>Iran is totally winning</div>
+        <div style="padding:4px 16px 0;"><a href="https://x.com/RussiaSupportt/status/2030577022968483845" target="_blank" style="font-size:12px;font-weight:600;color:#2451C9;text-decoration:none;">View on X &#8594;</a></div>
+        <div style="border-top:1px solid #e2e8f0;margin-top:8px;padding:8px 16px 4px;">
+          <span style="display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;padding:2px 8px;border-radius:4px;background:#fef2f2;color:#dc2626;">Grok&#8217;s rating: False</span>
+        </div>
+        <div style="padding:4px 16px 8px;">
+          <span style="font-size:12px;color:#64748b;"><strong style="color:#2451C9;font-weight:800;font-size:15px;">98</strong> groks (1.0% of daily total)</span>
+          <div style="height:4px;border-radius:2px;background:#e2e8f0;margin-top:6px;overflow:hidden;">
+            <div style="width:83.7%;height:100%;background:#ef4444;float:left;"></div>
+            <div style="width:1%;height:100%;background:#22c55e;float:left;"></div>
+            <div style="width:15.3%;height:100%;background:#ECBB2D;float:left;"></div>
           </div>
         </div>
-        <div class="card-reply-wrap">
-          <span class="card-reply-label">&#9662; Median Grok reply</span>
-          <div class="card-reply-text">No, this is not true. Fact-checks from multiple outlets (WION, Hindustan Times, Times Now, BBC Verify) confirm no evidence or official reports of Iran shooting down a US B-2 bomber or capturing any crew. US CENTCOM and Pentagon statements note B-2s conducted strikes on Iranian targets and all returned safely.</div>
+        <div style="border-top:1px solid #e2e8f0;background:#f8fafc;padding:8px 16px 12px;border-radius:0 0 12px 12px;">
+          <div style="font-size:12px;font-weight:600;color:#2451C9;margin-bottom:4px;">&#9662; Median Grok reply</div>
+          <div style="font-size:13px;color:#475569;line-height:1.55;">No, this is not true. Fact-checks from multiple outlets (WION, Hindustan Times, Times Now, BBC Verify) confirm no evidence or official reports of Iran shooting down a US B-2 bomber or capturing any crew. US CENTCOM and Pentagon statements note B-2s conducted strikes on Iranian targets and all returned safely.</div>
         </div>
-      </div>
-    </div>
+      </td>
 
-    <!-- Mar 7 — @QTHESTORMM -->
-    <div class="card verdict-false">
-      <div class="card-head">
-        <span class="card-date">Mar 7</span>
-        <span class="card-user"><a href="https://x.com/QTHESTORMM/status/2030072058533536076" target="_blank">@QTHESTORMM <span class="check blue"><svg viewBox="0 0 22 22"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.852-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.69-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.636.433 1.221.878 1.69.47.446 1.055.752 1.69.883.635.13 1.294.083 1.902-.143.271.586.702 1.084 1.24 1.438s1.167.55 1.813.569c.647-.02 1.277-.216 1.818-.569s.972-.852 1.245-1.438c.608.226 1.267.276 1.9.143.636-.13 1.22-.437 1.69-.883.445-.47.75-1.054.88-1.69.131-.633.08-1.29-.14-1.896.587-.273 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg></span></a></span>
-        <span class="card-cat cat-politics">Politics</span>
-        <span class="card-views"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>6.4M views</span>
-      </div>
-      <div class="card-tweet">&#128680;&#128680;MAJOR ALERT: DOJ RELEASES 2ND BATCH OF EPSTEIN FILES INCLUDING NEW EMAILS SHOWING &quot;TRUMP ALLEGEDLY HAD S*X WITH DAUGHTER IVANKA&quot;, EPSTEIN IN THE EMAIL CALLS TRUMP &quot;MOST EVIL&quot;</div>
-      <div class="reply-link"><a href="https://x.com/QTHESTORMM/status/2030072058533536076" target="_blank" rel="noopener">View on X &#8594;</a></div>
-      <div class="card-grok-section">
-        <span class="card-verdict false">Grok&#8217;s rating: False</span>
-        <div class="card-stats">
-          <span class="card-count"><strong>193</strong> groks (1.8% of daily total)</span>
-          <div class="card-minibar">
-            <div class="mb-false" style="width:56.5%"></div>
-            <div class="mb-mixed" style="width:43.5%"></div>
+      <!-- Card 2: Mar 7 -->
+      <td width="33%" style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid #ef4444;border-radius:12px;padding:0;vertical-align:top;">
+        <div style="padding:14px 16px 6px;">
+          <span style="font-size:12px;font-weight:700;color:#2451C9;background:rgba(36,81,201,0.07);padding:2px 8px;border-radius:4px;">Mar 7</span>
+          <a href="https://x.com/QTHESTORMM/status/2030072058533536076" target="_blank" style="font-size:14px;font-weight:700;color:#1a1a2e;text-decoration:none;margin-left:6px;">@QTHESTORMM <span style="display:inline-block;width:15px;height:15px;border-radius:50%;background:#1d9bf0;vertical-align:middle;position:relative;top:-1px;margin-left:-2px;"><svg viewBox="0 0 22 22" style="width:9px;height:9px;fill:#fff;position:relative;top:2px;left:3px;"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.852-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.69-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.636.433 1.221.878 1.69.47.446 1.055.752 1.69.883.635.13 1.294.083 1.902-.143.271.586.702 1.084 1.24 1.438s1.167.55 1.813.569c.647-.02 1.277-.216 1.818-.569s.972-.852 1.245-1.438c.608.226 1.267.276 1.9.143.636-.13 1.22-.437 1.69-.883.445-.47.75-1.054.88-1.69.131-.633.08-1.29-.14-1.896.587-.273 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg></span></a>
+          <span style="float:right;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#fee2e2;color:#991b1b;text-transform:uppercase;letter-spacing:0.05em;">Politics</span>
+          <span style="float:right;font-size:11px;color:#94a3b8;margin-right:8px;">6.4M views</span>
+        </div>
+        <div style="padding:8px 16px 10px;font-size:14px;color:#334155;line-height:1.5;">&#128680;&#128680;MAJOR ALERT: DOJ RELEASES 2ND BATCH OF EPSTEIN FILES INCLUDING NEW EMAILS SHOWING &quot;TRUMP ALLEGEDLY HAD S*X WITH DAUGHTER IVANKA&quot;, EPSTEIN IN THE EMAIL CALLS TRUMP &quot;MOST EVIL&quot;</div>
+        <div style="padding:4px 16px 0;"><a href="https://x.com/QTHESTORMM/status/2030072058533536076" target="_blank" style="font-size:12px;font-weight:600;color:#2451C9;text-decoration:none;">View on X &#8594;</a></div>
+        <div style="border-top:1px solid #e2e8f0;margin-top:8px;padding:8px 16px 4px;">
+          <span style="display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;padding:2px 8px;border-radius:4px;background:#fef2f2;color:#dc2626;">Grok&#8217;s rating: False</span>
+        </div>
+        <div style="padding:4px 16px 8px;">
+          <span style="font-size:12px;color:#64748b;"><strong style="color:#2451C9;font-weight:800;font-size:15px;">193</strong> groks (1.8% of daily total)</span>
+          <div style="height:4px;border-radius:2px;background:#e2e8f0;margin-top:6px;overflow:hidden;">
+            <div style="width:56.5%;height:100%;background:#ef4444;float:left;"></div>
+            <div style="width:43.5%;height:100%;background:#ECBB2D;float:left;"></div>
           </div>
         </div>
-        <div class="card-reply-wrap">
-          <span class="card-reply-label">&#9662; Median Grok reply</span>
-          <div class="card-reply-text">No, this specific claim isn&#8217;t supported. Recent DOJ Epstein file releases (including March 2026 batches under the Transparency Act) contain uncorroborated 2019 FBI interview notes alleging Trump abused a minor introduced by Epstein. No documents mention Trump having sex with Ivanka or Epstein calling Trump &#8220;most evil.&#8221; The post&#8217;s headline exaggerates beyond what the files contain.</div>
+        <div style="border-top:1px solid #e2e8f0;background:#f8fafc;padding:8px 16px 12px;border-radius:0 0 12px 12px;">
+          <div style="font-size:12px;font-weight:600;color:#2451C9;margin-bottom:4px;">&#9662; Median Grok reply</div>
+          <div style="font-size:13px;color:#475569;line-height:1.55;">No, this specific claim isn&#8217;t supported. Recent DOJ Epstein file releases (including March 2026 batches under the Transparency Act) contain uncorroborated 2019 FBI interview notes alleging Trump abused a minor introduced by Epstein. No documents mention Trump having sex with Ivanka or Epstein calling Trump &#8220;most evil.&#8221; The post&#8217;s headline exaggerates beyond what the files contain.</div>
         </div>
-      </div>
-    </div>
+      </td>
 
-    <!-- Mar 6 — @boutmoneey12 -->
-    <div class="card verdict-false">
-      <div class="card-head">
-        <span class="card-date">Mar 6</span>
-        <span class="card-user"><a href="https://x.com/boutmoneey12/status/2029965785058218322" target="_blank">@boutmoneey12 <span class="check blue"><svg viewBox="0 0 22 22"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.852-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.69-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.636.433 1.221.878 1.69.47.446 1.055.752 1.69.883.635.13 1.294.083 1.902-.143.271.586.702 1.084 1.24 1.438s1.167.55 1.813.569c.647-.02 1.277-.216 1.818-.569s.972-.852 1.245-1.438c.608.226 1.267.276 1.9.143.636-.13 1.22-.437 1.69-.883.445-.47.75-1.054.88-1.69.131-.633.08-1.29-.14-1.896.587-.273 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg></span></a></span>
-        <span class="card-cat cat-entertainment">Entertainment</span>
-        <span class="card-views"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>768K views</span>
-      </div>
-      <div class="card-tweet">Popular content creator kiriku have just passed away at the age of 8. after being rushed to the hospital last due to unknown circumstances.<br>His elder brother the umbrella boy just confirmed his passing via Ig story</div>
-      <div class="reply-link"><a href="https://x.com/boutmoneey12/status/2029965785058218322" target="_blank" rel="noopener">View on X &#8594;</a></div>
-      <div class="card-grok-section">
-        <span class="card-verdict false">Grok&#8217;s rating: False</span>
-        <div class="card-stats">
-          <span class="card-count"><strong>111</strong> groks (1.0% of daily total)</span>
-          <div class="card-minibar">
-            <div class="mb-false" style="width:100%"></div>
+      <!-- Card 3: Mar 6 -->
+      <td width="33%" style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid #ef4444;border-radius:12px;padding:0;vertical-align:top;">
+        <div style="padding:14px 16px 6px;">
+          <span style="font-size:12px;font-weight:700;color:#2451C9;background:rgba(36,81,201,0.07);padding:2px 8px;border-radius:4px;">Mar 6</span>
+          <a href="https://x.com/boutmoneey12/status/2029965785058218322" target="_blank" style="font-size:14px;font-weight:700;color:#1a1a2e;text-decoration:none;margin-left:6px;">@boutmoneey12 <span style="display:inline-block;width:15px;height:15px;border-radius:50%;background:#1d9bf0;vertical-align:middle;position:relative;top:-1px;margin-left:-2px;"><svg viewBox="0 0 22 22" style="width:9px;height:9px;fill:#fff;position:relative;top:2px;left:3px;"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.852-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.69-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.636.433 1.221.878 1.69.47.446 1.055.752 1.69.883.635.13 1.294.083 1.902-.143.271.586.702 1.084 1.24 1.438s1.167.55 1.813.569c.647-.02 1.277-.216 1.818-.569s.972-.852 1.245-1.438c.608.226 1.267.276 1.9.143.636-.13 1.22-.437 1.69-.883.445-.47.75-1.054.88-1.69.131-.633.08-1.29-.14-1.896.587-.273 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg></span></a>
+          <span style="float:right;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#fef3c7;color:#92400e;text-transform:uppercase;letter-spacing:0.05em;">Entertainment</span>
+          <span style="float:right;font-size:11px;color:#94a3b8;margin-right:8px;">768K views</span>
+        </div>
+        <div style="padding:8px 16px 10px;font-size:14px;color:#334155;line-height:1.5;">Popular content creator kiriku have just passed away at the age of 8. after being rushed to the hospital last due to unknown circumstances.<br>His elder brother the umbrella boy just confirmed his passing via Ig story</div>
+        <div style="padding:4px 16px 0;"><a href="https://x.com/boutmoneey12/status/2029965785058218322" target="_blank" style="font-size:12px;font-weight:600;color:#2451C9;text-decoration:none;">View on X &#8594;</a></div>
+        <div style="border-top:1px solid #e2e8f0;margin-top:8px;padding:8px 16px 4px;">
+          <span style="display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;padding:2px 8px;border-radius:4px;background:#fef2f2;color:#dc2626;">Grok&#8217;s rating: False</span>
+        </div>
+        <div style="padding:4px 16px 8px;">
+          <span style="font-size:12px;color:#64748b;"><strong style="color:#2451C9;font-weight:800;font-size:15px;">111</strong> groks (1.0% of daily total)</span>
+          <div style="height:4px;border-radius:2px;background:#e2e8f0;margin-top:6px;overflow:hidden;">
+            <div style="width:100%;height:100%;background:#ef4444;float:left;"></div>
           </div>
         </div>
-        <div class="card-reply-wrap">
-          <span class="card-reply-label">&#9662; Median Grok reply</span>
-          <div class="card-reply-text">No, this isn&#8217;t true. Kiriku (Enorense Victory, born Dec 17 2014) is alive at age 11. It&#8217;s a recycled 2025 hoax using his old photo + this fake &#8220;Umbrella Boy&#8221; IG RIP graphic. His official kirikuofficial IG/YouTube have fresh 2026 posts. No family statement or credible news confirms any death. Just viral bait.</div>
+        <div style="border-top:1px solid #e2e8f0;background:#f8fafc;padding:8px 16px 12px;border-radius:0 0 12px 12px;">
+          <div style="font-size:12px;font-weight:600;color:#2451C9;margin-bottom:4px;">&#9662; Median Grok reply</div>
+          <div style="font-size:13px;color:#475569;line-height:1.55;">No, this isn&#8217;t true. Kiriku (Enorense Victory, born Dec 17 2014) is alive at age 11. It&#8217;s a recycled 2025 hoax using his old photo + this fake &#8220;Umbrella Boy&#8221; IG RIP graphic. His official kirikuofficial IG/YouTube have fresh 2026 posts. No family statement or credible news confirms any death. Just viral bait.</div>
         </div>
-      </div>
-    </div>
+      </td>
 
+    </tr>
+  </table>
+
+  <div style="text-align:center;margin-top:14px;">
+    <a href="https://indicator.media/grok-is-this-true-tracker" target="_top" style="display:inline-block;background:#2451C9;color:#fff;font-family:inherit;font-size:14px;font-weight:700;padding:10px 28px;border-radius:8px;text-decoration:none;">Explore the full tracker &rarr;</a>
   </div>
 
-  <div class="cta-wrap">
-    <a class="cta-btn" href="https://indicator.media/grok-is-this-true-tracker" target="_top">Explore the full tracker &rarr;</a>
-  </div>
 </div>
 
 </body>
