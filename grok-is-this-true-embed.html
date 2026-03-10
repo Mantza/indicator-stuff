@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Main Character | Indicator</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: #fff;
+  color: #1a1a2e;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.embed-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 20px 16px;
+}
+
+/* Header */
+.embed-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.embed-header h1 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+.embed-header .tagline {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+.embed-header .tagline strong { color: #1a1a2e; }
+
+/* Stats row */
+.stats-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #334155;
+}
+.stat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Calendar */
+.calendar-wrap {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.cal-month {
+  font-size: 0.68rem;
+}
+.cal-month-title {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #2451C9;
+  text-align: center;
+  margin-bottom: 4px;
+  font-size: 0.62rem;
+}
+.cal-header {
+  display: grid;
+  grid-template-columns: repeat(7, 26px);
+  gap: 2px;
+  justify-content: center;
+}
+.cal-header span {
+  text-align: center;
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 26px);
+  gap: 2px;
+  justify-content: center;
+}
+.cal-day {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #fff;
+}
+.cal-day.false { background: #ef4444; }
+.cal-day.true { background: #22c55e; }
+.cal-day.mixed { background: #ECBB2D; color: #1a1a2e; }
+.cal-day.empty { background: transparent; }
+.cal-day.nodata { background: #e2e8f0; color: #94a3b8; }
+
+/* Recent cards */
+.recent-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #2451C9;
+  margin-bottom: 8px;
+}
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.recent-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.72rem;
+}
+.recent-card .rc-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.recent-card .rc-date {
+  font-weight: 700;
+  color: #64748b;
+  font-size: 0.65rem;
+}
+.rc-verdict {
+  display: inline-block;
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.rc-verdict.false { background: #fecaca; color: #991b1b; }
+.rc-verdict.true { background: #dcfce7; color: #166534; }
+.rc-verdict.mixed { background: #fef3c7; color: #92400e; }
+.recent-card .rc-user {
+  font-weight: 700;
+  color: #1a1a2e;
+  font-size: 0.78rem;
+}
+.recent-card .rc-cat {
+  color: #64748b;
+  font-size: 0.65rem;
+}
+.recent-card .rc-count {
+  color: #94a3b8;
+  font-size: 0.62rem;
+  margin-top: 2px;
+}
+
+/* CTA */
+.cta-wrap {
+  text-align: center;
+}
+.cta-btn {
+  display: inline-block;
+  background: #2451C9;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 10px 28px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.cta-btn:hover { background: #1a3fa0; }
+.cta-sub {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .embed-wrap { padding: 16px 14px 12px; }
+  .embed-header h1 { font-size: 1.1rem; }
+  .stats-row { gap: 6px; }
+  .stat-pill { padding: 5px 10px; font-size: 0.65rem; }
+  .stat-dot { width: 8px; height: 8px; }
+  .calendar-wrap { gap: 10px; }
+  .cal-header { grid-template-columns: repeat(7, 22px); }
+  .cal-grid { grid-template-columns: repeat(7, 22px); }
+  .cal-day { width: 22px; height: 22px; font-size: 0.52rem; }
+  .recent-grid { grid-template-columns: repeat(2, 1fr); }
+  .recent-grid .recent-card:nth-child(n+5) { display: none; }
+  .cta-btn { font-size: 0.75rem; padding: 9px 22px; }
+}
+@media (max-width: 400px) {
+  .calendar-wrap { flex-direction: column; align-items: center; }
+  .recent-grid { grid-template-columns: 1fr 1fr; }
+  .stats-row { flex-wrap: wrap; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="embed-wrap">
+  <div class="embed-header">
+    <h1>Daily Main Character</h1>
+    <p class="tagline">Which tweet gets the most &ldquo;@grok is this true?&rdquo; replies each day?<br>Tracking <strong>67 days</strong> &middot; <strong>8,166</strong> Grok fact-checks &middot; Jan 1 &ndash; Mar 8, 2026</p>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-pill"><span class="stat-dot" style="background:#ef4444"></span>False: 51</div>
+    <div class="stat-pill"><span class="stat-dot" style="background:#22c55e"></span>True: 12</div>
+    <div class="stat-pill"><span class="stat-dot" style="background:#ECBB2D"></span>Mixed: 4</div>
+  </div>
+
+  <div class="calendar-wrap" id="calWrap"></div>
+
+  <div class="recent-label">Latest</div>
+  <div class="recent-grid" id="recentGrid"></div>
+
+  <div class="cta-wrap">
+    <a class="cta-btn" href="https://indicator.media/grok-is-this-true-tracker" target="_top">Explore the full tracker &rarr;</a>
+  </div>
+</div>
+
+<script>
+var calData = [{"iso": "2026-01-01", "date": "Jan 1", "verdict": "false"}, {"iso": "2026-01-02", "date": "Jan 2", "verdict": "mixed"}, {"iso": "2026-01-03", "date": "Jan 3", "verdict": "true"}, {"iso": "2026-01-04", "date": "Jan 4", "verdict": "false"}, {"iso": "2026-01-05", "date": "Jan 5", "verdict": "false"}, {"iso": "2026-01-06", "date": "Jan 6", "verdict": "false"}, {"iso": "2026-01-07", "date": "Jan 7", "verdict": "false"}, {"iso": "2026-01-08", "date": "Jan 8", "verdict": "false"}, {"iso": "2026-01-09", "date": "Jan 9", "verdict": "false"}, {"iso": "2026-01-10", "date": "Jan 10", "verdict": "false"}, {"iso": "2026-01-11", "date": "Jan 11", "verdict": "true"}, {"iso": "2026-01-12", "date": "Jan 12", "verdict": "false"}, {"iso": "2026-01-13", "date": "Jan 13", "verdict": "false"}, {"iso": "2026-01-14", "date": "Jan 14", "verdict": "false"}, {"iso": "2026-01-15", "date": "Jan 15", "verdict": "false"}, {"iso": "2026-01-16", "date": "Jan 16", "verdict": "false"}, {"iso": "2026-01-17", "date": "Jan 17", "verdict": "false"}, {"iso": "2026-01-18", "date": "Jan 18", "verdict": "false"}, {"iso": "2026-01-19", "date": "Jan 19", "verdict": "false"}, {"iso": "2026-01-20", "date": "Jan 20", "verdict": "false"}, {"iso": "2026-01-21", "date": "Jan 21", "verdict": "false"}, {"iso": "2026-01-22", "date": "Jan 22", "verdict": "false"}, {"iso": "2026-01-23", "date": "Jan 23", "verdict": "mixed"}, {"iso": "2026-01-24", "date": "Jan 24", "verdict": "mixed"}, {"iso": "2026-01-25", "date": "Jan 25", "verdict": "false"}, {"iso": "2026-01-26", "date": "Jan 26", "verdict": "true"}, {"iso": "2026-01-27", "date": "Jan 27", "verdict": "false"}, {"iso": "2026-01-28", "date": "Jan 28", "verdict": "false"}, {"iso": "2026-01-29", "date": "Jan 29", "verdict": "false"}, {"iso": "2026-01-30", "date": "Jan 30", "verdict": "false"}, {"iso": "2026-01-31", "date": "Jan 31", "verdict": "true"}, {"iso": "2026-02-01", "date": "Feb 1", "verdict": "false"}, {"iso": "2026-02-02", "date": "Feb 2", "verdict": "false"}, {"iso": "2026-02-03", "date": "Feb 3", "verdict": "false"}, {"iso": "2026-02-04", "date": "Feb 4", "verdict": "false"}, {"iso": "2026-02-05", "date": "Feb 5", "verdict": "false"}, {"iso": "2026-02-06", "date": "Feb 6", "verdict": "false"}, {"iso": "2026-02-07", "date": "Feb 7", "verdict": "false"}, {"iso": "2026-02-08", "date": "Feb 8", "verdict": "true"}, {"iso": "2026-02-09", "date": "Feb 9", "verdict": "false"}, {"iso": "2026-02-10", "date": "Feb 10", "verdict": "true"}, {"iso": "2026-02-11", "date": "Feb 11", "verdict": "false"}, {"iso": "2026-02-12", "date": "Feb 12", "verdict": "true"}, {"iso": "2026-02-13", "date": "Feb 13", "verdict": "true"}, {"iso": "2026-02-14", "date": "Feb 14", "verdict": "false"}, {"iso": "2026-02-15", "date": "Feb 15", "verdict": "false"}, {"iso": "2026-02-16", "date": "Feb 16", "verdict": "true"}, {"iso": "2026-02-17", "date": "Feb 17", "verdict": "false"}, {"iso": "2026-02-18", "date": "Feb 18", "verdict": "false"}, {"iso": "2026-02-19", "date": "Feb 19", "verdict": "mixed"}, {"iso": "2026-02-20", "date": "Feb 20", "verdict": "true"}, {"iso": "2026-02-21", "date": "Feb 21", "verdict": "false"}, {"iso": "2026-02-22", "date": "Feb 22", "verdict": "false"}, {"iso": "2026-02-23", "date": "Feb 23", "verdict": "false"}, {"iso": "2026-02-24", "date": "Feb 24", "verdict": "false"}, {"iso": "2026-02-25", "date": "Feb 25", "verdict": "false"}, {"iso": "2026-02-26", "date": "Feb 26", "verdict": "false"}, {"iso": "2026-02-27", "date": "Feb 27", "verdict": "false"}, {"iso": "2026-02-28", "date": "Feb 28", "verdict": "false"}, {"iso": "2026-03-01", "date": "Mar 1", "verdict": "false"}, {"iso": "2026-03-02", "date": "Mar 2", "verdict": "false"}, {"iso": "2026-03-03", "date": "Mar 3", "verdict": "false"}, {"iso": "2026-03-04", "date": "Mar 4", "verdict": "true"}, {"iso": "2026-03-05", "date": "Mar 5", "verdict": "true"}, {"iso": "2026-03-06", "date": "Mar 6", "verdict": "false"}, {"iso": "2026-03-07", "date": "Mar 7", "verdict": "false"}, {"iso": "2026-03-08", "date": "Mar 8", "verdict": "false"}];
+var recentData = [{"date": "Mar 3", "user": "@gustavojames99", "usr": "gustavojames99", "cat": "Politics", "verdict": "false", "count": 220, "tid": "2028742404430340593", "text": "Adekunle filed for a divorce against his wife, Simi, just a few days after her tweet, which stated that the only reason "}, {"date": "Mar 4", "user": "@allenanalysis", "usr": "allenanalysis", "cat": "Sports", "verdict": "true", "count": 183, "tid": "2029044202391118214", "text": "\ud83d\udea8 HOLY HELLLLLLL: Iran just took out a $1.1 billion radar at the most fortified US base in the Middle East with a single"}, {"date": "Mar 5", "user": "@elonmusk", "usr": "elonmusk", "cat": "Science & Tech", "verdict": "true", "count": 138, "tid": "2029489351848300932", "text": "Fact check and ask questions about any post just by tapping the Grok logo in the upper left"}, {"date": "Mar 6", "user": "@boutmoneey12", "usr": "boutmoneey12", "cat": "Entertainment", "verdict": "false", "count": 111, "tid": "2029965785058218322", "text": "Popular content creator kiriku have just passed away at the age of 8. after being rushed to the hospital last due to unk"}, {"date": "Mar 7", "user": "@QTHESTORMM", "usr": "QTHESTORMM", "cat": "Politics", "verdict": "false", "count": 193, "tid": "2030072058533536076", "text": "MAJOR ALERT: DOJ RELEASES 2ND BATCH OF EPSTEIN FILES INCLUDING NEW EMAILS SHOWING TRUMP ALLEGEDLY HAD S*X WITH DAUGHTER"}, {"date": "Mar 8", "user": "@RussiaSupportt", "usr": "RussiaSupportt", "cat": "Geopolitics", "verdict": "false", "count": 98, "tid": "2030577022968483845", "text": "BREAKING NEWS: Iran has shot down a American B-2 bomber and kidnapped the entire crew. Iran is totally winning"}];
+
+// ── Calendar ──
+(function() {
+  var months = [
+    {name:'Jan', year:2026, month:0},
+    {name:'Feb', year:2026, month:1},
+    {name:'Mar', year:2026, month:2}
+  ];
+  var wrap = document.getElementById('calWrap');
+  var dayNames = ['M','T','W','T','F','S','S'];
+
+  // Index calendar data by ISO date
+  var byDate = {};
+  calData.forEach(function(d) { byDate[d.iso] = d; });
+
+  months.forEach(function(m) {
+    var div = document.createElement('div');
+    div.className = 'cal-month';
+
+    var title = document.createElement('div');
+    title.className = 'cal-month-title';
+    title.textContent = m.name + ' 2026';
+    div.appendChild(title);
+
+    var hdr = document.createElement('div');
+    hdr.className = 'cal-header';
+    dayNames.forEach(function(dn) {
+      var s = document.createElement('span');
+      s.textContent = dn;
+      hdr.appendChild(s);
+    });
+    div.appendChild(hdr);
+
+    var grid = document.createElement('div');
+    grid.className = 'cal-grid';
+
+    var firstDay = new Date(m.year, m.month, 1).getDay();
+    var startOffset = (firstDay + 6) % 7; // Monday = 0
+    var daysInMonth = new Date(m.year, m.month + 1, 0).getDate();
+
+    for (var i = 0; i < startOffset; i++) {
+      var empty = document.createElement('div');
+      empty.className = 'cal-day empty';
+      grid.appendChild(empty);
+    }
+    for (var d = 1; d <= daysInMonth; d++) {
+      var iso = m.year + '-' + String(m.month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      var cell = document.createElement('div');
+      if (byDate[iso]) {
+        cell.className = 'cal-day ' + byDate[iso].verdict;
+      } else if (m.month < 2 || (m.month === 2 && d <= 8)) {
+        cell.className = 'cal-day nodata';
+      } else {
+        cell.className = 'cal-day empty';
+      }
+      cell.textContent = d;
+      grid.appendChild(cell);
+    }
+    div.appendChild(grid);
+    wrap.appendChild(div);
+  });
+})();
+
+// ── Recent cards ──
+(function() {
+  var grid = document.getElementById('recentGrid');
+  recentData.slice().reverse().forEach(function(d) {
+    var card = document.createElement('div');
+    card.className = 'recent-card';
+    card.innerHTML = '<div class="rc-top">'
+      + '<span class="rc-date">' + d.date + '</span>'
+      + '<span class="rc-verdict ' + d.verdict + '">' + d.verdict + '</span>'
+      + '</div>'
+      + '<div class="rc-user">' + d.user + '</div>'
+      + '<div class="rc-cat">' + d.cat + ' &middot; ' + d.count + ' grok replies</div>';
+    grid.appendChild(card);
+  });
+})();
+</script>
+</body>
+</html>
