@@ -213,8 +213,19 @@ h1 {
 }
 
 .lever-label {
-  font-size: 8px; text-transform: uppercase; letter-spacing: 1px;
-  color: #777; margin-top: 6px; font-weight: 700;
+  font-size: 13px; text-transform: uppercase; letter-spacing: 3px;
+  margin-top: 8px; font-weight: 900;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--blue), var(--gold), var(--gold-dark));
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 3px rgba(236, 187, 45, 0.3));
+}
+@keyframes shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
 }
 
 /* ── PHONE ── */
