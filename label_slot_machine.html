@@ -136,7 +136,7 @@ h1 {
 
 .selector-label {
   font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px;
-  color: #555; font-weight: 700; margin-bottom: 6px;
+  color: #555; font-weight: 700; margin-bottom: 6px; white-space: nowrap;
 }
 
 .selector-btn {
@@ -228,21 +228,24 @@ h1 {
   100% { background-position: -100% 0; }
 }
 
-/* ── PHONE ── */
+/* ── PHONE (iPhone 15 Pro proportions: ~1:2.17) ── */
 .phone-frame {
-  width: 210px; min-height: 380px; background: #222; border-radius: 28px;
-  border: 3px solid #555; overflow: hidden; position: relative;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  width: 200px; min-height: 434px; background: #1a1a1a; border-radius: 40px;
+  border: 3px solid #444; overflow: hidden; position: relative;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.22),
+    inset 0 0 0 1px rgba(255,255,255,0.08);
 }
 
+/* Dynamic Island */
 .phone-notch {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 80px; height: 22px; background: #000; border-radius: 0 0 14px 14px; z-index: 5;
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 62px; height: 18px; background: #000; border-radius: 20px; z-index: 5;
 }
 
 .phone-screen {
-  --phone-h: 380px;
-  width: 100%; height: var(--phone-h); background: #111; overflow: hidden; position: relative;
+  --phone-h: 434px;
+  width: 100%; height: var(--phone-h); background: #000; overflow: hidden; position: relative;
 }
 
 .screenshot-reel {
@@ -254,11 +257,11 @@ h1 {
 }
 
 .screenshot-slot {
-  width: 100%; height: var(--phone-h, 380px);
+  width: 100%; height: var(--phone-h, 434px);
   display: flex; align-items: center; justify-content: center;
 }
 
-.screenshot-slot img { width: 100%; height: 100%; object-fit: contain; background: #111; }
+.screenshot-slot img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
 
 .scr-placeholder {
   width: 100%; height: 100%;
@@ -361,9 +364,9 @@ h1 {
   .selector-col { width: 90px; }
   .sel-logo svg { height: 24px; }
   .sel-logo img { height: 24px; }
-  .phone-frame { width: 180px; min-height: 330px; }
-  .phone-screen { --phone-h: 330px; height: var(--phone-h); }
-  .screenshot-slot img { object-fit: contain; background: #111; }
+  .phone-frame { width: 160px; min-height: 347px; border-radius: 32px; }
+  .phone-screen { --phone-h: 347px; height: var(--phone-h); }
+  .screenshot-slot img { object-fit: cover; object-position: top; }
 }
 </style>
 </head>
@@ -446,7 +449,7 @@ const VIDEO_PLATFORMS = ['youtube', 'tiktok'];
 // Reel order: Generator (0) → Device (1) → Platform (2)
 const SELECTOR_DEFS = [
   {
-    label: 'Generator',
+    label: 'Generated with',
     items: [
       { key: 'openai', logo: 'openai', text: 'OpenAI', sub: 'GPT-4o / Sora' },
       { key: 'google', logo: 'google', text: 'Google', sub: 'Imagen / Veo 3' },
@@ -454,14 +457,14 @@ const SELECTOR_DEFS = [
     ]
   },
   {
-    label: 'Device',
+    label: 'Uploaded via',
     items: [
       { key: 'desktop', logo: 'desktop', text: 'Desktop', sub: 'Browser' },
       { key: 'mobile',  logo: 'mobile',  text: 'Mobile',  sub: 'App' },
     ]
   },
   {
-    label: 'Platform',
+    label: 'Posted on',
     items: [
       { key: 'instagram', logo: 'instagram', text: 'Instagram', sub: 'Images', type: 'image' },
       { key: 'linkedin',  logo: 'linkedin',  text: 'LinkedIn',  sub: 'Images', type: 'image' },
