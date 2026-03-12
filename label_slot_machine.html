@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Will Your AI Content Get Labeled?</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #2451C9;
+  --yellow: #ECBB2D;
+  --dark: #1a1a1a;
+  --gray: #888;
+  --gold: #ECBB2D;
+  --gold-dark: #C99A1D;
+  --machine-bg: #e8e9f0;
+  --reel-bg: #FFFEF8;
+  --labeled-green: #16a34a;
+  --not-labeled-red: #dc2626;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: #fff;
+  color: var(--dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 16px;
+}
+
+.kicker {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--blue);
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--dark);
+  line-height: 1.25;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.dek {
+  font-size: 15px;
+  color: var(--gray);
+  font-weight: 300;
+  line-height: 1.5;
+  max-width: 560px;
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+/* ── MACHINE ── */
+.machine-outer { max-width: 780px; width: 100%; }
+
+.machine {
+  background: var(--machine-bg);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 2px 0 #b0b3c0, 0 8px 24px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.machine-top {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  padding: 14px 24px;
+  text-align: center;
+  position: relative;
+}
+.machine-top::before, .machine-top::after {
+  content: ''; position: absolute; top: 50%; transform: translateY(-50%);
+  width: 10px; height: 10px; border-radius: 50%; background: #fff;
+  box-shadow: 0 0 6px #fff, 0 0 12px var(--gold); animation: blink 1.2s infinite alternate;
+}
+.machine-top::before { left: 16px; }
+.machine-top::after { right: 16px; animation-delay: 0.6s; }
+
+@keyframes blink { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+
+.machine-title {
+  font-size: 15px; font-weight: 900; color: var(--dark);
+  letter-spacing: 3px; text-transform: uppercase;
+}
+
+.light-strip {
+  display: flex; justify-content: center; gap: 12px; padding: 8px 0; background: #d0d1dc;
+}
+.light-dot {
+  width: 6px; height: 6px; border-radius: 50%; animation: chase 2s infinite;
+}
+.light-dot:nth-child(odd) { background: var(--gold); }
+.light-dot:nth-child(even) { background: var(--blue); }
+.light-dot:nth-child(1) { animation-delay: 0s; }
+.light-dot:nth-child(2) { animation-delay: 0.12s; }
+.light-dot:nth-child(3) { animation-delay: 0.24s; }
+.light-dot:nth-child(4) { animation-delay: 0.36s; }
+.light-dot:nth-child(5) { animation-delay: 0.48s; }
+.light-dot:nth-child(6) { animation-delay: 0.60s; }
+.light-dot:nth-child(7) { animation-delay: 0.72s; }
+.light-dot:nth-child(8) { animation-delay: 0.84s; }
+.light-dot:nth-child(9) { animation-delay: 0.96s; }
+.light-dot:nth-child(10) { animation-delay: 1.08s; }
+.light-dot:nth-child(11) { animation-delay: 1.20s; }
+.light-dot:nth-child(12) { animation-delay: 1.32s; }
+.light-dot:nth-child(13) { animation-delay: 1.44s; }
+
+@keyframes chase {
+  0%, 60%, 100% { opacity: 0.2; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1.3); }
+}
+
+/* ── BODY ── */
+.machine-body {
+  display: flex;
+  padding: 24px 20px 20px;
+  gap: 16px;
+  align-items: center;
+}
+
+/* ── SELECTORS ── */
+.selectors { display: flex; gap: 6px; flex-shrink: 0; }
+
+.selector-col {
+  display: flex; flex-direction: column; align-items: center; width: 105px;
+}
+
+.selector-label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: #555; font-weight: 700; margin-bottom: 6px;
+}
+
+.selector-btn {
+  width: 100%; background: none; border: none; color: #888;
+  cursor: pointer; padding: 3px; display: flex; align-items: center;
+  justify-content: center; transition: color 0.15s;
+}
+.selector-btn:hover { color: var(--gold-dark); }
+.selector-btn svg { width: 16px; height: 16px; }
+
+.selector-window {
+  width: 100%; height: 88px; background: var(--reel-bg); border-radius: 8px;
+  border: 3px solid #b0b3c0; box-shadow: inset 0 2px 8px rgba(0,0,0,0.08);
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  gap: 2px; overflow: hidden; transition: border-color 0.2s;
+}
+
+.selector-window.disabled {
+  opacity: 0.3; pointer-events: none;
+}
+
+.selector-window.transitioning .selector-content {
+  animation: slideSwap 0.25s ease;
+}
+
+@keyframes slideSwap {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.selector-content {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+
+.sel-logo { height: 34px; display: flex; align-items: center; justify-content: center; }
+.sel-logo svg { height: 30px; width: auto; }
+.sel-logo img { height: 30px; width: auto; border-radius: 6px; }
+
+.sel-text { font-size: 12px; font-weight: 700; color: var(--dark); }
+.sel-sub { font-size: 9px; color: var(--gray); }
+
+.disabled-label {
+  font-size: 10px; color: #777; font-style: italic; text-align: center; line-height: 1.3;
+}
+
+/* ── RIGHT SIDE ── */
+.right-side {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+
+.lever-row { display: flex; align-items: center; gap: 16px; }
+
+.lever-housing { display: flex; flex-direction: column; align-items: center; }
+
+.lever-track {
+  width: 8px; height: 80px;
+  background: linear-gradient(to bottom, #aaa, #888);
+  border-radius: 4px; position: relative; cursor: pointer;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.lever-knob {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 30px; height: 30px;
+  background: radial-gradient(circle at 40% 35%, #ff4444, #cc0000);
+  border-radius: 50%; border: 3px solid #aa0000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.2);
+  cursor: grab; transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2;
+}
+.lever-knob.pulled { top: 50px; }
+.lever-knob:hover {
+  box-shadow: 0 2px 8px rgba(255,0,0,0.4), 0 0 16px rgba(255,0,0,0.2),
+    inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.2);
+}
+
+.lever-label {
+  font-size: 8px; text-transform: uppercase; letter-spacing: 1px;
+  color: #777; margin-top: 6px; font-weight: 700;
+}
+
+/* ── PHONE ── */
+.phone-frame {
+  width: 210px; min-height: 380px; background: #222; border-radius: 28px;
+  border: 3px solid #555; overflow: hidden; position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+.phone-notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 80px; height: 22px; background: #000; border-radius: 0 0 14px 14px; z-index: 5;
+}
+
+.phone-screen {
+  --phone-h: 380px;
+  width: 100%; height: var(--phone-h); background: #111; overflow: hidden; position: relative;
+}
+
+.screenshot-reel {
+  position: absolute; top: 0; left: 0; width: 100%;
+  transition: transform 0.06s linear;
+}
+.screenshot-reel.landing {
+  transition: transform 0.8s cubic-bezier(0.15, 0.85, 0.25, 1);
+}
+
+.screenshot-slot {
+  width: 100%; height: var(--phone-h, 380px);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.screenshot-slot img { width: 100%; height: 100%; object-fit: contain; background: #111; }
+
+.scr-placeholder {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 8px; padding: 20px;
+}
+
+.scr-placeholder .plat-logo { opacity: 0.4; }
+.scr-placeholder .plat-logo svg { width: 48px; height: 48px; }
+.scr-placeholder .plat-logo img { width: 48px; height: 48px; border-radius: 8px; }
+
+.scr-verdict {
+  font-size: 18px; font-weight: 900; letter-spacing: 1px;
+  padding: 8px 20px; border-radius: 8px;
+}
+.scr-verdict.labeled { background: var(--labeled-green); color: #fff; }
+.scr-verdict.not-labeled { background: var(--not-labeled-red); color: #fff; }
+
+.scr-placeholder .scr-tag {
+  font-size: 10px; color: #999; text-align: center; line-height: 1.4;
+}
+
+.scr-placeholder .scr-combo {
+  font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 8px;
+}
+
+.scr-placeholder .scr-type {
+  font-size: 9px; color: #666; margin-top: 2px;
+}
+
+.phone-idle {
+  position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; color: #666; font-size: 13px; text-align: center;
+  padding: 24px; line-height: 1.5; z-index: 2;
+}
+
+/* Caption — hidden, replaced by overlay badge */
+.result-caption { display: none; }
+
+/* ── RESULT BADGE (bejeweled slot style) ── */
+.result-badge {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  z-index: 10; pointer-events: none;
+  opacity: 0; transition: opacity 0.4s ease 0.3s;
+}
+.result-badge.show { opacity: 1; }
+
+.result-badge .badge-inner {
+  display: flex; align-items: center; justify-content: center;
+  padding: 6px 18px; border-radius: 20px;
+  font-size: 13px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
+  color: #fff; white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  box-shadow:
+    0 0 8px rgba(255,255,255,0.3),
+    0 0 20px rgba(255,255,255,0.15),
+    0 4px 12px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    inset 0 -1px 0 rgba(0,0,0,0.2);
+  animation: badge-glow 2s ease-in-out infinite alternate;
+}
+
+.result-badge.labeled .badge-inner {
+  background: linear-gradient(135deg, #1a8c3a, #22c55e, #1a8c3a);
+  border: 2px solid rgba(255,255,255,0.25);
+}
+.result-badge.not-labeled .badge-inner {
+  background: linear-gradient(135deg, #b91c1c, #ef4444, #b91c1c);
+  border: 2px solid rgba(255,255,255,0.25);
+}
+
+@keyframes badge-glow {
+  0%   { box-shadow: 0 0 8px rgba(255,255,255,0.3), 0 0 20px rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4); }
+  100% { box-shadow: 0 0 12px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.25), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.5); }
+}
+
+/* Badge fraction sub-line */
+.badge-fraction {
+  text-align: center; font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.85);
+  margin-top: 3px; letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+/* Position variants */
+.result-badge.pos-bottom { bottom: 20px; }
+.result-badge.pos-middle { top: 50%; transform: translateX(-50%) translateY(-50%); }
+
+.machine-bottom {
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold)); padding: 6px;
+}
+
+.footnote {
+  margin-top: 28px; text-align: center; font-size: 12px; color: var(--gray);
+  line-height: 1.6; max-width: 520px; font-weight: 300;
+}
+
+@media (max-width: 680px) {
+  .machine-body { flex-direction: column; align-items: center; }
+  .selectors { flex-wrap: wrap; justify-content: center; }
+  .selector-col { width: 90px; }
+  .sel-logo svg { height: 24px; }
+  .sel-logo img { height: 24px; }
+  .phone-frame { width: 180px; min-height: 330px; }
+  .phone-screen { --phone-h: 330px; height: var(--phone-h); }
+  .screenshot-slot img { object-fit: contain; background: #111; }
+}
+</style>
+</head>
+<body>
+
+<div class="kicker">AI Labeling Audit · Q1 2026</div>
+<h1>Will Your AI Content Get Labeled?</h1>
+<p class="dek">Choose a generator, platform, and upload device. Then pull the lever to see if the content gets flagged as AI-generated.</p>
+
+<div class="machine-outer">
+<div class="machine">
+  <div class="machine-top"><span class="machine-title">AI Label Slots</span></div>
+  <div class="light-strip">
+    <div class="light-dot"></div><div class="light-dot"></div><div class="light-dot"></div>
+    <div class="light-dot"></div><div class="light-dot"></div><div class="light-dot"></div>
+    <div class="light-dot"></div><div class="light-dot"></div><div class="light-dot"></div>
+    <div class="light-dot"></div><div class="light-dot"></div><div class="light-dot"></div>
+    <div class="light-dot"></div>
+  </div>
+
+  <div class="machine-body">
+    <div class="selectors" id="selectors"></div>
+
+    <div class="right-side">
+      <div class="lever-row">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen" id="phoneScreen">
+            <div class="phone-idle">Select your combo<br>then pull the lever</div>
+            <div class="screenshot-reel" id="screenshotReel"></div>
+            <div class="result-badge" id="resultBadge">
+              <div class="badge-inner" id="badgeLabel"></div>
+              <div class="badge-fraction" id="badgeFraction"></div>
+            </div>
+          </div>
+        </div>
+        <div class="lever-housing">
+          <div class="lever-track" id="leverTrack">
+            <div class="lever-knob" id="leverKnob"></div>
+          </div>
+          <div class="lever-label">Pull</div>
+        </div>
+      </div>
+      <div class="result-caption" id="resultCaption">
+        <div class="caption-combo" id="captionCombo"></div>
+        <div class="caption-fraction" id="captionFraction"></div>
+        <div class="caption-detail" id="captionDetail"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="machine-bottom"></div>
+</div>
+</div>
+
+<div class="footnote">
+  Based on an audit of 75 AI-generated videos and 105 AI-generated images uploaded to YouTube, TikTok, Instagram, LinkedIn, and Pinterest via desktop and mobile · Q1 2026
+</div>
+
+<script>
+// ── LOGOS ──
+const LOGO_PATH = 'company logos';
+const LOGOS = {
+  openai:    `<img src="${LOGO_PATH}/openai.jpg" alt="OpenAI">`,
+  google:    `<img src="${LOGO_PATH}/google.jpg" alt="Google">`,
+  meta:      `<img src="${LOGO_PATH}/meta.png" alt="Meta">`,
+  desktop: `<svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+  mobile: `<svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
+  youtube:   `<img src="${LOGO_PATH}/youtube.jpg" alt="YouTube">`,
+  tiktok:    `<img src="${LOGO_PATH}/tiktok.jpg" alt="TikTok">`,
+  instagram: `<img src="${LOGO_PATH}/instagram.jpg" alt="Instagram">`,
+  linkedin:  `<img src="${LOGO_PATH}/linkedin.png" alt="LinkedIn">`,
+  pinterest: `<img src="${LOGO_PATH}/pinterest.jpg" alt="Pinterest">`,
+};
+
+// ── SELECTOR CONFIG ──
+// Platforms: image platforms (Instagram, LinkedIn, Pinterest) and video platforms (YouTube, TikTok)
+const IMAGE_PLATFORMS = ['instagram', 'linkedin', 'pinterest'];
+const VIDEO_PLATFORMS = ['youtube', 'tiktok'];
+
+// Reel order: Generator (0) → Device (1) → Platform (2)
+const SELECTOR_DEFS = [
+  {
+    label: 'Generator',
+    items: [
+      { key: 'openai', logo: 'openai', text: 'OpenAI', sub: 'GPT-4o / Sora' },
+      { key: 'google', logo: 'google', text: 'Google', sub: 'Imagen / Veo 3' },
+      { key: 'meta',   logo: 'meta',   text: 'Meta',   sub: 'Meta AI' },
+    ]
+  },
+  {
+    label: 'Device',
+    items: [
+      { key: 'desktop', logo: 'desktop', text: 'Desktop', sub: 'Browser' },
+      { key: 'mobile',  logo: 'mobile',  text: 'Mobile',  sub: 'App' },
+    ]
+  },
+  {
+    label: 'Platform',
+    items: [
+      { key: 'instagram', logo: 'instagram', text: 'Instagram', sub: 'Images', type: 'image' },
+      { key: 'linkedin',  logo: 'linkedin',  text: 'LinkedIn',  sub: 'Images', type: 'image' },
+      { key: 'pinterest', logo: 'pinterest', text: 'Pinterest', sub: 'Images', type: 'image' },
+      { key: 'youtube',   logo: 'youtube',   text: 'YouTube',   sub: 'Videos', type: 'video' },
+      { key: 'tiktok',    logo: 'tiktok',    text: 'TikTok',    sub: 'Videos', type: 'video' },
+    ]
+  },
+];
+
+// ── RESULTS ──
+// Images — per-path totals: Instagram (Desktop 20 / iPhone 15), LinkedIn (Desktop 25 / iPhone 10), Pinterest (Desktop 20 / iPhone 15)
+const RESULTS = {
+  // OpenAI images (GPT-4o) — C2PA only on all 35
+  'openai|instagram|desktop': { labeled: false, n: 0,  t: 20, detail: 'Instagram doesn\'t read C2PA from OpenAI images. 0/20 desktop uploads labeled.', type: 'image' },
+  'openai|instagram|mobile':  { labeled: false, n: 0,  t: 15, detail: 'Instagram doesn\'t read C2PA from OpenAI images. 0/15 mobile uploads labeled.', type: 'image' },
+  'openai|linkedin|desktop':  { labeled: true,  n: 25, t: 25, detail: 'LinkedIn reads C2PA and labels all OpenAI images. 25/25 desktop uploads labeled.', type: 'image' },
+  'openai|linkedin|mobile':   { labeled: true,  n: 10, t: 10, detail: 'LinkedIn reads C2PA and labels all OpenAI images. 10/10 mobile uploads labeled.', type: 'image' },
+  'openai|pinterest|desktop': { labeled: true,  n: 20, t: 20, detail: 'Pinterest reads C2PA and labels all OpenAI images. 20/20 desktop uploads labeled.', type: 'image' },
+  'openai|pinterest|mobile':  { labeled: true,  n: 15, t: 15, detail: 'Pinterest reads C2PA and labels all OpenAI images. 15/15 mobile uploads labeled.', type: 'image' },
+
+  // Google images (Imagen / Nano Banana) — C2PA + SynthID on all 35
+  'google|instagram|desktop': { labeled: false, n: 0,  t: 20, detail: 'Instagram doesn\'t read C2PA or SynthID from Google images. 0/20 desktop uploads labeled.', type: 'image' },
+  'google|instagram|mobile':  { labeled: false, n: 0,  t: 15, detail: 'Instagram doesn\'t read C2PA or SynthID from Google images. 0/15 mobile uploads labeled.', type: 'image' },
+  'google|linkedin|desktop':  { labeled: true,  n: 25, t: 25, detail: 'LinkedIn reads C2PA and labels all Google images. 25/25 desktop uploads labeled.', type: 'image' },
+  'google|linkedin|mobile':   { labeled: true,  n: 10, t: 10, detail: 'LinkedIn reads C2PA and labels all Google images. 10/10 mobile uploads labeled.', type: 'image' },
+  'google|pinterest|desktop': { labeled: false, n: 0,  t: 20, detail: 'Pinterest doesn\'t detect Google images despite C2PA + SynthID. 0/20 desktop uploads labeled.', type: 'image' },
+  'google|pinterest|mobile':  { labeled: false, n: 0,  t: 15, detail: 'Pinterest doesn\'t detect Google images despite C2PA + SynthID. 0/15 mobile uploads labeled.', type: 'image' },
+
+  // Meta images — no C2PA, IPTC only
+  'meta|instagram|desktop':   { labeled: false, n: 0,  t: 20, detail: 'Instagram doesn\'t label Meta AI desktop uploads despite IPTC. 0/20 labeled.', type: 'image' },
+  'meta|instagram|mobile':    { labeled: true,  n: 15, t: 15, detail: 'Instagram labels all Meta AI mobile uploads (its own generator reads IPTC). 15/15 labeled.', type: 'image' },
+  'meta|linkedin|desktop':    { labeled: false, n: 0,  t: 25, detail: 'LinkedIn doesn\'t read IPTC — only C2PA, which Meta doesn\'t embed. 0/25 desktop uploads labeled.', type: 'image' },
+  'meta|linkedin|mobile':     { labeled: false, n: 0,  t: 10, detail: 'LinkedIn doesn\'t read IPTC — only C2PA, which Meta doesn\'t embed. 0/10 mobile uploads labeled.', type: 'image' },
+  'meta|pinterest|desktop':   { labeled: true,  n: 20, t: 20, detail: 'Pinterest reads IPTC and labels all Meta images. 20/20 desktop uploads labeled.', type: 'image' },
+  'meta|pinterest|mobile':    { labeled: true,  n: 15, t: 15, detail: 'Pinterest reads IPTC and labels all Meta images. 15/15 mobile uploads labeled.', type: 'image' },
+
+  // OpenAI videos (Sora) — C2PA only on all 25
+  'openai|youtube|desktop':   { labeled: true,  n: 13, t: 13, detail: 'YouTube reads C2PA from desktop uploads.', type: 'video' },
+  'openai|youtube|mobile':    { labeled: true,  n: 12, t: 12, detail: 'YouTube reads C2PA from Sora mobile uploads.', type: 'video' },
+  'openai|tiktok|desktop':    { labeled: false, n: 0,  t: 13, detail: 'TikTok\'s web uploader doesn\'t label at upload time.', type: 'video' },
+  'openai|tiktok|mobile':     { labeled: true,  n: 12, t: 12, detail: 'TikTok\'s mobile app preserves C2PA.', type: 'video' },
+
+  // Google videos (Veo 3) — C2PA + SynthID on all 25
+  'google|youtube|desktop':   { labeled: true,  n: 14, t: 14, detail: 'YouTube reads C2PA from desktop uploads. All 14 desktop Veo 3 videos labeled.', type: 'video' },
+  'google|youtube|mobile':    { labeled: false, n: 0,  t: 11, detail: 'YouTube\'s mobile pipeline doesn\'t read C2PA.', type: 'video' },
+  'google|tiktok|desktop':    { labeled: false, n: 0,  t: 14, detail: 'TikTok\'s web uploader doesn\'t label at upload time.', type: 'video' },
+  'google|tiktok|mobile':     { labeled: true,  n: 11, t: 11, detail: 'TikTok\'s mobile app preserves C2PA. All 11 mobile Veo 3 videos labeled.', type: 'video' },
+
+  // Meta videos — no C2PA, IPTC only (partial)
+  'meta|youtube|desktop':     { labeled: false, n: 0,  t: 13, detail: 'Meta embeds no C2PA — YouTube has nothing to detect.', type: 'video' },
+  'meta|youtube|mobile':      { labeled: false, n: 0,  t: 12, detail: 'Meta embeds no C2PA — YouTube has nothing to detect.', type: 'video' },
+  'meta|tiktok|desktop':      { labeled: false, n: 0,  t: 13, detail: 'TikTok doesn\'t label Meta videos at upload time.', type: 'video' },
+  'meta|tiktok|mobile':       { labeled: false, n: 0,  t: 12, detail: 'TikTok doesn\'t label Meta videos at upload time.', type: 'video' },
+};
+
+// Screenshot paths — replace with real cropped screenshots (~210×380 portrait)
+const SCREENSHOTS = {
+  // Instagram
+  'openai|instagram|desktop': 'slot_screenshots/openai_instagram_desktop.png',
+  'openai|instagram|mobile':  'slot_screenshots/openai_instagram_mobile.png',
+  'google|instagram|desktop': 'slot_screenshots/google_instagram_desktop.png',
+  'google|instagram|mobile':  'slot_screenshots/google_instagram_mobile.png',
+  'meta|instagram|desktop':   'slot_screenshots/meta_instagram_desktop.png',
+  'meta|instagram|mobile':    'slot_screenshots/meta_instagram_mobile.png',
+  // LinkedIn
+  'openai|linkedin|desktop':  'slot_screenshots/openai_linkedin_desktop.png',
+  'openai|linkedin|mobile':   'slot_screenshots/openai_linkedin_mobile.png',
+  'google|linkedin|desktop':  'slot_screenshots/google_linkedin_desktop.png',
+  'google|linkedin|mobile':   'slot_screenshots/google_linkedin_mobile.png',
+  'meta|linkedin|desktop':    'slot_screenshots/meta_linkedin_desktop.png',
+  'meta|linkedin|mobile':     'slot_screenshots/meta_linkedin_mobile.png',
+  // Pinterest
+  'openai|pinterest|desktop': 'slot_screenshots/openai_pinterest_desktop.png',
+  'openai|pinterest|mobile':  'slot_screenshots/openai_pinterest_mobile.png',
+  'google|pinterest|desktop': 'slot_screenshots/google_pinterest_desktop.png',
+  'google|pinterest|mobile':  'slot_screenshots/google_pinterest_mobile.png',
+  'meta|pinterest|desktop':   'slot_screenshots/meta_pinterest_desktop.png',
+  'meta|pinterest|mobile':    'slot_screenshots/meta_pinterest_mobile.png',
+  // YouTube
+  'openai|youtube|desktop':   'slot_screenshots/openai_youtube_desktop.png',
+  'openai|youtube|mobile':    'slot_screenshots/openai_youtube_mobile.png',
+  'google|youtube|desktop':   'slot_screenshots/google_youtube_desktop.png',
+  'google|youtube|mobile':    'slot_screenshots/google_youtube_mobile.png',
+  'meta|youtube|desktop':     'slot_screenshots/meta_youtube_desktop.png',
+  'meta|youtube|mobile':      'slot_screenshots/meta_youtube_mobile.png',
+  // TikTok
+  'openai|tiktok|desktop':    'slot_screenshots/openai_tiktok_desktop.png',
+  'openai|tiktok|mobile':     'slot_screenshots/openai_tiktok_mobile.png',
+  'google|tiktok|desktop':    'slot_screenshots/google_tiktok_desktop.png',
+  'google|tiktok|mobile':     'slot_screenshots/google_tiktok_mobile.png',
+  'meta|tiktok|desktop':      'slot_screenshots/meta_tiktok_desktop.png',
+  'meta|tiktok|mobile':       'slot_screenshots/meta_tiktok_mobile.png',
+};
+
+// ── STATE ──
+const selected = [0, 0, 0];
+let spinning = false;
+
+// ── BUILD SELECTORS ──
+const selectorsEl = document.getElementById('selectors');
+
+SELECTOR_DEFS.forEach((def, si) => {
+  const col = document.createElement('div');
+  col.className = 'selector-col';
+
+  const label = document.createElement('div');
+  label.className = 'selector-label';
+  label.textContent = def.label;
+  col.appendChild(label);
+
+  const upBtn = document.createElement('button');
+  upBtn.className = 'selector-btn';
+  upBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>`;
+  upBtn.addEventListener('click', () => cycleSelector(si, -1));
+  col.appendChild(upBtn);
+
+  const win = document.createElement('div');
+  win.className = 'selector-window';
+  win.id = `selWin${si}`;
+  col.appendChild(win);
+
+  const dnBtn = document.createElement('button');
+  dnBtn.className = 'selector-btn';
+  dnBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
+  dnBtn.addEventListener('click', () => cycleSelector(si, 1));
+  col.appendChild(dnBtn);
+
+  selectorsEl.appendChild(col);
+});
+
+function renderSelector(si) {
+  const def = SELECTOR_DEFS[si];
+  const item = def.items[selected[si]];
+  const win = document.getElementById(`selWin${si}`);
+
+  win.classList.add('transitioning');
+  setTimeout(() => win.classList.remove('transitioning'), 260);
+
+  win.innerHTML = `
+    <div class="selector-content">
+      <div class="sel-logo">${LOGOS[item.logo]}</div>
+      <div class="sel-text">${item.text}</div>
+      ${item.sub ? `<div class="sel-sub">${item.sub}</div>` : ''}
+    </div>
+  `;
+}
+
+function cycleSelector(si, dir) {
+  const len = SELECTOR_DEFS[si].items.length;
+  selected[si] = (selected[si] + dir + len) % len;
+  renderSelector(si);
+}
+
+SELECTOR_DEFS.forEach((_, i) => renderSelector(i));
+
+// ── SCREENSHOT REEL ──
+function getFrameHeight() {
+  return document.getElementById('phoneScreen').offsetHeight || 380;
+}
+const allKeys = Object.keys(RESULTS);
+
+function buildReel(targetKey) {
+  const reel = document.getElementById('screenshotReel');
+  reel.innerHTML = '';
+  reel.classList.remove('landing');
+
+  const frames = [];
+  for (let i = 0; i < 3; i++) {
+    frames.push(...[...allKeys].sort(() => Math.random() - 0.5));
+  }
+  frames.push(targetKey);
+
+  frames.forEach(key => {
+    const r = RESULTS[key];
+    const slot = document.createElement('div');
+    slot.className = 'screenshot-slot';
+
+    const scrSrc = SCREENSHOTS[key];
+    if (scrSrc) {
+      slot.innerHTML = `<img src="${scrSrc}" alt="">`;
+    } else {
+      const parts = key.split('|');
+      const genName = SELECTOR_DEFS[0].items.find(x => x.key === parts[0])?.text || parts[0];
+      const platItem = SELECTOR_DEFS[2].items.find(x => x.key === parts[1]);
+      const platName = platItem?.text || parts[1];
+      const devName = SELECTOR_DEFS[1].items.find(x => x.key === parts[2])?.text || parts[2];
+      const platLogo = LOGOS[parts[1]] || '';
+      const contentType = r.type === 'image' ? 'Image' : 'Video';
+
+      slot.innerHTML = `
+        <div class="scr-placeholder" style="background:${r.labeled ? '#0a1a0f' : '#1a0a0a'}">
+          <div class="plat-logo">${platLogo}</div>
+          <div class="scr-verdict ${r.labeled ? 'labeled' : 'not-labeled'}">${r.labeled ? 'LABELED' : 'NOT LABELED'}</div>
+          <div class="scr-tag">${r.labeled ? '"AI-generated content"' : 'No AI disclosure shown'}</div>
+          <div class="scr-combo">${genName} · ${platName}</div>
+          <div class="scr-type">${contentType} · ${devName}</div>
+        </div>
+      `;
+    }
+    reel.appendChild(slot);
+  });
+
+  return frames.length;
+}
+
+// ── PULL ──
+function pull() {
+  if (spinning) return;
+  spinning = true;
+
+  document.getElementById('leverKnob').classList.add('pulled');
+  const idle = document.querySelector('.phone-idle');
+  if (idle) idle.style.display = 'none';
+  document.getElementById('resultCaption').classList.remove('show');
+  const badge = document.getElementById('resultBadge');
+  badge.classList.remove('show', 'labeled', 'not-labeled', 'pos-bottom', 'pos-middle');
+
+  const genKey = SELECTOR_DEFS[0].items[selected[0]].key;
+  const devKey = SELECTOR_DEFS[1].items[selected[1]].key;
+  const platItem = SELECTOR_DEFS[2].items[selected[2]];
+  const platKey = platItem.key;
+  const targetKey = `${genKey}|${platKey}|${devKey}`;
+
+  const totalFrames = buildReel(targetKey);
+  const reel = document.getElementById('screenshotReel');
+
+  let offset = 0;
+  const speed = 20;
+
+  const spinInterval = setInterval(() => {
+    const fh = getFrameHeight();
+    offset = (offset + speed) % (totalFrames * fh);
+    reel.style.transform = `translateY(-${offset}px)`;
+  }, 16);
+
+  setTimeout(() => {
+    clearInterval(spinInterval);
+    const fh = getFrameHeight();
+    reel.classList.add('landing');
+    reel.style.transform = `translateY(-${(totalFrames - 1) * fh}px)`;
+    document.getElementById('leverKnob').classList.remove('pulled');
+  }, 2000);
+
+  setTimeout(() => {
+    const r = RESULTS[targetKey];
+
+    // Position badge: Instagram & LinkedIn labels are at top → badge at bottom
+    // YouTube, TikTok, Pinterest labels are at bottom → badge in middle
+    const bottomPlatforms = ['instagram', 'linkedin'];
+    const posClass = bottomPlatforms.includes(platKey) ? 'pos-bottom' : 'pos-middle';
+
+    const badge = document.getElementById('resultBadge');
+    badge.className = 'result-badge'; // reset
+    badge.classList.add(r.labeled ? 'labeled' : 'not-labeled', posClass);
+
+    document.getElementById('badgeLabel').textContent = r.labeled ? 'LABELED' : 'NOT LABELED';
+    document.getElementById('badgeFraction').textContent = `${r.n} / ${r.t} in our test`;
+
+    badge.classList.add('show');
+    spinning = false;
+  }, 2900);
+}
+
+document.getElementById('leverTrack').addEventListener('click', pull);
+document.getElementById('leverKnob').addEventListener('click', pull);
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); pull(); }
+});
+</script>
+
+</body>
+</html>
