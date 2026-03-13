@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Will Your AI Content Get Labeled?</title>
+<title>Did AI Content Get Labeled?</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -140,12 +140,23 @@ h1 {
 }
 
 .selector-btn {
-  width: 100%; background: none; border: none; color: #888;
-  cursor: pointer; padding: 3px; display: flex; align-items: center;
-  justify-content: center; transition: color 0.15s;
+  width: 100%; background: none; border: none; color: var(--gold);
+  cursor: pointer; padding: 5px; display: flex; align-items: center;
+  justify-content: center;
+  animation: arrow-pulse 1.5s ease-in-out infinite alternate;
 }
-.selector-btn:hover { color: var(--gold-dark); }
-.selector-btn svg { width: 16px; height: 16px; }
+.selector-btn:hover {
+  color: var(--blue);
+  animation: none;
+  transform: scale(1.3);
+  filter: drop-shadow(0 0 8px rgba(36, 81, 201, 0.6));
+}
+.selector-btn svg { width: 26px; height: 26px; stroke-width: 3; }
+
+@keyframes arrow-pulse {
+  0%   { opacity: 0.45; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px rgba(236, 187, 45, 0.6)); }
+}
 
 .selector-window {
   width: 100%; height: 88px; background: var(--reel-bg); border-radius: 8px;
@@ -372,9 +383,9 @@ h1 {
 </head>
 <body>
 
-<div class="kicker">AI Labeling Audit · Q1 2026</div>
-<h1>Will Your AI Content Get Labeled?</h1>
-<p class="dek">Choose a generator, platform, and upload device. Then pull the lever to see if the content gets flagged as AI-generated.</p>
+<div class="kicker">Indicator · AI Labeling Audit · Mar 2026</div>
+<h1>Did AI Content Get Labeled?</h1>
+<p class="dek">Choose a generator, platform, and upload device. Then pull the lever to see if the content got flagged as AI-generated.</p>
 
 <div class="machine-outer">
 <div class="machine">
@@ -423,7 +434,7 @@ h1 {
 </div>
 
 <div class="footnote">
-  Based on an audit of 75 AI-generated videos and 105 AI-generated images uploaded to YouTube, TikTok, Instagram, LinkedIn, and Pinterest via desktop and mobile · Q1 2026
+  Based on an audit of 75 AI-generated videos and 105 AI-generated images uploaded to YouTube, TikTok, Instagram, LinkedIn, and Pinterest via desktop and mobile · Mar 2026
 </div>
 
 <script>
