@@ -208,42 +208,42 @@ h1 {
 
 /* Track */
 .lever-track {
-  width: 8px; height: 90px;
+  width: 10px; height: 105px;
   background: linear-gradient(to bottom, #bbb, #888);
-  border-radius: 4px; position: relative;
+  border-radius: 6px; position: relative;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
 }
 
 /* Knob — rests at top, animated down-and-back on click */
 .lever-knob {
-  position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
-  width: 30px; height: 30px;
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  width: 36px; height: 36px;
   background: radial-gradient(circle at 40% 35%, #ff4444, #cc0000);
   border-radius: 50%; border: 3px solid #aa0000;
   box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.2);
   z-index: 4;
 }
 .lever-housing:hover .lever-knob {
-  box-shadow: 0 2px 8px rgba(255,0,0,0.4), 0 0 16px rgba(255,0,0,0.2),
-    inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.2);
+  box-shadow: 0 3px 12px rgba(255,0,0,0.4), 0 0 20px rgba(255,0,0,0.2),
+    inset 0 -3px 6px rgba(0,0,0,0.3), inset 0 3px 6px rgba(255,255,255,0.2);
 }
 
 /* Keyframe: knob slides down to bottom of track, holds briefly, springs back */
 @keyframes lever-pull {
-  0%   { top: -6px; }
-  25%  { top: 64px; }
-  40%  { top: 64px; }
-  70%  { top: -12px; }
-  85%  { top: 2px; }
-  100% { top: -6px; }
+  0%   { top: -8px; }
+  25%  { top: 76px; }
+  40%  { top: 76px; }
+  70%  { top: -14px; }
+  85%  { top: 0px; }
+  100% { top: -8px; }
 }
 .lever-knob.pulling {
   animation: lever-pull 0.7s ease-in-out forwards;
 }
 
 .lever-label {
-  font-size: 13px; text-transform: uppercase; letter-spacing: 3px;
-  margin-top: 8px; font-weight: 900;
+  font-size: 18px; text-transform: uppercase; letter-spacing: 4px;
+  margin-top: 10px; font-weight: 900;
   background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--blue), var(--gold), var(--gold-dark));
   background-size: 200% 100%;
   -webkit-background-clip: text;
