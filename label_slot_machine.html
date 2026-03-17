@@ -180,6 +180,7 @@ h1 {
 
 .selector-content {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
+  width: 100%; overflow: hidden;
 }
 
 .sel-logo { height: 34px; display: flex; align-items: center; justify-content: center; }
@@ -187,7 +188,7 @@ h1 {
 .sel-logo img { height: 30px; width: auto; border-radius: 6px; }
 
 .sel-text { font-size: 12px; font-weight: 700; color: var(--dark); }
-.sel-sub { font-size: 9px; color: var(--gray); }
+.sel-sub { font-size: 9px; color: var(--gray); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .disabled-label {
   font-size: 10px; color: #777; font-style: italic; text-align: center; line-height: 1.3;
@@ -200,27 +201,44 @@ h1 {
 
 .lever-row { display: flex; align-items: center; gap: 16px; }
 
-.lever-housing { display: flex; flex-direction: column; align-items: center; }
+.lever-housing {
+  display: flex; flex-direction: column; align-items: center;
+  cursor: pointer;
+}
 
+/* Track */
 .lever-track {
-  width: 8px; height: 80px;
-  background: linear-gradient(to bottom, #aaa, #888);
-  border-radius: 4px; position: relative; cursor: pointer;
+  width: 8px; height: 90px;
+  background: linear-gradient(to bottom, #bbb, #888);
+  border-radius: 4px; position: relative;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
 }
 
+/* Knob — rests at top, animated down-and-back on click */
 .lever-knob {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
   width: 30px; height: 30px;
   background: radial-gradient(circle at 40% 35%, #ff4444, #cc0000);
   border-radius: 50%; border: 3px solid #aa0000;
   box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.2);
-  cursor: grab; transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2;
+  z-index: 4;
 }
-.lever-knob.pulled { top: 50px; }
-.lever-knob:hover {
+.lever-housing:hover .lever-knob {
   box-shadow: 0 2px 8px rgba(255,0,0,0.4), 0 0 16px rgba(255,0,0,0.2),
     inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.2);
+}
+
+/* Keyframe: knob slides down to bottom of track, holds briefly, springs back */
+@keyframes lever-pull {
+  0%   { top: -6px; }
+  25%  { top: 64px; }
+  40%  { top: 64px; }
+  70%  { top: -12px; }
+  85%  { top: 2px; }
+  100% { top: -6px; }
+}
+.lever-knob.pulling {
+  animation: lever-pull 0.7s ease-in-out forwards;
 }
 
 .lever-label {
@@ -385,7 +403,7 @@ h1 {
 
 <div class="kicker">Indicator · AI Labeling Audit · Mar 2026</div>
 <h1>Did AI Content Get Labeled?</h1>
-<p class="dek">Choose a generator, platform, and upload device. Then pull the lever to see if the content got flagged as AI-generated.</p>
+<p class="dek">Choose a generator, platform, and upload device. Then tap the lever to see if the content got flagged as AI-generated.</p>
 
 <div class="machine-outer">
 <div class="machine">
@@ -406,7 +424,7 @@ h1 {
         <div class="phone-frame">
           <div class="phone-notch"></div>
           <div class="phone-screen" id="phoneScreen">
-            <div class="phone-idle">Select your combo<br>then pull the lever</div>
+            <div class="phone-idle">Select your combo<br>then tap the lever</div>
             <div class="screenshot-reel" id="screenshotReel"></div>
             <div class="result-badge" id="resultBadge">
               <div class="badge-inner" id="badgeLabel"></div>
@@ -414,11 +432,11 @@ h1 {
             </div>
           </div>
         </div>
-        <div class="lever-housing">
-          <div class="lever-track" id="leverTrack">
+        <div class="lever-housing" id="leverHousing">
+          <div class="lever-track">
             <div class="lever-knob" id="leverKnob"></div>
           </div>
-          <div class="lever-label">Pull</div>
+          <div class="lever-label">Tap</div>
         </div>
       </div>
       <div class="result-caption" id="resultCaption">
@@ -434,7 +452,7 @@ h1 {
 </div>
 
 <div class="footnote">
-  Based on an audit of 75 AI-generated videos and 105 AI-generated images uploaded to YouTube, TikTok, Instagram, LinkedIn, and Pinterest via desktop and mobile · Mar 2026
+  Based on Indicator's March 2026 audit of 75 AI-generated videos and 105 AI-generated images<br>This visualization was made with Claude Code
 </div>
 
 <script>
@@ -682,12 +700,19 @@ function buildReel(targetKey) {
   return frames.length;
 }
 
-// ── PULL ──
+// ── LEVER — click/tap to pull (CSS animation handles the visual) ──
+const leverKnob = document.getElementById('leverKnob');
+const leverHousing = document.getElementById('leverHousing');
+
 function pull() {
   if (spinning) return;
   spinning = true;
 
-  document.getElementById('leverKnob').classList.add('pulled');
+  // Animate the knob down and back via CSS keyframes
+  leverKnob.classList.remove('pulling');
+  void leverKnob.offsetWidth; // force reflow to restart animation
+  leverKnob.classList.add('pulling');
+
   const idle = document.querySelector('.phone-idle');
   if (idle) idle.style.display = 'none';
   document.getElementById('resultCaption').classList.remove('show');
@@ -717,31 +742,28 @@ function pull() {
     const fh = getFrameHeight();
     reel.classList.add('landing');
     reel.style.transform = `translateY(-${(totalFrames - 1) * fh}px)`;
-    document.getElementById('leverKnob').classList.remove('pulled');
   }, 2000);
 
   setTimeout(() => {
     const r = RESULTS[targetKey];
 
-    // Position badge: Instagram & LinkedIn labels are at top → badge at bottom
-    // YouTube, TikTok, Pinterest labels are at bottom → badge in middle
     const bottomPlatforms = ['instagram', 'linkedin'];
     const posClass = bottomPlatforms.includes(platKey) ? 'pos-bottom' : 'pos-middle';
 
     const badge = document.getElementById('resultBadge');
-    badge.className = 'result-badge'; // reset
+    badge.className = 'result-badge';
     badge.classList.add(r.labeled ? 'labeled' : 'not-labeled', posClass);
 
     document.getElementById('badgeLabel').textContent = r.labeled ? 'LABELED' : 'NOT LABELED';
     document.getElementById('badgeFraction').textContent = `${r.n} / ${r.t} in our test`;
 
     badge.classList.add('show');
+    leverKnob.classList.remove('pulling');
     spinning = false;
   }, 2900);
 }
 
-document.getElementById('leverTrack').addEventListener('click', pull);
-document.getElementById('leverKnob').addEventListener('click', pull);
+leverHousing.addEventListener('click', pull);
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); pull(); }
 });
