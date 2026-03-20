@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Nudifiers in Schools - Indicator</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        #map {
+            width: 100%;
+            height: 620px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 32px;
+        }
+
+        .sources-section {
+            margin-bottom: 12px;
+            padding: 0 24px;
+        }
+
+        .sources-section h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #2451C9;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .filters select {
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            padding: 8px 12px;
+            border: 1px solid #d0d0d0;
+            border-radius: 4px;
+            background: #fff;
+            color: #1a1a1a;
+            cursor: pointer;
+            min-width: 160px;
+        }
+
+        .filters select:focus {
+            outline: none;
+            border-color: #2451C9;
+        }
+
+        .source-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .source-list li {
+            padding: 12px 16px;
+            border-left: 3px solid #ECBB2D;
+            margin-bottom: 10px;
+            background: #f9f9fb;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .source-list li.hidden {
+            display: none;
+        }
+
+        .source-list li a {
+            color: #2451C9;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .source-list li a:hover {
+            text-decoration: underline;
+        }
+
+        .source-meta {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .leaflet-popup-content {
+            font-family: 'Roboto', sans-serif;
+            min-width: 240px;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 6px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .popup-title {
+            font-weight: 700;
+            color: #2451C9;
+            font-size: 14px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #ECBB2D;
+        }
+
+        .popup-item {
+            font-size: 12.5px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .popup-item strong {
+            color: #1a1a1a;
+            display: inline-block;
+            min-width: 80px;
+        }
+
+        .popup-victims {
+            font-size: 13px;
+            font-weight: 700;
+            color: #2451C9;
+            margin: 6px 0;
+        }
+
+        .popup-link {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .popup-link a {
+            color: #2451C9;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .popup-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            #map { height: 420px; }
+            .source-list li { padding: 10px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <div class="sources-section">
+        <h3>Sources</h3>
+        <div class="filters">
+            <select id="filterCountry">
+                <option value="all">All countries</option>
+            </select>
+            <select id="filterYear">
+                <option value="all">All years</option>
+            </select>
+        </div>
+        <ul class="source-list" id="sourceList"></ul>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+    <script>
+        // ============================================================
+        // DATA — Add new cases here as objects in this array
+        // ============================================================
+        const caseData = [
+            {
+                date: '2026-03-07',
+                location: 'North Charleston, SC',
+                country: 'United States',
+                schoolType: 'High School',
+                lat: 32.85, lng: -80.06,
+                victims: 5,
+                notes: 'Fort Dorchester High School. Images posted across social media. Two suspects identified (both underage). School district launched AI Task Force.',
+                source: 'Live 5 News',
+                sourceUrl: 'https://www.live5news.com/2026/03/07/5-fort-dorchester-high-school-girls-victimized-by-ai-generated-nude-images/'
+            },
+            {
+                date: '2025-12-02',
+                location: 'Corbett, OR',
+                country: 'United States',
+                schoolType: 'High School',
+                lat: 45.52, lng: -122.38,
+                victims: 1,
+                notes: 'Corbett High School. Principal delayed reporting to police. Student walkout followed. Led to Oregon HB 2299.',
+                source: 'KPTV',
+                sourceUrl: 'https://www.kptv.com/2025/12/11/oregon-law-targets-ai-generated-explicit-images-after-corbett-high-school-incident/'
+            },
+            {
+                date: '2025-05-07',
+                location: 'Dover, MA',
+                country: 'United States',
+                schoolType: 'Middle School',
+                lat: 42.24, lng: -71.28,
+                victims: 2,
+                notes: 'Dover-Sherborn Middle School. AI-generated CSAM of female students reported.',
+                source: 'Boston Herald',
+                sourceUrl: 'https://www.bostonherald.com/2025/05/07/ai-generated-child-pornography-of-female-dover-sherborn-middle-school-students-reported/'
+            },
+            {
+                date: '2025-03-25',
+                location: 'Cascade, IA',
+                country: 'United States',
+                schoolType: 'High School',
+                lat: 42.30, lng: -91.01,
+                victims: 44,
+                notes: 'Cascade High School. 44 female students targeted. 3 students charged. Victims issued joint statement demanding systemic changes.',
+                source: 'Iowa Public Radio',
+                sourceUrl: 'https://www.iowapublicradio.org/ipr-news/2025-05-05/northeast-iowa-school-district-investigates-ai-generated-nude-images-of-students'
+            },
+            {
+                date: '2025-03-01',
+                location: 'Saint-Hilaire-du-Harcou\u00ebt',
+                country: 'France',
+                schoolType: 'Middle School',
+                lat: 48.58, lng: -1.09,
+                victims: 12,
+                notes: 'Coll\u00e8ge Immacul\u00e9e Conception. 12 female students victimized. Complaints filed. Suspect tried May 2025.',
+                source: 'France Bleu',
+                sourceUrl: 'https://www.francebleu.fr/infos/faits-divers-justice/des-plaintes-deposees-dans-une-affaire-de-deepfake-dont-sont-victimes-des-collegiennes-du-sud-manche-2349343'
+            },
+            {
+                date: '2025-01-06',
+                location: 'Sydney',
+                country: 'Australia',
+                schoolType: 'High School',
+                lat: -33.87, lng: 151.21,
+                victims: 2,
+                notes: 'Plural used; exact count not specified.',
+                source: 'The Guardian',
+                sourceUrl: 'https://www.theguardian.com/australia-news/2025/jan/09/sydney-high-school-ai-deepfake-porn-scandal-ntwnfb'
+            },
+            {
+                date: '2025-01-01',
+                location: 'Chicago, IL',
+                country: 'United States',
+                schoolType: 'Middle School',
+                lat: 41.83, lng: -87.63,
+                victims: 1,
+                notes: 'Sixth Ward Middle School. Victim expelled after fighting boys who created and shared AI-generated nude images of her.',
+                source: 'ABC7 Chicago',
+                sourceUrl: 'https://abc7chicago.com/post/boys-school-shared-ai-generated-nude-images-she-was-expelled-sixth-ward-middle/18306695/'
+            },
+            {
+                date: '2024-12-28',
+                location: 'Toronto',
+                country: 'Canada',
+                schoolType: 'High School',
+                lat: 43.65, lng: -79.38,
+                victims: 2,
+                notes: 'Plural used; exact count not specified.',
+                source: 'Toronto Star',
+                sourceUrl: 'https://www.thestar.com/news/gta/a-boy-created-ai-generated-porn-with-the-faces-of-girls-he-knew-why-toronto/article_27155b82-ada1-11ef-b898-0f1b3247fa65.html'
+            },
+            {
+                date: '2024-11-01',
+                location: 'Singapore',
+                country: 'Singapore',
+                schoolType: 'High School',
+                lat: 1.35, lng: 103.82,
+                victims: 10,
+                notes: 'Described as "many"; conservative estimate.',
+                source: 'Straits Times',
+                sourceUrl: 'https://www.straitstimes.com/singapore/police-investigating-deepfake-nude-photos-of-singapore-sports-school-students'
+            },
+            {
+                date: '2024-10-14',
+                location: 'San Mart\u00edn, Buenos Aires',
+                country: 'Argentina',
+                schoolType: 'High School',
+                lat: -34.58, lng: -58.54,
+                victims: 22,
+                notes: 'Colegio San Agustiniano. Student stole photos of 22 classmates, manipulated with AI, and sold the images.',
+                source: 'El Destape',
+                sourceUrl: 'https://www.eldestapeweb.com/sociedad/inteligencia-artificial/robaba-fotos-de-sus-companeras-de-un-colegio-de-san-martin-las-manipulaba-con-ia-y-las-vendia-el-nuevo-caso-de-deepfake-que-llego-a-la-justicia-202410141709'
+            },
+            {
+                date: '2024-10-22',
+                location: 'Resistencia, Chaco',
+                country: 'Argentina',
+                schoolType: 'High School',
+                lat: -27.45, lng: -59.00,
+                victims: 2,
+                notes: 'Colegio Don Bosco. Students took classmates\u2019 photos from social media, manipulated with AI, sold via WhatsApp and Telegram.',
+                source: 'Infobae',
+                sourceUrl: 'https://www.infobae.com/sociedad/policiales/2024/10/22/ahora-denunciaron-que-alumnos-de-un-colegio-de-chaco-difundieron-imagenes-de-sus-companeras-desnudas-creadas-con-ia/'
+            },
+            {
+                date: '2024-10-10',
+                location: 'Pensacola, FL',
+                country: 'United States',
+                schoolType: 'High School',
+                lat: 30.44, lng: -87.22,
+                victims: 30,
+                notes: 'Disseminator charged. Creator not charged.',
+                source: 'PNJ',
+                sourceUrl: 'https://www.pnj.com/story/news/local/escambia-county/2024/10/10/pensacola-teen-used-ai-to-create-fake-nude-photos-of-girls/75570605007/'
+            },
+            {
+                date: '2024-10-01',
+                location: 'Bayside, WI',
+                country: 'United States',
+                schoolType: 'Middle School',
+                lat: 43.18, lng: -87.90,
+                victims: 2,
+                notes: '13-year-old male student used AI to undress two female classmates from photos posted online.',
+                source: 'FOX6 Milwaukee',
+                sourceUrl: 'https://www.fox6now.com/news/deepfake-nudes-outpace-wisconsin-law-children-adults-risk'
+            },
+            {
+                date: '2024-08-30',
+                location: 'South Korea (National)',
+                country: 'South Korea',
+                schoolType: 'Multiple',
+                lat: 36.5, lng: 127.0,
+                victims: 342,
+                notes: 'National-level report: 80% of 527 cases (2021\u20132023) involved minors. Telegram deepfake rooms targeting students and teachers.',
+                source: 'Naver',
+                sourceUrl: 'https://n.news.naver.com/mnews/article/001/0014902159?sid=102'
+            },
+            {
+                date: '2024-08-01',
+                location: 'Thibodaux, LA',
+                country: 'United States',
+                schoolType: 'Middle School',
+                lat: 29.80, lng: -90.82,
+                victims: 8,
+                notes: 'Lafourche Parish. 8 middle school girls targeted. One male student charged with 10 counts. A 13-year-old victim expelled after confrontation.',
+                source: 'NOLA.com',
+                sourceUrl: 'https://www.nola.com/news/education/lafourche-parish-deepfake-nude-photos-8-girls-victims/article_1f065eb4-dc06-47db-989c-ec71b5d05901.html'
+            },
+            {
+                date: '2024-07-03',
+                location: 'C\u00f3rdoba',
+                country: 'Argentina',
+                schoolType: 'High School',
+                lat: -31.42, lng: -64.18,
+                victims: 2,
+                notes: 'Escuela Manuel Belgrano. Student used AI to create pornographic images of classmates and uploaded to a pornographic site.',
+                source: 'Infobae',
+                sourceUrl: 'https://www.infobae.com/sociedad/2024/07/03/escandalo-en-una-escuela-de-cordoba-un-alumno-utilizo-ia-para-crear-imagenes-pornograficas-de-sus-companeras/'
+            },
+            {
+                date: '2024-06-07',
+                location: 'Bacchus Marsh, VIC',
+                country: 'Australia',
+                schoolType: 'High School',
+                lat: -37.67, lng: 144.44,
+                victims: 50,
+                notes: '',
+                source: 'ABC News',
+                sourceUrl: 'https://www.abc.net.au/news/2024-06-11/bacchus-marsh-grammar-explicit-images-ai-nude/103965298'
+            },
+            {
+                date: '2024-06-01',
+                location: 'West Yorkshire',
+                country: 'United Kingdom',
+                schoolType: 'Middle School',
+                lat: 53.73, lng: -1.86,
+                victims: 1,
+                notes: '',
+                source: 'BBC',
+                sourceUrl: 'https://www.bbc.com/news/articles/ckvgezk74kgo'
+            },
+            {
+                date: '2024-05-24',
+                location: 'Santiago (Vitacura)',
+                country: 'Chile',
+                schoolType: 'High School',
+                lat: -33.39, lng: -70.60,
+                victims: 7,
+                notes: 'Colegio Saint George. 7 female students affected. Used Clothoff.io, DeepNude, Undress AI. Court initially ordered expulsion; Supreme Court reversed.',
+                source: 'T13',
+                sourceUrl: 'https://www.t13.cl/noticia/nacional/colegio-saint-george-crean-fotos-alumnas-desnudas-usando-inteligencia-artificial-24-5-2024'
+            },
+            {
+                date: '2024-03-09',
+                location: 'Tenerife',
+                country: 'Spain',
+                schoolType: 'High School',
+                lat: 28.47, lng: -16.25,
+                victims: 3,
+                notes: 'Colegio La Salle San Ildefonso. 2 students investigated. First case in Canary Islands. At least 3 students plus others outside school affected.',
+                source: 'El Diario',
+                sourceUrl: 'https://www.eldiario.es/canariasahora/tenerifeahora/sociedad/investigados-estudiantes-colegio-tenerife-distribuir-desnudos-manipulados-companera_1_10991618.html'
+            },
+            {
+                date: '2024-03-01',
+                location: 'Latina',
+                country: 'Italy',
+                schoolType: 'High School',
+                lat: 41.47, lng: 12.90,
+                victims: 2,
+                notes: '',
+                source: 'Quotidiano Nazionale',
+                sourceUrl: 'https://www.quotidiano.net/roma/bikinioff-studentesse-spogliate-indagine-deepfake-latina-eiew4u3p'
+            },
+            {
+                date: '2024-02-20',
+                location: 'Beverly Hills, CA',
+                country: 'United States',
+                schoolType: 'Middle School',
+                lat: 34.07, lng: -118.40,
+                victims: 16,
+                notes: '5 students expelled.',
+                source: 'NBC News',
+                sourceUrl: 'https://www.nbcnews.com/tech/tech-news/beverly-hills-school-expels-students-deepfake-nude-photos-rcna142480'
+            },
+            {
+                date: '2024-02-01',
+                location: 'Saint Therese, QC',
+                country: 'Canada',
+                schoolType: 'High School',
+                lat: 45.52, lng: -73.52,
+                victims: 10,
+                notes: '5 teens arrested.',
+                source: 'Journal de Montr\u00e9al',
+                sourceUrl: 'https://www.journaldemontreal.com/2024/03/13/photos-pornographiques-hypertruquees-dans-une-ecole-secondaire-de-sainte-therese--la-police-arrete-cinq-ados'
+            },
+            {
+                date: '2024-01-01',
+                location: 'Itasca, TX',
+                country: 'United States',
+                schoolType: 'High School',
+                lat: 32.16, lng: -97.15,
+                victims: 2,
+                notes: 'Itasca ISD. Sexually explicit deepfake images of students and staff. Former student involved.',
+                source: 'NBC 5 Dallas-Fort Worth',
+                sourceUrl: 'https://www.nbcdfw.com/news/local/itasca-sexually-explicit-deep-fake-images-students-staff/3987547/'
+            },
+            {
+                date: '2023-12-01',
+                location: 'Nafpaktos',
+                country: 'Greece',
+                schoolType: 'Middle School',
+                lat: 38.39, lng: 21.83,
+                victims: 6,
+                notes: '',
+                source: 'The Toc',
+                sourceUrl: 'https://www.thetoc.gr/koinwnia/article/naupaktos-proklitikoi-oi-anilikoi-pou-eftiaxan-gumnes-fotografies-summathitrion-tous---thelame-na-gelasoume/'
+            },
+            {
+                date: '2023-11-23',
+                location: 'Miami, FL',
+                country: 'United States',
+                schoolType: 'Middle School',
+                lat: 25.76, lng: -80.19,
+                victims: 2,
+                notes: 'Teens arrested. Plural used; conservative estimate.',
+                source: 'NBC Miami',
+                sourceUrl: 'https://www.nbcmiami.com/news/local/ai-app-misused-by-miami-dade-students-to-make-inappropriate-images-of-classmates-police/3184692/'
+            },
+            {
+                date: '2023-11-01',
+                location: 'Lancaster, PA',
+                country: 'United States',
+                schoolType: 'High School',
+                lat: 40.04, lng: -76.30,
+                victims: 50,
+                notes: 'Lancaster Country Day School. As many as 60. Two students later pleaded guilty to 59 felony counts.',
+                source: 'LNP',
+                sourceUrl: 'https://lancasteronline.com/news/local/police-identify-nearly-50-student-victims-in-lancaster-country-day-ai-made-nude-images-incident/article_26ca48ae-9eab-11ef-836b-db649ae08884.html'
+            },
+            {
+                date: '2023-11-01',
+                location: 'Rio de Janeiro',
+                country: 'Brazil',
+                schoolType: 'High School',
+                lat: -22.91, lng: -43.17,
+                victims: 20,
+                notes: '',
+                source: 'O Globo',
+                sourceUrl: 'https://g1.globo.com/rj/rio-de-janeiro/noticia/2023/11/01/alunos-de-colegio-na-barra-sao-suspeitos-de-usar-inteligencia-artificial-para-fazer-montagens-de-colegas-nuas-e-compartilhar.ghtml'
+            },
+            {
+                date: '2023-10-17',
+                location: 'Issaquah, WA',
+                country: 'United States',
+                schoolType: 'High School',
+                lat: 47.53, lng: -122.03,
+                victims: 6,
+                notes: 'FOIAed documents mention 6 students.',
+                source: 'Issaquah Reporter',
+                sourceUrl: 'https://www.issaquahreporter.com/news/issaquah-teen-distributes-ai-generated-nude-photos-of-female-students/?ref=404media.co'
+            },
+            {
+                date: '2023-10-16',
+                location: 'Westfield, NJ',
+                country: 'United States',
+                schoolType: 'High School',
+                lat: 40.66, lng: -74.35,
+                victims: 4,
+                notes: 'Perpetrator sued.',
+                source: 'WSJ',
+                sourceUrl: 'https://www.wsj.com/tech/fake-nudes-of-real-students-cause-an-uproar-at-a-new-jersey-high-school-df10f1bb'
+            },
+            {
+                date: '2023-10-13',
+                location: 'Treviso',
+                country: 'Italy',
+                schoolType: 'Mixed',
+                lat: 45.67, lng: 12.24,
+                victims: 2,
+                notes: '',
+                source: 'Il Gazzettino',
+                sourceUrl: 'https://www.ilgazzettino.it/nordest/treviso/compagne_scuola_nude_app_immagini_erotiche_denuncia_minorenni_cyberbullismo-7688864.html?refresh_ce'
+            },
+            {
+                date: '2023-10-05',
+                location: 'Quito',
+                country: 'Ecuador',
+                schoolType: 'High School',
+                lat: -0.18, lng: -78.47,
+                victims: 22,
+                notes: 'Private school in Los Chillos valley. 2 students created ~700 videos/photos of 20\u201324 female classmates. Prosecutor opened child pornography investigation.',
+                source: 'Infobae',
+                sourceUrl: 'https://www.infobae.com/america/america-latina/2023/10/05/estudiantes-de-un-colegio-de-quito-utilizaron-fotografias-de-sus-companeras-para-crear-contenido-sexual-con-inteligencia-artificial/'
+            },
+            {
+                date: '2023-10-01',
+                location: 'Aledo, TX',
+                country: 'United States',
+                schoolType: 'High School',
+                lat: 32.70, lng: -97.60,
+                victims: 9,
+                notes: 'Used as rallying cry for Cruz/Klobuchar bill.',
+                source: 'WSJ',
+                sourceUrl: 'https://www.wsj.com/politics/policy/teen-deepfake-ai-nudes-bill-ted-cruz-amy-klobuchar-3106eda0'
+            },
+            {
+                date: '2023-09-14',
+                location: 'Almendralejo',
+                country: 'Spain',
+                schoolType: 'Middle School',
+                lat: 38.68, lng: -6.41,
+                victims: 20,
+                notes: 'Used ClothOff app.',
+                source: 'El Pa\u00eds',
+                sourceUrl: 'https://english.elpais.com/international/2023-09-18/in-spain-dozens-of-girls-are-reporting-ai-generated-nude-photos-of-them-being-circulated-at-school-my-heart-skipped-a-beat.html'
+            },
+            {
+                date: '2023-09-01',
+                location: 'Latina',
+                country: 'Italy',
+                schoolType: 'Middle School',
+                lat: 41.47, lng: 12.90,
+                victims: 5,
+                notes: 'Excludes one teacher.',
+                source: 'Il Messaggero',
+                sourceUrl: 'https://www.ilmessaggero.it/latina/prof_spogliata_app_bikinioff_latina_cosa_e_successo-7630192.html'
+            },
+            {
+                date: '2023-04-01',
+                location: 'Rome',
+                country: 'Italy',
+                schoolType: 'Middle School',
+                lat: 41.90, lng: 12.50,
+                victims: 5,
+                notes: 'As many as 27 cases.',
+                source: 'Fanpage',
+                sourceUrl: 'https://www.fanpage.it/roma/usano-unapp-per-generare-foto-delle-compagne-di-classe-nude-due-14enne-dai-carabinieri/'
+            },
+            {
+                date: '2023-03-10',
+                location: 'Richmond, IL',
+                country: 'United States',
+                schoolType: 'High School',
+                lat: 42.48, lng: -88.31,
+                victims: 30,
+                notes: 'Richmond-Burton Community High School. 2 minors later arrested and charged.',
+                source: 'Scripps / NBC',
+                sourceUrl: 'https://www.aol.com/news/high-schools-nationwide-facing-problem-004500554.html'
+            }
+        ];
+
+        // ============================================================
+        // MAP
+        // ============================================================
+        const map = L.map('map', {
+            minZoom: 2,
+            maxBoundsViscosity: 1.0,
+            maxBounds: [[-85, -200], [85, 200]]
+        }).setView([20, 0], 2.5);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+            maxZoom: 19,
+            subdomains: 'abcd',
+            noWrap: true
+        }).addTo(map);
+
+        caseData.forEach(incident => {
+            const r = Math.max(Math.sqrt(incident.victims) * 2.8, 5);
+
+            const circle = L.circleMarker([incident.lat, incident.lng], {
+                radius: r,
+                fillColor: '#ECBB2D',
+                color: '#2451C9',
+                weight: 2,
+                opacity: 0.9,
+                fillOpacity: 0.75
+            }).addTo(map);
+
+            const dateStr = new Date(incident.date + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+
+            const popupContent = `
+                <div class="popup-title">${incident.location}, ${incident.country}</div>
+                <div class="popup-item"><strong>Date:</strong> ${dateStr}</div>
+                <div class="popup-item"><strong>School type:</strong> ${incident.schoolType}</div>
+                <div class="popup-victims">${incident.victims} reported victim${incident.victims !== 1 ? 's' : ''}</div>
+                ${incident.notes ? `<div class="popup-item">${incident.notes}</div>` : ''}
+                <div class="popup-item" style="margin-top:6px; color:#666; font-size:11.5px;">Source: ${incident.source}</div>
+                ${incident.sourceUrl ? `<div class="popup-link"><a href="${incident.sourceUrl}" target="_blank">Read article \u2192</a></div>` : ''}
+            `;
+
+            circle.bindPopup(popupContent, { maxWidth: 300 });
+        });
+
+        // Build source list (reverse chronological) with filters
+        const sorted = [...caseData].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const sourceList = document.getElementById('sourceList');
+        const filterCountry = document.getElementById('filterCountry');
+        const filterYear = document.getElementById('filterYear');
+
+        // Populate filter options from data
+        const countries = [...new Set(caseData.map(c => c.country))].sort();
+        countries.forEach(country => {
+            const opt = document.createElement('option');
+            opt.value = country;
+            opt.textContent = country;
+            filterCountry.appendChild(opt);
+        });
+
+        const years = [...new Set(caseData.map(c => new Date(c.date + 'T00:00:00').getFullYear()))].sort((a, b) => b - a);
+        years.forEach(year => {
+            const opt = document.createElement('option');
+            opt.value = year;
+            opt.textContent = year;
+            filterYear.appendChild(opt);
+        });
+
+        // Render list items
+        sorted.forEach(c => {
+            const d = new Date(c.date + 'T00:00:00');
+            const mo = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+            const yr = d.getFullYear();
+            const li = document.createElement('li');
+            li.dataset.country = c.country;
+            li.dataset.year = yr;
+            const label = `${c.location}, ${c.country} \u2014 ${c.victims} victim${c.victims !== 1 ? 's' : ''} (${c.schoolType})`;
+            if (c.sourceUrl) {
+                li.innerHTML = `<a href="${c.sourceUrl}" target="_blank">${label}</a><span class="source-meta">${c.source} &middot; ${mo}</span>`;
+            } else {
+                li.innerHTML = `<span style="font-weight:500;font-size:15px;">${label}</span><span class="source-meta">${c.source} &middot; ${mo}</span>`;
+            }
+            sourceList.appendChild(li);
+        });
+
+        // Filter logic
+        function applyFilters() {
+            const selCountry = filterCountry.value;
+            const selYear = filterYear.value;
+            sourceList.querySelectorAll('li').forEach(li => {
+                const matchCountry = selCountry === 'all' || li.dataset.country === selCountry;
+                const matchYear = selYear === 'all' || li.dataset.year === selYear;
+                li.classList.toggle('hidden', !(matchCountry && matchYear));
+            });
+        }
+
+        filterCountry.addEventListener('change', applyFilters);
+        filterYear.addEventListener('change', applyFilters);
+    </script>
+</body>
+</html>
