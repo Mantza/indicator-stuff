@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>1win — Network Graph</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Roboto', sans-serif; background: #ffffff; color: #1a1a2e; overflow: hidden; }
+  #graph { width: 100vw; height: 100vh; }
+  svg { display: block; }
+
+  .panel {
+    position: fixed; background: rgba(255,255,255,0.96); border: 1px solid #d0d8f0;
+    border-radius: 8px; padding: 14px 18px; font-size: 14px; z-index: 10;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  .legend { top: 16px; left: 16px; min-width: 210px; }
+  .legend h2 { font-size: 18px; color: #2451C9; margin-bottom: 10px; font-weight: 700; letter-spacing: -0.3px; }
+  .legend-section { margin-bottom: 8px; }
+  .legend-section h3 { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; font-weight: 500; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-line { width: 24px; height: 0; flex-shrink: 0; border-top: 2px solid; }
+  .legend-line.dashed { border-top-style: dashed; }
+  .legend-label { color: #4b5563; font-size: 13px; }
+
+  .controls { top: 16px; right: 16px; display: flex; flex-direction: column; gap: 6px; }
+  .controls label { display: flex; align-items: center; gap: 6px; color: #4b5563; cursor: pointer; font-size: 13px; }
+  .controls input[type="checkbox"] { accent-color: #2451C9; }
+
+  .stats { bottom: 16px; left: 16px; color: #6b7280; font-size: 13px; }
+  .stats span { color: #2451C9; font-weight: 700; }
+
+  .tooltip {
+    position: fixed; background: rgba(255,255,255,0.98); border: 1px solid #2451C9; border-radius: 6px;
+    padding: 10px 14px; font-size: 14px; color: #1a1a2e; pointer-events: none; z-index: 20; display: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: opacity 0.15s;
+  }
+  .tooltip.pinned { pointer-events: auto; }
+  .tooltip a { color: #2451C9; text-decoration: none; }
+  .tooltip a:hover { text-decoration: underline; }
+  .tooltip .handle { font-weight: 700; color: #2451C9; font-size: 15px; }
+  .tooltip .detail { color: #6b7280; margin-top: 2px; font-size: 13px; }
+  .tooltip .click-hint { color: #9ca3af; font-size: 11px; margin-top: 4px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div id="graph"></div>
+
+<div class="panel legend">
+  <h2>1win Network</h2>
+  <div class="legend-section">
+    <h3>19 accounts</h3>
+    <div class="legend-item"><div class="legend-dot" style="background:#2451C9;"></div><span class="legend-label">AI-generated persona</span></div>
+    <div class="legend-item" style="margin-top:2px;"><span class="legend-label" style="font-size:11px;color:#9ca3af;">Size = follower count</span></div>
+  </div>
+  <div class="legend-section">
+    <h3>Connections</h3>
+    <div class="legend-item"><div class="legend-line" style="border-color:#8896ab;"></div><span class="legend-label">Cross-follow</span></div>
+    <div class="legend-item"><div class="legend-line dashed" style="border-color:#ECBB2D; border-width:2px;"></div><span class="legend-label">Shared video template</span></div>
+    <div class="legend-item"><div class="legend-line" style="border-color:#7c6ce0; border-width:2px;"></div><span class="legend-label">Both</span></div>
+  </div>
+  <div class="legend-section" style="margin-top:4px;">
+    <span class="legend-label" style="font-size:11px;color:#9ca3af;">Click a node to pin tooltip, then click the link to visit the profile.</span>
+  </div>
+</div>
+
+<div class="panel controls">
+  <label><input type="checkbox" id="togFollows" checked> Follows</label>
+  <label><input type="checkbox" id="togTemplates" checked> Templates</label>
+  <label><input type="checkbox" id="togLabels" checked> Labels</label>
+</div>
+
+<div class="panel stats">
+  Accounts: <span>19</span> · Follows: <span id="stat-follows">0</span> · Template pairs: <span id="stat-templates">0</span>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+// --- DATA ---
+const accounts = [
+  { id: "val.derossi", followers: "294K" },
+  { id: "val.derossi.vault", followers: "148K" },
+  { id: "novasinclair_", followers: "277K" },
+  { id: "valeria_derossi", followers: "96K" },
+  { id: "vossalina.boss", followers: "144K" },
+  { id: "eva_vvibes", followers: "81K" },
+  { id: "isla_latina2", followers: "78K" },
+  { id: "sienna_vellori", followers: "24K" },
+  { id: "giacollinc", followers: "211K" },
+  { id: "maud.smithson", followers: "77K" },
+  { id: "mavis__turton", followers: "226K" },
+  { id: "jane.flahertty", followers: "49K" },
+  { id: "marianaravelin", followers: "44K" },
+  { id: "dorothy.battenn", followers: "25K" },
+  { id: "antonia_sparkling", followers: "25K" },
+  { id: "christine.charmy", followers: "38K" },
+  { id: "teresa.dalzell", followers: "27K" },
+  { id: "melanie.buxxton", followers: "53K" },
+  { id: "colleen.dicksson", followers: "33K" },
+];
+const acctUrl = {};
+accounts.forEach(a => acctUrl[a.id] = 'https://www.instagram.com/' + a.id.replace(/_$/, '_'));
+
+const followEdges = [
+  ["val.derossi","novasinclair_"],["val.derossi","valeria_derossi"],["val.derossi","eva_vvibes"],
+  ["val.derossi","isla_latina2"],["val.derossi","sienna_vellori"],["val.derossi","vossalina.boss"],
+  ["val.derossi","val.derossi.vault"],
+  ["vossalina.boss","val.derossi"],["vossalina.boss","val.derossi.vault"],["vossalina.boss","novasinclair_"],
+  ["vossalina.boss","valeria_derossi"],["val.derossi.vault","val.derossi"],
+  ["novasinclair_","val.derossi"],["novasinclair_","vossalina.boss"],
+  ["valeria_derossi","val.derossi"],["valeria_derossi","novasinclair_"],
+  ["sienna_vellori","val.derossi"],["sienna_vellori","val.derossi.vault"],
+  ["eva_vvibes","val.derossi"],["eva_vvibes","isla_latina2"],["isla_latina2","val.derossi"],
+  ["giacollinc","eva_vvibes"],["christine.charmy","melanie.buxxton"],
+];
+
+const templateEdgesRaw = [
+  { source: "colleen.dicksson", target: "marianaravelin", desc: "Beach walk" },
+  { source: "colleen.dicksson", target: "maud.smithson", desc: "Beach walk" },
+  { source: "colleen.dicksson", target: "mavis__turton", desc: "Beach walk" },
+  { source: "colleen.dicksson", target: "melanie.buxxton", desc: "Beach walk" },
+  { source: "colleen.dicksson", target: "novasinclair_", desc: "Beach walk" },
+  { source: "colleen.dicksson", target: "val.derossi.vault", desc: "Beach walk" },
+  { source: "colleen.dicksson", target: "vossalina.boss", desc: "Beach walk" },
+  { source: "marianaravelin", target: "maud.smithson", desc: "Beach walk" },
+  { source: "marianaravelin", target: "mavis__turton", desc: "Beach walk" },
+  { source: "marianaravelin", target: "melanie.buxxton", desc: "Beach walk" },
+  { source: "marianaravelin", target: "novasinclair_", desc: "Beach walk" },
+  { source: "marianaravelin", target: "val.derossi.vault", desc: "Beach walk" },
+  { source: "marianaravelin", target: "vossalina.boss", desc: "Beach walk" },
+  { source: "maud.smithson", target: "mavis__turton", desc: "Beach walk" },
+  { source: "maud.smithson", target: "melanie.buxxton", desc: "Beach walk" },
+  { source: "maud.smithson", target: "novasinclair_", desc: "Beach walk" },
+  { source: "maud.smithson", target: "val.derossi.vault", desc: "Beach walk" },
+  { source: "maud.smithson", target: "vossalina.boss", desc: "Beach walk" },
+  { source: "mavis__turton", target: "melanie.buxxton", desc: "Beach walk" },
+  { source: "mavis__turton", target: "novasinclair_", desc: "Beach walk" },
+  { source: "mavis__turton", target: "val.derossi.vault", desc: "Beach walk" },
+  { source: "mavis__turton", target: "vossalina.boss", desc: "Beach walk" },
+  { source: "melanie.buxxton", target: "novasinclair_", desc: "Beach walk" },
+  { source: "melanie.buxxton", target: "val.derossi.vault", desc: "Beach walk" },
+  { source: "melanie.buxxton", target: "vossalina.boss", desc: "Beach walk" },
+  { source: "novasinclair_", target: "val.derossi.vault", desc: "Beach walk" },
+  { source: "novasinclair_", target: "vossalina.boss", desc: "Beach walk" },
+  { source: "val.derossi.vault", target: "vossalina.boss", desc: "Beach walk" },
+  { source: "jane.flahertty", target: "teresa.dalzell", desc: "Black top DJ" },
+  { source: "antonia_sparkling", target: "christine.charmy", desc: "Cobblestone street" },
+  { source: "antonia_sparkling", target: "jane.flahertty", desc: "Cobblestone street" },
+  { source: "antonia_sparkling", target: "mavis__turton", desc: "Cobblestone street" },
+  { source: "antonia_sparkling", target: "valeria_derossi", desc: "Cobblestone street" },
+  { source: "antonia_sparkling", target: "vossalina.boss", desc: "Cobblestone street" },
+  { source: "christine.charmy", target: "jane.flahertty", desc: "Cobblestone street" },
+  { source: "christine.charmy", target: "mavis__turton", desc: "Cobblestone street" },
+  { source: "christine.charmy", target: "valeria_derossi", desc: "Cobblestone street" },
+  { source: "christine.charmy", target: "vossalina.boss", desc: "Cobblestone street" },
+  { source: "jane.flahertty", target: "mavis__turton", desc: "Cobblestone street" },
+  { source: "jane.flahertty", target: "valeria_derossi", desc: "Cobblestone street" },
+  { source: "jane.flahertty", target: "vossalina.boss", desc: "Cobblestone street" },
+  { source: "mavis__turton", target: "valeria_derossi", desc: "Cobblestone street" },
+  { source: "mavis__turton", target: "vossalina.boss", desc: "Cobblestone street" },
+  { source: "valeria_derossi", target: "vossalina.boss", desc: "Cobblestone street" },
+  { source: "marianaravelin", target: "melanie.buxxton", desc: "Crossing street" },
+  { source: "antonia_sparkling", target: "christine.charmy", desc: "Hide face" },
+  { source: "antonia_sparkling", target: "colleen.dicksson", desc: "Hide face" },
+  { source: "antonia_sparkling", target: "giacollinc", desc: "Hide face" },
+  { source: "antonia_sparkling", target: "novasinclair_", desc: "Hide face" },
+  { source: "antonia_sparkling", target: "val.derossi", desc: "Hide face" },
+  { source: "christine.charmy", target: "colleen.dicksson", desc: "Hide face" },
+  { source: "christine.charmy", target: "giacollinc", desc: "Hide face" },
+  { source: "christine.charmy", target: "novasinclair_", desc: "Hide face" },
+  { source: "christine.charmy", target: "val.derossi", desc: "Hide face" },
+  { source: "colleen.dicksson", target: "giacollinc", desc: "Hide face" },
+  { source: "colleen.dicksson", target: "novasinclair_", desc: "Hide face" },
+  { source: "colleen.dicksson", target: "val.derossi", desc: "Hide face" },
+  { source: "giacollinc", target: "novasinclair_", desc: "Hide face" },
+  { source: "giacollinc", target: "val.derossi", desc: "Hide face" },
+  { source: "novasinclair_", target: "val.derossi", desc: "Hide face" },
+  { source: "antonia_sparkling", target: "christine.charmy", desc: "Leopard dress" },
+  { source: "antonia_sparkling", target: "eva_vvibes", desc: "Leopard dress" },
+  { source: "antonia_sparkling", target: "jane.flahertty", desc: "Leopard dress" },
+  { source: "antonia_sparkling", target: "marianaravelin", desc: "Leopard dress" },
+  { source: "antonia_sparkling", target: "maud.smithson", desc: "Leopard dress" },
+  { source: "antonia_sparkling", target: "melanie.buxxton", desc: "Leopard dress" },
+  { source: "antonia_sparkling", target: "novasinclair_", desc: "Leopard dress" },
+  { source: "antonia_sparkling", target: "sienna_vellori", desc: "Leopard dress" },
+  { source: "antonia_sparkling", target: "val.derossi", desc: "Leopard dress" },
+  { source: "antonia_sparkling", target: "vossalina.boss", desc: "Leopard dress" },
+  { source: "christine.charmy", target: "eva_vvibes", desc: "Leopard dress" },
+  { source: "christine.charmy", target: "jane.flahertty", desc: "Leopard dress" },
+  { source: "christine.charmy", target: "marianaravelin", desc: "Leopard dress" },
+  { source: "christine.charmy", target: "maud.smithson", desc: "Leopard dress" },
+  { source: "christine.charmy", target: "melanie.buxxton", desc: "Leopard dress" },
+  { source: "christine.charmy", target: "novasinclair_", desc: "Leopard dress" },
+  { source: "christine.charmy", target: "sienna_vellori", desc: "Leopard dress" },
+  { source: "christine.charmy", target: "val.derossi", desc: "Leopard dress" },
+  { source: "christine.charmy", target: "vossalina.boss", desc: "Leopard dress" },
+  { source: "eva_vvibes", target: "jane.flahertty", desc: "Leopard dress" },
+  { source: "eva_vvibes", target: "marianaravelin", desc: "Leopard dress" },
+  { source: "eva_vvibes", target: "maud.smithson", desc: "Leopard dress" },
+  { source: "eva_vvibes", target: "melanie.buxxton", desc: "Leopard dress" },
+  { source: "eva_vvibes", target: "novasinclair_", desc: "Leopard dress" },
+  { source: "eva_vvibes", target: "sienna_vellori", desc: "Leopard dress" },
+  { source: "eva_vvibes", target: "val.derossi", desc: "Leopard dress" },
+  { source: "eva_vvibes", target: "vossalina.boss", desc: "Leopard dress" },
+  { source: "jane.flahertty", target: "marianaravelin", desc: "Leopard dress" },
+  { source: "jane.flahertty", target: "maud.smithson", desc: "Leopard dress" },
+  { source: "jane.flahertty", target: "melanie.buxxton", desc: "Leopard dress" },
+  { source: "jane.flahertty", target: "novasinclair_", desc: "Leopard dress" },
+  { source: "jane.flahertty", target: "sienna_vellori", desc: "Leopard dress" },
+  { source: "jane.flahertty", target: "val.derossi", desc: "Leopard dress" },
+  { source: "jane.flahertty", target: "vossalina.boss", desc: "Leopard dress" },
+  { source: "marianaravelin", target: "maud.smithson", desc: "Leopard dress" },
+  { source: "marianaravelin", target: "melanie.buxxton", desc: "Leopard dress" },
+  { source: "marianaravelin", target: "novasinclair_", desc: "Leopard dress" },
+  { source: "marianaravelin", target: "sienna_vellori", desc: "Leopard dress" },
+  { source: "marianaravelin", target: "val.derossi", desc: "Leopard dress" },
+  { source: "marianaravelin", target: "vossalina.boss", desc: "Leopard dress" },
+  { source: "maud.smithson", target: "melanie.buxxton", desc: "Leopard dress" },
+  { source: "maud.smithson", target: "novasinclair_", desc: "Leopard dress" },
+  { source: "maud.smithson", target: "sienna_vellori", desc: "Leopard dress" },
+  { source: "maud.smithson", target: "val.derossi", desc: "Leopard dress" },
+  { source: "maud.smithson", target: "vossalina.boss", desc: "Leopard dress" },
+  { source: "melanie.buxxton", target: "novasinclair_", desc: "Leopard dress" },
+  { source: "melanie.buxxton", target: "sienna_vellori", desc: "Leopard dress" },
+  { source: "melanie.buxxton", target: "val.derossi", desc: "Leopard dress" },
+  { source: "melanie.buxxton", target: "vossalina.boss", desc: "Leopard dress" },
+  { source: "novasinclair_", target: "sienna_vellori", desc: "Leopard dress" },
+  { source: "novasinclair_", target: "val.derossi", desc: "Leopard dress" },
+  { source: "novasinclair_", target: "vossalina.boss", desc: "Leopard dress" },
+  { source: "sienna_vellori", target: "val.derossi", desc: "Leopard dress" },
+  { source: "sienna_vellori", target: "vossalina.boss", desc: "Leopard dress" },
+  { source: "val.derossi", target: "vossalina.boss", desc: "Leopard dress" },
+  { source: "christine.charmy", target: "eva_vvibes", desc: "Maid outfit" },
+  { source: "christine.charmy", target: "jane.flahertty", desc: "Maid outfit" },
+  { source: "christine.charmy", target: "marianaravelin", desc: "Maid outfit" },
+  { source: "christine.charmy", target: "maud.smithson", desc: "Maid outfit" },
+  { source: "christine.charmy", target: "mavis__turton", desc: "Maid outfit" },
+  { source: "christine.charmy", target: "val.derossi", desc: "Maid outfit" },
+  { source: "christine.charmy", target: "vossalina.boss", desc: "Maid outfit" },
+  { source: "eva_vvibes", target: "jane.flahertty", desc: "Maid outfit" },
+  { source: "eva_vvibes", target: "marianaravelin", desc: "Maid outfit" },
+  { source: "eva_vvibes", target: "maud.smithson", desc: "Maid outfit" },
+  { source: "eva_vvibes", target: "mavis__turton", desc: "Maid outfit" },
+  { source: "eva_vvibes", target: "val.derossi", desc: "Maid outfit" },
+  { source: "eva_vvibes", target: "vossalina.boss", desc: "Maid outfit" },
+  { source: "jane.flahertty", target: "marianaravelin", desc: "Maid outfit" },
+  { source: "jane.flahertty", target: "maud.smithson", desc: "Maid outfit" },
+  { source: "jane.flahertty", target: "mavis__turton", desc: "Maid outfit" },
+  { source: "jane.flahertty", target: "val.derossi", desc: "Maid outfit" },
+  { source: "jane.flahertty", target: "vossalina.boss", desc: "Maid outfit" },
+  { source: "marianaravelin", target: "maud.smithson", desc: "Maid outfit" },
+  { source: "marianaravelin", target: "mavis__turton", desc: "Maid outfit" },
+  { source: "marianaravelin", target: "val.derossi", desc: "Maid outfit" },
+  { source: "marianaravelin", target: "vossalina.boss", desc: "Maid outfit" },
+  { source: "maud.smithson", target: "mavis__turton", desc: "Maid outfit" },
+  { source: "maud.smithson", target: "val.derossi", desc: "Maid outfit" },
+  { source: "maud.smithson", target: "vossalina.boss", desc: "Maid outfit" },
+  { source: "mavis__turton", target: "val.derossi", desc: "Maid outfit" },
+  { source: "mavis__turton", target: "vossalina.boss", desc: "Maid outfit" },
+  { source: "val.derossi", target: "vossalina.boss", desc: "Maid outfit" },
+  { source: "christine.charmy", target: "colleen.dicksson", desc: "Red dress" },
+  { source: "christine.charmy", target: "dorothy.battenn", desc: "Red dress" },
+  { source: "christine.charmy", target: "giacollinc", desc: "Red dress" },
+  { source: "christine.charmy", target: "marianaravelin", desc: "Red dress" },
+  { source: "christine.charmy", target: "mavis__turton", desc: "Red dress" },
+  { source: "christine.charmy", target: "melanie.buxxton", desc: "Red dress" },
+  { source: "christine.charmy", target: "teresa.dalzell", desc: "Red dress" },
+  { source: "christine.charmy", target: "val.derossi", desc: "Red dress" },
+  { source: "colleen.dicksson", target: "dorothy.battenn", desc: "Red dress" },
+  { source: "colleen.dicksson", target: "giacollinc", desc: "Red dress" },
+  { source: "colleen.dicksson", target: "marianaravelin", desc: "Red dress" },
+  { source: "colleen.dicksson", target: "mavis__turton", desc: "Red dress" },
+  { source: "colleen.dicksson", target: "melanie.buxxton", desc: "Red dress" },
+  { source: "colleen.dicksson", target: "teresa.dalzell", desc: "Red dress" },
+  { source: "colleen.dicksson", target: "val.derossi", desc: "Red dress" },
+  { source: "dorothy.battenn", target: "giacollinc", desc: "Red dress" },
+  { source: "dorothy.battenn", target: "marianaravelin", desc: "Red dress" },
+  { source: "dorothy.battenn", target: "mavis__turton", desc: "Red dress" },
+  { source: "dorothy.battenn", target: "melanie.buxxton", desc: "Red dress" },
+  { source: "dorothy.battenn", target: "teresa.dalzell", desc: "Red dress" },
+  { source: "dorothy.battenn", target: "val.derossi", desc: "Red dress" },
+  { source: "giacollinc", target: "marianaravelin", desc: "Red dress" },
+  { source: "giacollinc", target: "mavis__turton", desc: "Red dress" },
+  { source: "giacollinc", target: "melanie.buxxton", desc: "Red dress" },
+  { source: "giacollinc", target: "teresa.dalzell", desc: "Red dress" },
+  { source: "giacollinc", target: "val.derossi", desc: "Red dress" },
+  { source: "marianaravelin", target: "mavis__turton", desc: "Red dress" },
+  { source: "marianaravelin", target: "melanie.buxxton", desc: "Red dress" },
+  { source: "marianaravelin", target: "teresa.dalzell", desc: "Red dress" },
+  { source: "marianaravelin", target: "val.derossi", desc: "Red dress" },
+  { source: "mavis__turton", target: "melanie.buxxton", desc: "Red dress" },
+  { source: "mavis__turton", target: "teresa.dalzell", desc: "Red dress" },
+  { source: "mavis__turton", target: "val.derossi", desc: "Red dress" },
+  { source: "melanie.buxxton", target: "teresa.dalzell", desc: "Red dress" },
+  { source: "melanie.buxxton", target: "val.derossi", desc: "Red dress" },
+  { source: "teresa.dalzell", target: "val.derossi", desc: "Red dress" },
+  { source: "christine.charmy", target: "dorothy.battenn", desc: "Shopping" },
+  { source: "christine.charmy", target: "eva_vvibes", desc: "Shopping" },
+  { source: "christine.charmy", target: "jane.flahertty", desc: "Shopping" },
+  { source: "christine.charmy", target: "maud.smithson", desc: "Shopping" },
+  { source: "christine.charmy", target: "mavis__turton", desc: "Shopping" },
+  { source: "christine.charmy", target: "melanie.buxxton", desc: "Shopping" },
+  { source: "christine.charmy", target: "novasinclair_", desc: "Shopping" },
+  { source: "christine.charmy", target: "sienna_vellori", desc: "Shopping" },
+  { source: "christine.charmy", target: "teresa.dalzell", desc: "Shopping" },
+  { source: "christine.charmy", target: "val.derossi", desc: "Shopping" },
+  { source: "christine.charmy", target: "vossalina.boss", desc: "Shopping" },
+  { source: "dorothy.battenn", target: "eva_vvibes", desc: "Shopping" },
+  { source: "dorothy.battenn", target: "jane.flahertty", desc: "Shopping" },
+  { source: "dorothy.battenn", target: "maud.smithson", desc: "Shopping" },
+  { source: "dorothy.battenn", target: "mavis__turton", desc: "Shopping" },
+  { source: "dorothy.battenn", target: "melanie.buxxton", desc: "Shopping" },
+  { source: "dorothy.battenn", target: "novasinclair_", desc: "Shopping" },
+  { source: "dorothy.battenn", target: "sienna_vellori", desc: "Shopping" },
+  { source: "dorothy.battenn", target: "teresa.dalzell", desc: "Shopping" },
+  { source: "dorothy.battenn", target: "val.derossi", desc: "Shopping" },
+  { source: "dorothy.battenn", target: "vossalina.boss", desc: "Shopping" },
+  { source: "eva_vvibes", target: "jane.flahertty", desc: "Shopping" },
+  { source: "eva_vvibes", target: "maud.smithson", desc: "Shopping" },
+  { source: "eva_vvibes", target: "mavis__turton", desc: "Shopping" },
+  { source: "eva_vvibes", target: "melanie.buxxton", desc: "Shopping" },
+  { source: "eva_vvibes", target: "novasinclair_", desc: "Shopping" },
+  { source: "eva_vvibes", target: "sienna_vellori", desc: "Shopping" },
+  { source: "eva_vvibes", target: "teresa.dalzell", desc: "Shopping" },
+  { source: "eva_vvibes", target: "val.derossi", desc: "Shopping" },
+  { source: "eva_vvibes", target: "vossalina.boss", desc: "Shopping" },
+  { source: "jane.flahertty", target: "maud.smithson", desc: "Shopping" },
+  { source: "jane.flahertty", target: "mavis__turton", desc: "Shopping" },
+  { source: "jane.flahertty", target: "melanie.buxxton", desc: "Shopping" },
+  { source: "jane.flahertty", target: "novasinclair_", desc: "Shopping" },
+  { source: "jane.flahertty", target: "sienna_vellori", desc: "Shopping" },
+  { source: "jane.flahertty", target: "teresa.dalzell", desc: "Shopping" },
+  { source: "jane.flahertty", target: "val.derossi", desc: "Shopping" },
+  { source: "jane.flahertty", target: "vossalina.boss", desc: "Shopping" },
+  { source: "maud.smithson", target: "mavis__turton", desc: "Shopping" },
+  { source: "maud.smithson", target: "melanie.buxxton", desc: "Shopping" },
+  { source: "maud.smithson", target: "novasinclair_", desc: "Shopping" },
+  { source: "maud.smithson", target: "sienna_vellori", desc: "Shopping" },
+  { source: "maud.smithson", target: "teresa.dalzell", desc: "Shopping" },
+  { source: "maud.smithson", target: "val.derossi", desc: "Shopping" },
+  { source: "maud.smithson", target: "vossalina.boss", desc: "Shopping" },
+  { source: "mavis__turton", target: "melanie.buxxton", desc: "Shopping" },
+  { source: "mavis__turton", target: "novasinclair_", desc: "Shopping" },
+  { source: "mavis__turton", target: "sienna_vellori", desc: "Shopping" },
+  { source: "mavis__turton", target: "teresa.dalzell", desc: "Shopping" },
+  { source: "mavis__turton", target: "val.derossi", desc: "Shopping" },
+  { source: "mavis__turton", target: "vossalina.boss", desc: "Shopping" },
+  { source: "melanie.buxxton", target: "novasinclair_", desc: "Shopping" },
+  { source: "melanie.buxxton", target: "sienna_vellori", desc: "Shopping" },
+  { source: "melanie.buxxton", target: "teresa.dalzell", desc: "Shopping" },
+  { source: "melanie.buxxton", target: "val.derossi", desc: "Shopping" },
+  { source: "melanie.buxxton", target: "vossalina.boss", desc: "Shopping" },
+  { source: "novasinclair_", target: "sienna_vellori", desc: "Shopping" },
+  { source: "novasinclair_", target: "teresa.dalzell", desc: "Shopping" },
+  { source: "novasinclair_", target: "val.derossi", desc: "Shopping" },
+  { source: "novasinclair_", target: "vossalina.boss", desc: "Shopping" },
+  { source: "sienna_vellori", target: "teresa.dalzell", desc: "Shopping" },
+  { source: "sienna_vellori", target: "val.derossi", desc: "Shopping" },
+  { source: "sienna_vellori", target: "vossalina.boss", desc: "Shopping" },
+  { source: "teresa.dalzell", target: "val.derossi", desc: "Shopping" },
+  { source: "teresa.dalzell", target: "vossalina.boss", desc: "Shopping" },
+  { source: "val.derossi", target: "vossalina.boss", desc: "Shopping" },
+  { source: "christine.charmy", target: "colleen.dicksson", desc: "Tube dress" },
+  { source: "christine.charmy", target: "dorothy.battenn", desc: "Tube dress" },
+  { source: "christine.charmy", target: "eva_vvibes", desc: "Tube dress" },
+  { source: "christine.charmy", target: "jane.flahertty", desc: "Tube dress" },
+  { source: "christine.charmy", target: "mavis__turton", desc: "Tube dress" },
+  { source: "christine.charmy", target: "melanie.buxxton", desc: "Tube dress" },
+  { source: "christine.charmy", target: "novasinclair_", desc: "Tube dress" },
+  { source: "christine.charmy", target: "sienna_vellori", desc: "Tube dress" },
+  { source: "christine.charmy", target: "teresa.dalzell", desc: "Tube dress" },
+  { source: "christine.charmy", target: "val.derossi", desc: "Tube dress" },
+  { source: "christine.charmy", target: "vossalina.boss", desc: "Tube dress" },
+  { source: "colleen.dicksson", target: "dorothy.battenn", desc: "Tube dress" },
+  { source: "colleen.dicksson", target: "eva_vvibes", desc: "Tube dress" },
+  { source: "colleen.dicksson", target: "jane.flahertty", desc: "Tube dress" },
+  { source: "colleen.dicksson", target: "mavis__turton", desc: "Tube dress" },
+  { source: "colleen.dicksson", target: "melanie.buxxton", desc: "Tube dress" },
+  { source: "colleen.dicksson", target: "novasinclair_", desc: "Tube dress" },
+  { source: "colleen.dicksson", target: "sienna_vellori", desc: "Tube dress" },
+  { source: "colleen.dicksson", target: "teresa.dalzell", desc: "Tube dress" },
+  { source: "colleen.dicksson", target: "val.derossi", desc: "Tube dress" },
+  { source: "colleen.dicksson", target: "vossalina.boss", desc: "Tube dress" },
+  { source: "dorothy.battenn", target: "eva_vvibes", desc: "Tube dress" },
+  { source: "dorothy.battenn", target: "jane.flahertty", desc: "Tube dress" },
+  { source: "dorothy.battenn", target: "mavis__turton", desc: "Tube dress" },
+  { source: "dorothy.battenn", target: "melanie.buxxton", desc: "Tube dress" },
+  { source: "dorothy.battenn", target: "novasinclair_", desc: "Tube dress" },
+  { source: "dorothy.battenn", target: "sienna_vellori", desc: "Tube dress" },
+  { source: "dorothy.battenn", target: "teresa.dalzell", desc: "Tube dress" },
+  { source: "dorothy.battenn", target: "val.derossi", desc: "Tube dress" },
+  { source: "dorothy.battenn", target: "vossalina.boss", desc: "Tube dress" },
+  { source: "eva_vvibes", target: "jane.flahertty", desc: "Tube dress" },
+  { source: "eva_vvibes", target: "mavis__turton", desc: "Tube dress" },
+  { source: "eva_vvibes", target: "melanie.buxxton", desc: "Tube dress" },
+  { source: "eva_vvibes", target: "novasinclair_", desc: "Tube dress" },
+  { source: "eva_vvibes", target: "sienna_vellori", desc: "Tube dress" },
+  { source: "eva_vvibes", target: "teresa.dalzell", desc: "Tube dress" },
+  { source: "eva_vvibes", target: "val.derossi", desc: "Tube dress" },
+  { source: "eva_vvibes", target: "vossalina.boss", desc: "Tube dress" },
+  { source: "jane.flahertty", target: "mavis__turton", desc: "Tube dress" },
+  { source: "jane.flahertty", target: "melanie.buxxton", desc: "Tube dress" },
+  { source: "jane.flahertty", target: "novasinclair_", desc: "Tube dress" },
+  { source: "jane.flahertty", target: "sienna_vellori", desc: "Tube dress" },
+  { source: "jane.flahertty", target: "teresa.dalzell", desc: "Tube dress" },
+  { source: "jane.flahertty", target: "val.derossi", desc: "Tube dress" },
+  { source: "jane.flahertty", target: "vossalina.boss", desc: "Tube dress" },
+  { source: "mavis__turton", target: "melanie.buxxton", desc: "Tube dress" },
+  { source: "mavis__turton", target: "novasinclair_", desc: "Tube dress" },
+  { source: "mavis__turton", target: "sienna_vellori", desc: "Tube dress" },
+  { source: "mavis__turton", target: "teresa.dalzell", desc: "Tube dress" },
+  { source: "mavis__turton", target: "val.derossi", desc: "Tube dress" },
+  { source: "mavis__turton", target: "vossalina.boss", desc: "Tube dress" },
+  { source: "melanie.buxxton", target: "novasinclair_", desc: "Tube dress" },
+  { source: "melanie.buxxton", target: "sienna_vellori", desc: "Tube dress" },
+  { source: "melanie.buxxton", target: "teresa.dalzell", desc: "Tube dress" },
+  { source: "melanie.buxxton", target: "val.derossi", desc: "Tube dress" },
+  { source: "melanie.buxxton", target: "vossalina.boss", desc: "Tube dress" },
+  { source: "novasinclair_", target: "sienna_vellori", desc: "Tube dress" },
+  { source: "novasinclair_", target: "teresa.dalzell", desc: "Tube dress" },
+  { source: "novasinclair_", target: "val.derossi", desc: "Tube dress" },
+  { source: "novasinclair_", target: "vossalina.boss", desc: "Tube dress" },
+  { source: "sienna_vellori", target: "teresa.dalzell", desc: "Tube dress" },
+  { source: "sienna_vellori", target: "val.derossi", desc: "Tube dress" },
+  { source: "sienna_vellori", target: "vossalina.boss", desc: "Tube dress" },
+  { source: "teresa.dalzell", target: "val.derossi", desc: "Tube dress" },
+  { source: "teresa.dalzell", target: "vossalina.boss", desc: "Tube dress" },
+  { source: "val.derossi", target: "vossalina.boss", desc: "Tube dress" },
+  { source: "antonia_sparkling", target: "christine.charmy", desc: "Yoga pose" },
+  { source: "antonia_sparkling", target: "colleen.dicksson", desc: "Yoga pose" },
+  { source: "antonia_sparkling", target: "eva_vvibes", desc: "Yoga pose" },
+  { source: "antonia_sparkling", target: "maud.smithson", desc: "Yoga pose" },
+  { source: "antonia_sparkling", target: "novasinclair_", desc: "Yoga pose" },
+  { source: "antonia_sparkling", target: "val.derossi.vault", desc: "Yoga pose" },
+  { source: "antonia_sparkling", target: "valeria_derossi", desc: "Yoga pose" },
+  { source: "christine.charmy", target: "colleen.dicksson", desc: "Yoga pose" },
+  { source: "christine.charmy", target: "eva_vvibes", desc: "Yoga pose" },
+  { source: "christine.charmy", target: "maud.smithson", desc: "Yoga pose" },
+  { source: "christine.charmy", target: "novasinclair_", desc: "Yoga pose" },
+  { source: "christine.charmy", target: "val.derossi.vault", desc: "Yoga pose" },
+  { source: "christine.charmy", target: "valeria_derossi", desc: "Yoga pose" },
+  { source: "colleen.dicksson", target: "eva_vvibes", desc: "Yoga pose" },
+  { source: "colleen.dicksson", target: "maud.smithson", desc: "Yoga pose" },
+  { source: "colleen.dicksson", target: "novasinclair_", desc: "Yoga pose" },
+  { source: "colleen.dicksson", target: "val.derossi.vault", desc: "Yoga pose" },
+  { source: "colleen.dicksson", target: "valeria_derossi", desc: "Yoga pose" },
+  { source: "eva_vvibes", target: "maud.smithson", desc: "Yoga pose" },
+  { source: "eva_vvibes", target: "novasinclair_", desc: "Yoga pose" },
+  { source: "eva_vvibes", target: "val.derossi.vault", desc: "Yoga pose" },
+  { source: "eva_vvibes", target: "valeria_derossi", desc: "Yoga pose" },
+  { source: "maud.smithson", target: "novasinclair_", desc: "Yoga pose" },
+  { source: "maud.smithson", target: "val.derossi.vault", desc: "Yoga pose" },
+  { source: "maud.smithson", target: "valeria_derossi", desc: "Yoga pose" },
+  { source: "novasinclair_", target: "val.derossi.vault", desc: "Yoga pose" },
+  { source: "novasinclair_", target: "valeria_derossi", desc: "Yoga pose" },
+  { source: "val.derossi.vault", target: "valeria_derossi", desc: "Yoga pose" },
+];
+
+// --- GRAPH ENGINE ---
+const followPairSet = new Set();
+const followLinks = [];
+followEdges.forEach(([s,t]) => {
+  const key = [s,t].sort().join('|');
+  if (!followPairSet.has(key)) { followPairSet.add(key); followLinks.push({ source: s, target: t, type: 'follow' }); }
+});
+
+const templatePairMap = {};
+templateEdgesRaw.forEach(e => {
+  const key = [e.source, e.target].sort().join('|');
+  if (!templatePairMap[key]) templatePairMap[key] = { source: e.source, target: e.target, descs: [], type: 'template' };
+  if (!templatePairMap[key].descs.includes(e.desc)) templatePairMap[key].descs.push(e.desc);
+});
+const templateLinks = Object.values(templatePairMap);
+
+const allLinks = [];
+const templatePairKeys = new Set(Object.keys(templatePairMap));
+followLinks.forEach(l => { const k = [l.source, l.target].sort().join('|'); if (!templatePairKeys.has(k)) allLinks.push({...l}); });
+templateLinks.forEach(l => { const k = [l.source, l.target].sort().join('|'); allLinks.push({...l, type: followPairSet.has(k) ? 'both' : 'template'}); });
+
+document.getElementById('stat-follows').textContent = followLinks.length;
+document.getElementById('stat-templates').textContent = templateLinks.length;
+
+// --- DYNAMIC TIER COMPUTATION ---
+// Count unique connections per account (follow + template, deduplicated)
+const connectionCount = {};
+accounts.forEach(a => connectionCount[a.id] = new Set());
+allLinks.forEach(l => {
+  const src = typeof l.source === 'object' ? l.source.id : l.source;
+  const tgt = typeof l.target === 'object' ? l.target.id : l.target;
+  connectionCount[src].add(tgt);
+  connectionCount[tgt].add(src);
+});
+
+accounts.forEach(a => {
+  const count = connectionCount[a.id].size;
+  if (count >= 5) a.tier = 'hub';
+  else if (count >= 2) a.tier = 'connected';
+  else a.tier = 'peripheral';
+});
+
+const nodeColor = '#2451C9';
+const edgeColor = { follow: '#8896ab', template: '#ECBB2D', both: '#7c6ce0' };
+
+function parseFollowers(s) { const n = parseFloat(s); return s.includes('K') ? n*1000 : n; }
+const maxF = Math.max(...accounts.map(a => parseFollowers(a.followers)));
+function nodeRadius(a) { return 8 + 16 * Math.sqrt(parseFollowers(a.followers) / maxF); }
+
+const width = window.innerWidth, height = window.innerHeight;
+const svg = d3.select('#graph').append('svg').attr('width', width).attr('height', height);
+const g = svg.append('g');
+const zoom = d3.zoom().scaleExtent([0.3, 5]).on('zoom', e => g.attr('transform', e.transform));
+svg.call(zoom);
+svg.call(zoom.transform, d3.zoomIdentity.translate(width/2, height/2).scale(1));
+
+const simulation = d3.forceSimulation(accounts)
+  .force('link', d3.forceLink(allLinks).id(d => d.id).distance(d => (d.type==='template'||d.type==='both') ? 200 : 120).strength(d => d.type==='template' ? 0.04 : 0.3))
+  .force('charge', d3.forceManyBody().strength(-1200))
+  .force('center', d3.forceCenter(0, 0))
+  .force('collision', d3.forceCollide().radius(d => nodeRadius(d) + 24))
+  .force('x', d3.forceX(0).strength(0.03))
+  .force('y', d3.forceY(0).strength(0.03));
+
+const linkG = g.append('g');
+const link = linkG.selectAll('line').data(allLinks).enter().append('line')
+  .attr('stroke', d => edgeColor[d.type])
+  .attr('stroke-width', d => {
+    if (d.type === 'follow') return 1.2;
+    return 1.5 + Math.min(d.descs ? d.descs.length : 1, 5) * 0.6;
+  })
+  .attr('stroke-dasharray', d => d.type === 'template' ? '6,4' : '0')
+  .attr('stroke-opacity', d => d.type === 'follow' ? 0.5 : 0.7);
+
+const nodeG = g.append('g');
+const node = nodeG.selectAll('g').data(accounts).enter().append('g')
+  .call(d3.drag()
+    .on('start', (e,d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+    .on('drag', (e,d) => { d.fx=e.x; d.fy=e.y; })
+    .on('end', (e,d) => { if (!e.active) simulation.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+node.append('circle')
+  .attr('r', d => nodeRadius(d))
+  .attr('fill', nodeColor)
+  .attr('stroke', '#fff')
+  .attr('stroke-width', 1.5)
+  .attr('fill-opacity', 0.9);
+
+const labels = node.append('text')
+  .text(d => d.id)
+  .attr('dx', d => nodeRadius(d) + 5).attr('dy', 4)
+  .attr('fill', '#374151').attr('font-size', '12px').attr('font-family', "'Roboto', sans-serif")
+  .attr('font-weight', '500').attr('pointer-events', 'none');
+
+// Tooltip — pinnable on click
+const tooltip = document.getElementById('tooltip');
+let pinnedNode = null;
+
+function showTooltip(event, d) {
+  const url = acctUrl[d.id] || '#';
+  const connCount = connectionCount[d.id].size;
+  // Count shared templates
+  const tplCount = new Set();
+  allLinks.forEach(l => {
+    if ((l.source.id===d.id || l.target.id===d.id) && l.descs) l.descs.forEach(t => tplCount.add(t));
+  });
+  tooltip.innerHTML = `<div class="handle"><a href="${url}" target="_blank">@${d.id} ↗</a></div>
+    <div class="detail">${d.followers} followers · ${connCount} connections · ${tplCount.size} templates</div>`;
+  tooltip.style.display = 'block';
+  tooltip.style.left = (event.clientX + 14) + 'px';
+  tooltip.style.top = (event.clientY - 10) + 'px';
+}
+
+function highlightNode(d) {
+  const connSet = new Set([d.id]);
+  allLinks.forEach(l => { if (l.source.id===d.id) connSet.add(l.target.id); if (l.target.id===d.id) connSet.add(l.source.id); });
+  link.attr('stroke-opacity', l => (l.source.id===d.id||l.target.id===d.id) ? 1 : 0.06);
+  node.select('circle').attr('fill-opacity', n => connSet.has(n.id) ? 1 : 0.15);
+  labels.attr('fill-opacity', n => connSet.has(n.id) ? 1 : 0.15);
+}
+
+function resetOpacity() {
+  link.attr('stroke-opacity', d => d.type==='follow' ? 0.5 : 0.7);
+  node.select('circle').attr('fill-opacity', 0.9);
+  labels.attr('fill-opacity', 1);
+}
+
+node.on('mouseenter', (event, d) => {
+  if (pinnedNode) return; // don't override pinned tooltip
+  showTooltip(event, d);
+  highlightNode(d);
+})
+.on('mousemove', (event) => {
+  if (pinnedNode) return;
+  tooltip.style.left = (event.clientX + 14) + 'px';
+  tooltip.style.top = (event.clientY - 10) + 'px';
+})
+.on('mouseleave', () => {
+  if (pinnedNode) return;
+  tooltip.style.display = 'none';
+  resetOpacity();
+})
+.on('click', (event, d) => {
+  event.stopPropagation();
+  if (pinnedNode === d.id) {
+    // Unpin
+    pinnedNode = null;
+    tooltip.classList.remove('pinned');
+    tooltip.style.display = 'none';
+    resetOpacity();
+  } else {
+    // Pin this node
+    pinnedNode = d.id;
+    tooltip.classList.add('pinned');
+    showTooltip(event, d);
+    highlightNode(d);
+  }
+});
+
+// Click on background to unpin
+svg.on('click', () => {
+  if (pinnedNode) {
+    pinnedNode = null;
+    tooltip.classList.remove('pinned');
+    tooltip.style.display = 'none';
+    resetOpacity();
+  }
+});
+
+// Toggle controls
+document.getElementById('togFollows').addEventListener('change', function() { link.filter(d => d.type==='follow').attr('display', this.checked ? null : 'none'); });
+document.getElementById('togTemplates').addEventListener('change', function() {
+  const show = this.checked;
+  link.filter(d => d.type==='template'||d.type==='both').attr('display', show ? null : 'none');
+});
+document.getElementById('togLabels').addEventListener('change', function() { labels.attr('display', this.checked ? null : 'none'); });
+
+// Tick
+simulation.on('tick', () => {
+  link.attr('x1', d=>d.source.x).attr('y1', d=>d.source.y).attr('x2', d=>d.target.x).attr('y2', d=>d.target.y);
+  node.attr('transform', d => `translate(${d.x},${d.y})`);
+});
+</script>
+</body>
+</html>
