@@ -63,6 +63,7 @@
     <div class="legend-item"><div class="legend-line" style="border-color:#8896ab;"></div><span class="legend-label">Cross-follow</span></div>
     <div class="legend-item"><div class="legend-line dashed" style="border-color:#ECBB2D; border-width:2px;"></div><span class="legend-label">Shared video template</span></div>
     <div class="legend-item"><div class="legend-line" style="border-color:#7c6ce0; border-width:2px;"></div><span class="legend-label">Both</span></div>
+    <div class="legend-item"><div class="legend-line" style="border-color:#dc2626; border-width:1.5px; opacity:0.5;"></div><span class="legend-label">Shared followers (20+/100)</span></div>
   </div>
   <div class="legend-section" style="margin-top:4px;">
     <span class="legend-label" style="font-size:11px;color:#9ca3af;">Click a node to pin tooltip, then click the link to visit the profile.</span>
@@ -72,11 +73,12 @@
 <div class="panel controls">
   <label><input type="checkbox" id="togFollows" checked> Follows</label>
   <label><input type="checkbox" id="togTemplates" checked> Templates</label>
+  <label><input type="checkbox" id="togFollowerOverlap"> Shared followers</label>
   <label><input type="checkbox" id="togLabels" checked> Labels</label>
 </div>
 
 <div class="panel stats">
-  Accounts: <span>19</span> · Follows: <span id="stat-follows">0</span> · Template pairs: <span id="stat-templates">0</span>
+  Accounts: <span>19</span> · Follows: <span id="stat-follows">0</span> · Template pairs: <span id="stat-templates">0</span> · Follower overlap pairs: <span id="stat-foverlap">0</span>
 </div>
 
 <div class="tooltip" id="tooltip"></div>
@@ -463,6 +465,126 @@ const templateEdgesRaw = [
   { source: "val.derossi.vault", target: "valeria_derossi", desc: "Yoga pose" },
 ];
 
+const followerOverlapEdges = [
+  { source: "antonia_sparkling", target: "christine.charmy", count: 38 },
+  { source: "antonia_sparkling", target: "colleen.dicksson", count: 23 },
+  { source: "antonia_sparkling", target: "dorothy.battenn", count: 36 },
+  { source: "antonia_sparkling", target: "eva_vvibes", count: 35 },
+  { source: "antonia_sparkling", target: "giacollinc", count: 26 },
+  { source: "antonia_sparkling", target: "isla_latina2", count: 35 },
+  { source: "antonia_sparkling", target: "jane.flahertty", count: 37 },
+  { source: "antonia_sparkling", target: "marianaravelin", count: 20 },
+  { source: "antonia_sparkling", target: "maud.smithson", count: 37 },
+  { source: "antonia_sparkling", target: "mavis__turton", count: 40 },
+  { source: "antonia_sparkling", target: "melanie.buxxton", count: 29 },
+  { source: "antonia_sparkling", target: "novasinclair_", count: 25 },
+  { source: "antonia_sparkling", target: "sienna_vellori", count: 35 },
+  { source: "antonia_sparkling", target: "teresa.dalzell", count: 33 },
+  { source: "antonia_sparkling", target: "valeria_derossi", count: 44 },
+  { source: "antonia_sparkling", target: "vossalina.boss", count: 36 },
+  { source: "christine.charmy", target: "colleen.dicksson", count: 21 },
+  { source: "christine.charmy", target: "dorothy.battenn", count: 32 },
+  { source: "christine.charmy", target: "eva_vvibes", count: 33 },
+  { source: "christine.charmy", target: "giacollinc", count: 28 },
+  { source: "christine.charmy", target: "isla_latina2", count: 32 },
+  { source: "christine.charmy", target: "jane.flahertty", count: 31 },
+  { source: "christine.charmy", target: "maud.smithson", count: 34 },
+  { source: "christine.charmy", target: "mavis__turton", count: 38 },
+  { source: "christine.charmy", target: "melanie.buxxton", count: 26 },
+  { source: "christine.charmy", target: "novasinclair_", count: 24 },
+  { source: "christine.charmy", target: "sienna_vellori", count: 32 },
+  { source: "christine.charmy", target: "teresa.dalzell", count: 32 },
+  { source: "christine.charmy", target: "valeria_derossi", count: 37 },
+  { source: "christine.charmy", target: "vossalina.boss", count: 34 },
+  { source: "colleen.dicksson", target: "dorothy.battenn", count: 20 },
+  { source: "colleen.dicksson", target: "giacollinc", count: 22 },
+  { source: "colleen.dicksson", target: "maud.smithson", count: 20 },
+  { source: "colleen.dicksson", target: "mavis__turton", count: 26 },
+  { source: "colleen.dicksson", target: "melanie.buxxton", count: 28 },
+  { source: "colleen.dicksson", target: "teresa.dalzell", count: 25 },
+  { source: "colleen.dicksson", target: "valeria_derossi", count: 20 },
+  { source: "colleen.dicksson", target: "vossalina.boss", count: 20 },
+  { source: "dorothy.battenn", target: "eva_vvibes", count: 38 },
+  { source: "dorothy.battenn", target: "giacollinc", count: 23 },
+  { source: "dorothy.battenn", target: "isla_latina2", count: 37 },
+  { source: "dorothy.battenn", target: "jane.flahertty", count: 37 },
+  { source: "dorothy.battenn", target: "maud.smithson", count: 34 },
+  { source: "dorothy.battenn", target: "mavis__turton", count: 38 },
+  { source: "dorothy.battenn", target: "melanie.buxxton", count: 25 },
+  { source: "dorothy.battenn", target: "novasinclair_", count: 27 },
+  { source: "dorothy.battenn", target: "sienna_vellori", count: 37 },
+  { source: "dorothy.battenn", target: "teresa.dalzell", count: 27 },
+  { source: "dorothy.battenn", target: "valeria_derossi", count: 36 },
+  { source: "dorothy.battenn", target: "vossalina.boss", count: 39 },
+  { source: "eva_vvibes", target: "giacollinc", count: 22 },
+  { source: "eva_vvibes", target: "isla_latina2", count: 38 },
+  { source: "eva_vvibes", target: "jane.flahertty", count: 37 },
+  { source: "eva_vvibes", target: "maud.smithson", count: 34 },
+  { source: "eva_vvibes", target: "mavis__turton", count: 37 },
+  { source: "eva_vvibes", target: "melanie.buxxton", count: 22 },
+  { source: "eva_vvibes", target: "novasinclair_", count: 30 },
+  { source: "eva_vvibes", target: "sienna_vellori", count: 37 },
+  { source: "eva_vvibes", target: "teresa.dalzell", count: 26 },
+  { source: "eva_vvibes", target: "valeria_derossi", count: 36 },
+  { source: "eva_vvibes", target: "vossalina.boss", count: 40 },
+  { source: "giacollinc", target: "isla_latina2", count: 22 },
+  { source: "giacollinc", target: "jane.flahertty", count: 21 },
+  { source: "giacollinc", target: "maud.smithson", count: 22 },
+  { source: "giacollinc", target: "mavis__turton", count: 28 },
+  { source: "giacollinc", target: "melanie.buxxton", count: 27 },
+  { source: "giacollinc", target: "sienna_vellori", count: 21 },
+  { source: "giacollinc", target: "teresa.dalzell", count: 28 },
+  { source: "giacollinc", target: "valeria_derossi", count: 26 },
+  { source: "giacollinc", target: "vossalina.boss", count: 26 },
+  { source: "isla_latina2", target: "jane.flahertty", count: 36 },
+  { source: "isla_latina2", target: "maud.smithson", count: 33 },
+  { source: "isla_latina2", target: "mavis__turton", count: 36 },
+  { source: "isla_latina2", target: "melanie.buxxton", count: 21 },
+  { source: "isla_latina2", target: "novasinclair_", count: 27 },
+  { source: "isla_latina2", target: "sienna_vellori", count: 37 },
+  { source: "isla_latina2", target: "teresa.dalzell", count: 26 },
+  { source: "isla_latina2", target: "valeria_derossi", count: 36 },
+  { source: "isla_latina2", target: "vossalina.boss", count: 38 },
+  { source: "jane.flahertty", target: "maud.smithson", count: 36 },
+  { source: "jane.flahertty", target: "mavis__turton", count: 35 },
+  { source: "jane.flahertty", target: "melanie.buxxton", count: 23 },
+  { source: "jane.flahertty", target: "novasinclair_", count: 28 },
+  { source: "jane.flahertty", target: "sienna_vellori", count: 36 },
+  { source: "jane.flahertty", target: "teresa.dalzell", count: 27 },
+  { source: "jane.flahertty", target: "valeria_derossi", count: 35 },
+  { source: "jane.flahertty", target: "vossalina.boss", count: 37 },
+  { source: "marianaravelin", target: "sienna_vellori", count: 20 },
+  { source: "marianaravelin", target: "val.derossi", count: 31 },
+  { source: "maud.smithson", target: "mavis__turton", count: 34 },
+  { source: "maud.smithson", target: "melanie.buxxton", count: 27 },
+  { source: "maud.smithson", target: "novasinclair_", count: 26 },
+  { source: "maud.smithson", target: "sienna_vellori", count: 33 },
+  { source: "maud.smithson", target: "teresa.dalzell", count: 27 },
+  { source: "maud.smithson", target: "valeria_derossi", count: 34 },
+  { source: "maud.smithson", target: "vossalina.boss", count: 34 },
+  { source: "mavis__turton", target: "melanie.buxxton", count: 27 },
+  { source: "mavis__turton", target: "novasinclair_", count: 28 },
+  { source: "mavis__turton", target: "sienna_vellori", count: 35 },
+  { source: "mavis__turton", target: "teresa.dalzell", count: 32 },
+  { source: "mavis__turton", target: "val.derossi", count: 21 },
+  { source: "mavis__turton", target: "valeria_derossi", count: 40 },
+  { source: "mavis__turton", target: "vossalina.boss", count: 38 },
+  { source: "melanie.buxxton", target: "sienna_vellori", count: 21 },
+  { source: "melanie.buxxton", target: "teresa.dalzell", count: 29 },
+  { source: "melanie.buxxton", target: "valeria_derossi", count: 26 },
+  { source: "melanie.buxxton", target: "vossalina.boss", count: 25 },
+  { source: "novasinclair_", target: "sienna_vellori", count: 27 },
+  { source: "novasinclair_", target: "valeria_derossi", count: 27 },
+  { source: "novasinclair_", target: "vossalina.boss", count: 29 },
+  { source: "sienna_vellori", target: "teresa.dalzell", count: 26 },
+  { source: "sienna_vellori", target: "valeria_derossi", count: 37 },
+  { source: "sienna_vellori", target: "vossalina.boss", count: 37 },
+  { source: "teresa.dalzell", target: "valeria_derossi", count: 32 },
+  { source: "teresa.dalzell", target: "vossalina.boss", count: 29 },
+  { source: "val.derossi", target: "vossalina.boss", count: 21 },
+  { source: "valeria_derossi", target: "vossalina.boss", count: 38 },
+];
+
 // --- GRAPH ENGINE ---
 const followPairSet = new Set();
 const followLinks = [];
@@ -484,8 +606,14 @@ const templatePairKeys = new Set(Object.keys(templatePairMap));
 followLinks.forEach(l => { const k = [l.source, l.target].sort().join('|'); if (!templatePairKeys.has(k)) allLinks.push({...l}); });
 templateLinks.forEach(l => { const k = [l.source, l.target].sort().join('|'); allLinks.push({...l, type: followPairSet.has(k) ? 'both' : 'template'}); });
 
+// Follower overlap edges — add ALL as a separate layer (rendered behind other edges)
+followerOverlapEdges.forEach(e => {
+  allLinks.push({ source: e.source, target: e.target, type: 'foverlap', count: e.count });
+});
+
 document.getElementById('stat-follows').textContent = followLinks.length;
 document.getElementById('stat-templates').textContent = templateLinks.length;
+document.getElementById('stat-foverlap').textContent = followerOverlapEdges.length;
 
 // --- DYNAMIC TIER COMPUTATION ---
 // Count unique connections per account (follow + template, deduplicated)
@@ -506,7 +634,7 @@ accounts.forEach(a => {
 });
 
 const nodeColor = '#2451C9';
-const edgeColor = { follow: '#8896ab', template: '#ECBB2D', both: '#7c6ce0' };
+const edgeColor = { follow: '#8896ab', template: '#ECBB2D', both: '#7c6ce0', foverlap: '#dc2626' };
 
 function parseFollowers(s) { const n = parseFloat(s); return s.includes('K') ? n*1000 : n; }
 const maxF = Math.max(...accounts.map(a => parseFollowers(a.followers)));
@@ -520,7 +648,7 @@ svg.call(zoom);
 svg.call(zoom.transform, d3.zoomIdentity.translate(width/2, height/2).scale(1));
 
 const simulation = d3.forceSimulation(accounts)
-  .force('link', d3.forceLink(allLinks).id(d => d.id).distance(d => (d.type==='template'||d.type==='both') ? 200 : 120).strength(d => d.type==='template' ? 0.04 : 0.3))
+  .force('link', d3.forceLink(allLinks).id(d => d.id).distance(d => d.type==='foverlap' ? 250 : (d.type==='template'||d.type==='both') ? 200 : 120).strength(d => d.type==='foverlap' ? 0 : d.type==='template' ? 0.04 : 0.3))
   .force('charge', d3.forceManyBody().strength(-1200))
   .force('center', d3.forceCenter(0, 0))
   .force('collision', d3.forceCollide().radius(d => nodeRadius(d) + 24))
@@ -528,14 +656,19 @@ const simulation = d3.forceSimulation(accounts)
   .force('y', d3.forceY(0).strength(0.03));
 
 const linkG = g.append('g');
+// Sort so foverlap renders first (behind), then follow, then template/both on top
+const linkOrder = { foverlap: 0, follow: 1, template: 2, both: 3 };
+allLinks.sort((a, b) => (linkOrder[a.type] || 0) - (linkOrder[b.type] || 0));
 const link = linkG.selectAll('line').data(allLinks).enter().append('line')
   .attr('stroke', d => edgeColor[d.type])
   .attr('stroke-width', d => {
+    if (d.type === 'foverlap') return 1 + Math.min((d.count || 20) / 44, 1) * 2;
     if (d.type === 'follow') return 1.2;
     return 1.5 + Math.min(d.descs ? d.descs.length : 1, 5) * 0.6;
   })
   .attr('stroke-dasharray', d => d.type === 'template' ? '6,4' : '0')
-  .attr('stroke-opacity', d => d.type === 'follow' ? 0.5 : 0.7);
+  .attr('stroke-opacity', d => d.type === 'foverlap' ? 0.4 : d.type === 'follow' ? 0.5 : 0.7)
+  .attr('display', d => d.type === 'foverlap' ? 'none' : null);
 
 const nodeG = g.append('g');
 const node = nodeG.selectAll('g').data(accounts).enter().append('g')
@@ -569,8 +702,10 @@ function showTooltip(event, d) {
   allLinks.forEach(l => {
     if ((l.source.id===d.id || l.target.id===d.id) && l.descs) l.descs.forEach(t => tplCount.add(t));
   });
+  // Count follower overlap pairs for this node
+  const foCount = followerOverlapEdges.filter(e => e.source === d.id || e.target === d.id).length;
   tooltip.innerHTML = `<div class="handle"><a href="${url}" target="_blank">@${d.id} ↗</a></div>
-    <div class="detail">${d.followers} followers · ${connCount} connections · ${tplCount.size} templates</div>`;
+    <div class="detail">${d.followers} followers · ${connCount} connections · ${tplCount.size} templates · ${foCount} follower overlaps</div>`;
   tooltip.style.display = 'block';
   tooltip.style.left = (event.clientX + 14) + 'px';
   tooltip.style.top = (event.clientY - 10) + 'px';
@@ -637,6 +772,9 @@ document.getElementById('togFollows').addEventListener('change', function() { li
 document.getElementById('togTemplates').addEventListener('change', function() {
   const show = this.checked;
   link.filter(d => d.type==='template'||d.type==='both').attr('display', show ? null : 'none');
+});
+document.getElementById('togFollowerOverlap').addEventListener('change', function() {
+  link.filter(d => d.type==='foverlap').attr('display', this.checked ? null : 'none');
 });
 document.getElementById('togLabels').addEventListener('change', function() { labels.attr('display', this.checked ? null : 'none'); });
 
