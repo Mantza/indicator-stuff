@@ -62,7 +62,6 @@
     <h3>Connections</h3>
     <div class="legend-item"><div class="legend-line" style="border-color:#8896ab;"></div><span class="legend-label">Cross-follow</span></div>
     <div class="legend-item"><div class="legend-line dashed" style="border-color:#ECBB2D; border-width:2px;"></div><span class="legend-label">Shared video template</span></div>
-    <div class="legend-item"><div class="legend-line" style="border-color:#7c6ce0; border-width:2px;"></div><span class="legend-label">Both</span></div>
     <div class="legend-item"><div class="legend-line" style="border-color:#dc2626; border-width:1.5px; opacity:0.5;"></div><span class="legend-label">Shared followers (20+/100)</span></div>
   </div>
   <div class="legend-section" style="margin-top:4px;">
@@ -74,7 +73,6 @@
   <label><input type="checkbox" id="togFollows" checked> Follows</label>
   <label><input type="checkbox" id="togTemplates" checked> Templates</label>
   <label><input type="checkbox" id="togFollowerOverlap" checked> Shared followers</label>
-  <label><input type="checkbox" id="togLabels" checked> Labels</label>
 </div>
 
 <div class="panel stats">
@@ -602,9 +600,8 @@ templateEdgesRaw.forEach(e => {
 const templateLinks = Object.values(templatePairMap);
 
 const allLinks = [];
-const templatePairKeys = new Set(Object.keys(templatePairMap));
-followLinks.forEach(l => { const k = [l.source, l.target].sort().join('|'); if (!templatePairKeys.has(k)) allLinks.push({...l}); });
-templateLinks.forEach(l => { const k = [l.source, l.target].sort().join('|'); allLinks.push({...l, type: followPairSet.has(k) ? 'both' : 'template'}); });
+followLinks.forEach(l => allLinks.push({...l}));
+templateLinks.forEach(l => allLinks.push({...l}));
 
 // Follower overlap edges — add ALL as a separate layer (rendered behind other edges)
 followerOverlapEdges.forEach(e => {
@@ -634,7 +631,7 @@ accounts.forEach(a => {
 });
 
 const nodeColor = '#2451C9';
-const edgeColor = { follow: '#8896ab', template: '#ECBB2D', both: '#7c6ce0', foverlap: '#dc2626' };
+const edgeColor = { follow: '#8896ab', template: '#ECBB2D', foverlap: '#dc2626' };
 
 function parseFollowers(s) { const n = parseFloat(s); return s.includes('K') ? n*1000 : n; }
 const maxF = Math.max(...accounts.map(a => parseFollowers(a.followers)));
@@ -648,7 +645,7 @@ svg.call(zoom);
 svg.call(zoom.transform, d3.zoomIdentity.translate(width/2, height/2).scale(1));
 
 const simulation = d3.forceSimulation(accounts)
-  .force('link', d3.forceLink(allLinks).id(d => d.id).distance(d => d.type==='foverlap' ? 250 : (d.type==='template'||d.type==='both') ? 200 : 120).strength(d => d.type==='foverlap' ? 0 : d.type==='template' ? 0.04 : 0.3))
+  .force('link', d3.forceLink(allLinks).id(d => d.id).distance(d => d.type==='foverlap' ? 250 : d.type==='template' ? 200 : 120).strength(d => d.type==='foverlap' ? 0 : d.type==='template' ? 0.04 : 0.3))
   .force('charge', d3.forceManyBody().strength(-1200))
   .force('center', d3.forceCenter(0, 0))
   .force('collision', d3.forceCollide().radius(d => nodeRadius(d) + 24))
@@ -657,7 +654,7 @@ const simulation = d3.forceSimulation(accounts)
 
 const linkG = g.append('g');
 // Sort so foverlap renders first (behind), then follow, then template/both on top
-const linkOrder = { foverlap: 0, follow: 1, template: 2, both: 3 };
+const linkOrder = { foverlap: 0, follow: 1, template: 2 };
 allLinks.sort((a, b) => (linkOrder[a.type] || 0) - (linkOrder[b.type] || 0));
 const link = linkG.selectAll('line').data(allLinks).enter().append('line')
   .attr('stroke', d => edgeColor[d.type])
@@ -720,7 +717,7 @@ function highlightNode(d) {
 }
 
 function resetOpacity() {
-  link.attr('stroke-opacity', d => d.type==='follow' ? 0.5 : 0.7);
+  link.attr('stroke-opacity', d => d.type==='foverlap' ? 0.4 : d.type==='follow' ? 0.5 : 0.7);
   node.select('circle').attr('fill-opacity', 0.9);
   labels.attr('fill-opacity', 1);
 }
@@ -770,13 +767,11 @@ svg.on('click', () => {
 // Toggle controls
 document.getElementById('togFollows').addEventListener('change', function() { link.filter(d => d.type==='follow').attr('display', this.checked ? null : 'none'); });
 document.getElementById('togTemplates').addEventListener('change', function() {
-  const show = this.checked;
-  link.filter(d => d.type==='template'||d.type==='both').attr('display', show ? null : 'none');
+  link.filter(d => d.type==='template').attr('display', this.checked ? null : 'none');
 });
 document.getElementById('togFollowerOverlap').addEventListener('change', function() {
   link.filter(d => d.type==='foverlap').attr('display', this.checked ? null : 'none');
 });
-document.getElementById('togLabels').addEventListener('change', function() { labels.attr('display', this.checked ? null : 'none'); });
 
 // Tick
 simulation.on('tick', () => {
