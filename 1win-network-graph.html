@@ -73,7 +73,7 @@
 <div class="panel controls">
   <label><input type="checkbox" id="togFollows" checked> Follows</label>
   <label><input type="checkbox" id="togTemplates" checked> Templates</label>
-  <label><input type="checkbox" id="togFollowerOverlap"> Shared followers</label>
+  <label><input type="checkbox" id="togFollowerOverlap" checked> Shared followers</label>
   <label><input type="checkbox" id="togLabels" checked> Labels</label>
 </div>
 
@@ -668,7 +668,7 @@ const link = linkG.selectAll('line').data(allLinks).enter().append('line')
   })
   .attr('stroke-dasharray', d => d.type === 'template' ? '6,4' : '0')
   .attr('stroke-opacity', d => d.type === 'foverlap' ? 0.4 : d.type === 'follow' ? 0.5 : 0.7)
-  .attr('display', d => d.type === 'foverlap' ? 'none' : null);
+;
 
 const nodeG = g.append('g');
 const node = nodeG.selectAll('g').data(accounts).enter().append('g')
