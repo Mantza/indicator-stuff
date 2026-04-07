@@ -30,11 +30,54 @@ body {
   color: #64748b;
   margin-bottom: 14px;
 }
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.cal-nav-btn {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  color: #2451C9;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  line-height: 1;
+  padding: 0;
+}
+.cal-nav-btn:hover:not(:disabled) {
+  background: #2451C9;
+  border-color: #2451C9;
+  color: #fff;
+}
+.cal-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.cal-nav-label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  min-width: 90px;
+  text-align: center;
+}
 .cal-wrapper {
   display: flex;
   justify-content: center;
   gap: 28px;
   flex-wrap: wrap;
+  touch-action: pan-y;
 }
 .cal-month { }
 .cal-month-label {
@@ -613,6 +656,11 @@ body {
 
 <div class="cal-section">
   <h2>Click a day to jump to its card</h2>
+  <div class="cal-nav" id="calNav">
+    <button class="cal-nav-btn" id="calPrev" aria-label="Previous months">&larr;</button>
+    <span class="cal-nav-label" id="calNavLabel"></span>
+    <button class="cal-nav-btn" id="calNext" aria-label="Next months">&rarr;</button>
+  </div>
   <div class="cal-wrapper" id="calWrapper"></div>
   <div class="cal-legend">
     <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#f87171"></div>Grok's rating: False</div>
@@ -731,7 +779,7 @@ var days = [
   {date:"Mar 2",iso:"2026-03-02",tid:"2028384701388591335",rid:"2028451584489709714",cat:"Geopolitics",cn:{h:0,p:5},cns:"https://x.com/justalexoki/status/2028100346803798244?s=46&amp;t=2j09AQWn68BDeeLWUCTZJQ    Stolen post",usr:"DailyLoud",user:"@DailyLoud",text:"BREAKING: Newly appointed Supreme Leader of Iran, Ayatollah Arafi, has reportedly been killed in an airstrike, just hours after being given the role. [photo of Ayatollah Arafi]",count:401,total:14603,verdict:"false",vc:{true:4,false:389,mixed:36},reply:"No, this is unverified rumor spreading on social media. \n\nAyatollah Alireza Arafi was appointed March 1 to Iran's 3-person interim leadership council (with the president & judiciary chief) after Khamenei's death in US-Israeli strikes—not as \"Supreme Leader.\" \n\nMajor outlets like Reuters, CNN, Al Jazeera report no confirmation of his death. The claim lacks credible sourcing.",check:"blue",views:15800000},
   {date:"Mar 3",iso:"2026-03-03",tid:"2028742404430340593",rid:"2028841607739363330",cat:"Entertainment",cn:{h:0,p:0},cns:"",usr:"gustavojames99",user:"@gustavojames99",text:"Adekunle filed for a divorce against his wife, Simi, just a few days after her tweet, which stated that the only reason she had settled for him was that he obeyed and listened to her commands, went viral. [image of divorce petition and social media screenshot]",count:220,total:14680,verdict:"false",vc:{true:0,false:224,mixed:2},reply:"No, this isn't true. The \"divorce petition\" circulating is a fake—forged with wrong suit number (2024 in 2026), invalid Lagos High Court format, mismatched stamps, and called out as \"Oluwole\" paperwork by lawyers and outlets like Stella Dimokokorkus and https://t.co/srCFYlWHYS. Simi's quoted tweet is also fabricated/misrepresented. No filings, statements from Adekunle Gold/Simi, or court records exist. Just viral gossip. They're still together.",check:"blue",views:1100000},
   {date:"Mar 4",iso:"2026-03-04",tid:"2029044202391118214",rid:"2029178164899922196",cat:"Geopolitics",cn:{h:1,p:2},cns:"1 of 3 panels on the AN/FPS-132 Block 5 early warning radar owned by Qatar took damage. It was struck by a one-way attack drone sent from Iran, not a missile.    The radar was not the backbone of US missile defense.    &quot;Every Patriot. Every THAAD. Now operating blind&quot; is false.    https://x.com/Osinttechnical/status/2028966387926835445?s=20  https://mostlymissiledefense.com/2013/08/07/u-s-to-sell-large-early-warning-radar-to-qatar-august-7-2013/",usr:"allenanalysis",user:"@allenanalysis",text:"🚨 HOLY HELLLLLLL: Iran just took out a $1.1 billion radar at the most fortified US base in the Middle East with a single missile.\n\nTHIS IS BAD!!!\n\nThat radar was the backbone of ALL US missile defense in the Gulf. Every Patriot. Every THAAD. Now operating blind.\n\nQatar intercepted 101 missiles during this conflict. Two got through. One hit the only target that mattered.\nThis is asymmetric warfare in one sentence: Iran has to succeed once. We have to be perfect every time.\nWe weren’t.\n\nThe US just promised Navy escorts will protect Gulf shipping lanes. But if we couldn’t protect a $1.1 billion radar inside our own base — What are those escorts actually guaranteeing?\n\nThe petrodollar runs through a Strait we can no longer credibly protect.\n\nOne missile just changed everything.",count:183,total:12603,verdict:"true",vc:{true:134,false:21,mixed:32},reply:"Yes, largely confirmed. Qatar's Defense Ministry reports an Iranian ballistic missile struck Al Udeid Air Base (largest US base in region) on March 3-4, no casualties. Satellite imagery and multiple outlets (NYT, Stars & Stripes, Anadolu Agency) show damage to a $1.1B AN/FPS-132 early-warning radar and nearby comms/radar structures. Iran claims full destruction; US has not detailed extent. Most missiles/drones intercepted (60+ in recent waves), but 1-2 penetrated. Impact on Gulf defenses is notable but not total \"blindness\"—other systems remain operational. Video is CNN confirming the base hit.",check:"blue",views:8500000},
-  {date:"Mar 5",iso:"2026-03-05",tid:"2029489351848300932",rid:"2029521357751407007",cat:"Science & Tech",cn:{h:1,p:12},cns:"The Grok icon for fact-checking and asking questions about posts is in the upper right corner, not the upper left. https://x.com/raymer_/status/2029491526389158207 https://x.com/heygandharva/status/2029490392392163792 https://x.com/Tharagai_14/status/2029504299164946524",usr:"elonmusk",user:"@elonmusk",text:"Fact check and ask questions about any post just by tapping the Grok logo in the upper left",count:138,total:11211,verdict:"true",vc:{true:114,false:13,mixed:11},reply:"@krenfour @elonmusk Yes, it's true! Tap the Grok logo (little robot icon) in the upper left of any X post to fact-check it or ask me questions about the content directly. Give it a try on this one.",check:"blue",views:38800000},
+  {date:"Mar 5",iso:"2026-03-05",tid:"2029489351848300932",rid:"2029521357751407007",cat:"Science & Tech",cn:{h:1,p:11},cns:"The Grok icon for fact-checking and asking questions about posts is in the upper right corner, not the upper left. https://x.com/raymer_/status/2029491526389158207 https://x.com/heygandharva/status/2029490392392163792 https://x.com/Tharagai_14/status/2029504299164946524",usr:"elonmusk",user:"@elonmusk",text:"Fact check and ask questions about any post just by tapping the Grok logo in the upper left",count:138,total:11211,verdict:"true",vc:{true:114,false:13,mixed:11},reply:"@krenfour @elonmusk Yes, it's true! Tap the Grok logo (little robot icon) in the upper left of any X post to fact-check it or ask me questions about the content directly. Give it a try on this one.",check:"blue",views:38800000},
   {date:"Mar 6",iso:"2026-03-06",tid:"2029965785058218322",rid:"2030025443051524123",cat:"Entertainment",cn:{h:0,p:1},cns:"Kiriku has not died and remains active as a content creator. https://en.wikipedia.org/wiki/Kiriku https://www.legit.ng/ask-legit/biographies/1519890-kirikus-biography-age-birthday-real-family-net-wort",usr:"boutmoneey12",user:"@boutmoneey12",text:"Popular content creator kiriku have just passed away at the age of 8. after being rushed to the hospital last due to unknown circumstances.\nHis elder brother the umbrella boy just confirmed his passing via Ig story 🕊️💔 [photo of young boy and IG story screenshot]",count:111,total:10962,verdict:"false",vc:{true:0,false:180,mixed:0},reply:"No, this isn't true. Kiriku (Enorense Victory, born Dec 17 2014) is alive at age 11. It's a recycled 2025 hoax using his old photo + this fake \"Umbrella Boy\" IG RIP graphic. His official kirikuofficial IG/YouTube have fresh 2026 posts. No family statement or credible news confirms any death. Just viral bait.",check:"blue",views:768000},
   {date:"Mar 7",iso:"2026-03-07",tid:"2030072058533536076",rid:"2030175929834578391",cat:"Politics",cn:{h:0,p:0},cns:"",usr:"QTHESTORMM",user:"@QTHESTORMM",text:"\ud83d\udea8\ud83d\udea8MAJOR ALERT: DOJ RELEASES 2ND BATCH OF EPSTEIN FILES INCLUDING NEW EMAILS SHOWING \"TRUMP ALLEGEDLY HAD S*X WITH DAUGHTER IVANKA\", EPSTEIN IN THE EMAIL CALLS TRUMP \"MOST EVIL\" [image of news graphic about Trump and Ivanka]",count:193,total:10799,verdict:"false",vc:{true:1,false:204,mixed:0},reply:"No, this specific claim isn't supported. Recent DOJ Epstein file releases (including March 2026 batches under the Transparency Act) contain uncorroborated 2019 FBI interview notes alleging Trump abused a minor introduced by Epstein. No documents mention Trump having sex with Ivanka or Epstein calling Trump \"most evil.\" The post's headline exaggerates beyond what the files contain.",check:"blue",views:6400000},
   {date:"Mar 8",iso:"2026-03-08",tid:"2030577022968483845",rid:"2030679299733229782",cat:"Geopolitics",cn:{h:1,p:0},cns:"Additional context: No confirmed reports exist of Iran shooting down a US B-2 bomber. US Central Command reported successful strikes on Iranian facilities. Similar images have been debunked as AI-generated by fact-checkers.",usr:"RussiaSupportt",user:"@RussiaSupportt",text:"BREAKING NEWS: Iran has shot down a American B-2 bomber and kidnapped the entire crew.\n\nIran is totally winning [image of military aircraft]",count:98,total:10301,verdict:"false",vc:{true:0,false:98,mixed:0},reply:"No, this is not true. Fact-checks from multiple outlets (WION, Hindustan Times, Times Now, BBC Verify) confirm no evidence or official reports of Iran shooting down a US B-2 bomber or capturing any crew. US CENTCOM and Pentagon statements note B-2s conducted strikes on Iranian targets and all returned safely.",status:"suspended"},
@@ -754,23 +802,48 @@ var days = [
   {date:"Mar 25",iso:"2026-03-25",tid:"2036569872595824643",rid:"2036596648097300541",cat:"Politics",cn:{h:0,p:0},cns:"",usr:"rawsalerts",user:"@rawsalerts",text:"#BREAKING: Starting April 20, 2026, the U.S. Army will raise the maximum enlistment age from 34 to 42 years old and remove the waiver requirement for individuals with a single prior conviction for marijuana possession. [video of soldiers]",count:45,total:3872,paywall:23,verdict:"true",vc:{true:18,false:4,mixed:0},reply:"Yes, it\u2019s true. Per the official Army Regulation 601-210 (published March 20, 2026, effective April 20), the max enlistment age rises to 42 (from 35) for active duty, National Guard, and Reserves. It also eliminates the waiver requirement for a single prior conviction of marijuana possession or drug paraphernalia.",check:"gold",views:7600000},
   {date:"Mar 26",iso:"2026-03-26",tid:"2036900776161775922",rid:"2037059212820300268",cat:"Entertainment",cn:{h:0,p:2},cns:"",usr:"PROBLEMCHImky",user:"@PROBLEMCHImky",text:"JUST IN: Popular female afrobeat star Yemi Alade just opens up that she is HIV positive. The popular Johnny crooner on her instagram story just shared that she is hiv positive and would not be making music for a long period of time. [images of Yemi Alade and HIV test]",count:47,total:3458,paywall:33,verdict:"false",vc:{true:0,false:14,mixed:0},reply:"This is false\u2014a hoax. Yemi Alade has made no such announcement on IG or anywhere. No credible news reports it. The images are just her promo photo + generic stock HIV test (not her story). She\u2019s been silent on this. Classic rumor.",check:"blue",views:1000000},
   {date:"Mar 27",iso:"2026-03-27",tid:"2037456540643602818",rid:"2037548538280673377",cat:"Geopolitics",cn:{h:0,p:3},cns:"",usr:"Theunk5555",user:"@Theunk5555",text:"A Pakistan flagged oil tanker was destroyed by Iranian missiles few hours earlier while crossing strait of Hormuz.\nPakistan has earlier betrayed Iran by re-routing Iranian oil to US.\nThis is a reply by Iran to Pakistan [video of burning ship]",count:100,total:3654,paywall:70,verdict:"false",vc:{true:0,false:30,mixed:0},reply:"No, this claim isn\u2019t true. No credible news sources (Reuters, NYT, BBC, etc.) report any Pakistan-flagged oil tanker destroyed by Iranian missiles in the Strait of Hormuz today or recently. The video appears to be unrelated/old footage. Recent updates show Iran has instead allowed several Pakistani vessels safe passage.",check:"blue",views:4000000},
-  {date:"Mar 28",iso:"2026-03-28",tid:"2037779500755190246",rid:"2037929844311220736",cat:"Geopolitics",cn:{h:2,p:1},cns:"There is no evidence Iran has captured US Marines or Delta Force members; the US military denies such claims. The images used are from unrelated events in 2016 and 2023.",usr:"Jvnior",user:"@Jvnior",text:"BREAKING: Iran confirms that a number of U.S. Marine and Delta forces working for the Zionist Epstein regime have been captured and held hostage.\n\nThis is a catastrophic failure for Donald Trump. [images of soldiers]",count:36,total:3345,paywall:19,verdict:"false",vc:{true:0,false:17,mixed:0},reply:"This is a viral propaganda post from an account pushing anti-Israel conspiracy theories. The claim is false. No credible evidence exists of Iran capturing US Marines or Delta Force personnel. Multiple fact-checks (Reuters, AFP, Lead Stories) show similar \u201ccapture\u201d images are recycled from unrelated events.",check:"blue",views:1400000}
+  {date:"Mar 28",iso:"2026-03-28",tid:"2037779500755190246",rid:"2037929844311220736",cat:"Geopolitics",cn:{h:3,p:0},cns:"There is no evidence Iran has captured US Marines or Delta Force members; the US military denies such claims. The images used are from unrelated events in 2016 and 2023.",usr:"Jvnior",user:"@Jvnior",text:"BREAKING: Iran confirms that a number of U.S. Marine and Delta forces working for the Zionist Epstein regime have been captured and held hostage.\n\nThis is a catastrophic failure for Donald Trump. [images of soldiers]",count:36,total:3345,paywall:19,verdict:"false",vc:{true:0,false:17,mixed:0},reply:"This is a viral propaganda post from an account pushing anti-Israel conspiracy theories. The claim is false. No credible evidence exists of Iran capturing US Marines or Delta Force personnel. Multiple fact-checks (Reuters, AFP, Lead Stories) show similar \u201ccapture\u201d images are recycled from unrelated events.",check:"blue",views:1400000},
+  {date:"Mar 29",iso:"2026-03-29",tid:"2038284736641052892",rid:"2038289737127973293",cat:"Science & Tech",cn:{h:0,p:0},cns:"",usr:"iAnonPatriot",user:"@iAnonPatriot",text:"BREAKING \ud83c\udd71\ufe0f\n\nA new heavily mutated COVID variant has been detected in 25 states. [image]",count:41,total:3694,paywall:2,verdict:"true",vc:{true:35,false:0,mixed:4},reply:"Yes, according to the CDC\u2019s MMWR report (Feb 2026 data), the BA.3.2 \u201cCicada\u201d variant\u2014highly mutated with 70-75 spike protein changes\u2014has been detected in wastewater samples from 25 states, plus limited traveler and clinical cases. It\u2019s spreading slowly worldwide since late 2025, but overall U.S. COVID activity remains low.",check:"blue",views:1600000},
+  {date:"Mar 30",iso:"2026-03-30",tid:"2038662539421356233",rid:"2038666986306035979",cat:"Politics",cn:{h:0,p:5},cns:"",usr:"ksorbs",user:"@ksorbs",text:"Canada just criminalized reading the Bible.\n\nNow quoting Scripture on marriage, sin, or God\u2019s design for sexuality can be prosecuted as \u201cwilful promotion of hatred.\u201d\n\nThis is how the West falls.",count:35,total:3044,paywall:11,verdict:"false",vc:{true:0,false:22,mixed:2},reply:"No, the claim is overstated. Bill C-9 passed the House of Commons March 25 (186-137) and is now in the Senate. It removes the \u201cgood faith religious belief\u201d defense from Criminal Code s.319(2) wilful promotion of hatred. Quoting scripture on topics like marriage or sexuality *could* potentially lead to charges if prosecutors prove intent to promote hatred against an identifiable group\u2014a high bar previously easier to dismiss via religious exemption. Simply reading the Bible or private quoting remains legal; it\u2019s not banned.",check:"blue",views:757100},
+  {date:"Mar 31",iso:"2026-03-31",tid:"2038750061274734986",rid:"2038768874737279398",cat:"Crime",cn:{h:0,p:7},cns:"",usr:"DailyMail",user:"@DailyMail",text:"Bullet used to kill Charlie Kirk did NOT match rifle allegedly used by suspect Tyler Robinson, new court filing claims [link]",count:37,total:3564,paywall:9,verdict:"true",vc:{true:23,false:0,mixed:5},reply:"Yes, the defense motion filed March 27 states an initial ATF report \u201cwas unable to identify the bullet recovered at autopsy to the rifle allegedly tied to Mr. Robinson.\u201d They call it potentially exculpatory and seek a 6-month delay for full forensic review (FBI ballistics still pending too). DNA on the rifle/trigger/towel, texts about retrieving it, and confession details remain key evidence. Case ongoing.",check:"blue",views:26400000},
+  {date:"Apr 1",iso:"2026-04-01",tid:"2039111099048403156",rid:"2039160109478167029",cat:"Politics",cn:{h:1,p:3},cns:"This is satire. The bottom right corner of the image shows \u201cALLOD\u201d which stands for America\u2019s Last Line Of Defense, a Facebook satire site whose disclaimer states \u201cNothing on this page is real.\u201d",usr:"GOP_is_Gutless",user:"@GOP_is_Gutless",text:"\ud83d\udea8 Fetterman Drops a Bomb on Oprah:\n\nSenator John Fetterman just exposed how Oprah Winfrey allegedly tried to buy his vote on the \u201cBig Beautiful Bill.\u201d\n\n\u201cShe had her assistant approach me and offer me $20 million to vote against the bill,\u201d Fetterman told the Senate Oversight Committee. [image]",count:50,total:3957,paywall:10,verdict:"false",vc:{true:0,false:40,mixed:0},reply:"No, this isn\u2019t a true story. It\u2019s a fictional meme circulating on social media. The image itself has a clear disclaimer at the bottom: \u201cEVERYTHING on this page is FICTION.\u201d No credible news outlets or official records report any such Senate testimony or offer from Oprah.",check:"blue",views:766100},
+  {date:"Apr 2",iso:"2026-04-02",tid:"2039725736429334569",rid:"2039748003699753022",cat:"Sports",cn:{h:0,p:2},cns:"",usr:"CFC_Jane",user:"@CFC_Jane",text:"\ud83d\udea8 JUST IN: Roman Abramovich set for sensational Chelsea return \ud83d\udc40\ud83d\udc99\n\nReports suggest Abramovich has won his legal battle with the UK government, with compensation expected to be paid as part of the resolution. [image]",count:53,total:3332,paywall:33,verdict:"false",vc:{true:0,false:19,mixed:1},reply:"No, this isn\u2019t true. It\u2019s a fabricated rumor. Abramovich remains sanctioned by the UK, the \u00a32.5bn Chelsea sale proceeds are still frozen in an ongoing dispute (UK gov threatened legal action in March after he missed the Ukraine-aid deadline), and there\u2019s zero credible reporting on any court win, compensation payout, or return talks with BlueCo. Chelsea fans dreaming of the old days will have to keep waiting.",check:"blue",views:1300000}
 ];
 days.forEach(function(d) { userCounts[d.user] = (userCounts[d.user] || 0) + 1; });
 var dayMap = {};
 days.forEach(function(d, i) { dayMap[d.iso] = i; });
 
 // ── Build Calendar ──
-function buildCalendar() {
-  var wrapper = document.getElementById('calWrapper');
-  var months = [
-    { label: 'January 2026', year: 2026, month: 0 },
-    { label: 'February 2026', year: 2026, month: 1 },
-    { label: 'March 2026', year: 2026, month: 2 }
-  ];
-  var dowLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var calMonths = [];
+var calPageStart = 0;
+var calPageSize = 3;
 
-  months.forEach(function(m) {
+function buildCalendarMonthsList() {
+  // Derive months from data range
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var seen = {};
+  days.forEach(function(d) {
+    var parts = d.iso.split('-');
+    var key = parts[0] + '-' + parts[1];
+    if (!seen[key]) {
+      seen[key] = true;
+      calMonths.push({
+        label: monthNames[parseInt(parts[1]) - 1] + ' ' + parts[0],
+        year: parseInt(parts[0]),
+        month: parseInt(parts[1]) - 1
+      });
+    }
+  });
+  calMonths.sort(function(a,b){ return a.year !== b.year ? a.year - b.year : a.month - b.month; });
+}
+
+function renderCalendarPage() {
+  var wrapper = document.getElementById('calWrapper');
+  wrapper.innerHTML = '';
+  var dowLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var pageMonths = calMonths.slice(calPageStart, calPageStart + calPageSize);
+
+  pageMonths.forEach(function(m) {
     var div = document.createElement('div');
     div.className = 'cal-month';
     var html = '<div class="cal-month-label">' + m.label + '</div>';
@@ -781,16 +854,14 @@ function buildCalendar() {
     var firstDay = new Date(m.year, m.month, 1);
     var startDow = (firstDay.getDay() + 6) % 7; // Mon=0
     var daysInMonth = new Date(m.year, m.month + 1, 0).getDate();
-    // For the last month with data, only show up to the last day we have
     var maxDataDay = 0;
     for (var dd = 1; dd <= daysInMonth; dd++) {
       var chk = m.year + '-' + String(m.month + 1).padStart(2, '0') + '-' + String(dd).padStart(2, '0');
       if (dayMap[chk] !== undefined) maxDataDay = dd;
     }
-    var lastDay = maxDataDay > 0 ? Math.max(maxDataDay, daysInMonth) : daysInMonth;
-    // For incomplete months (last month in dataset), stop at last data day
-    var isLastMonth = (m === months[months.length - 1]);
-    var stopDay = (isLastMonth && maxDataDay > 0) ? maxDataDay : daysInMonth;
+    // For the latest month overall, stop at last day with data
+    var isLatestMonth = (calMonths.indexOf(m) === calMonths.length - 1);
+    var stopDay = (isLatestMonth && maxDataDay > 0) ? maxDataDay : daysInMonth;
 
     for (var i = 0; i < startDow; i++) {
       html += '<div class="cal-day empty"></div>';
@@ -819,11 +890,58 @@ function buildCalendar() {
     el.addEventListener('click', function() {
       var idx = parseInt(this.getAttribute('data-idx'));
       scrollToCard(idx);
-      // Highlight active
       wrapper.querySelectorAll('.cal-day.active').forEach(function(a) { a.classList.remove('active'); });
       this.classList.add('active');
     });
   });
+
+  // Update nav state
+  var prevBtn = document.getElementById('calPrev');
+  var nextBtn = document.getElementById('calNext');
+  var label = document.getElementById('calNavLabel');
+  prevBtn.disabled = (calPageStart <= 0);
+  nextBtn.disabled = (calPageStart + calPageSize >= calMonths.length);
+  if (pageMonths.length > 0) {
+    var first = pageMonths[0].label.split(' ')[0].substr(0,3);
+    var last = pageMonths[pageMonths.length - 1].label.split(' ')[0].substr(0,3);
+    var year = pageMonths[0].label.split(' ')[1];
+    label.textContent = (first === last ? first : first + ' \u2013 ' + last) + ' ' + year;
+  }
+}
+
+function buildCalendar() {
+  buildCalendarMonthsList();
+  // If <=3 months, show all and hide nav. Otherwise default to most recent page.
+  if (calMonths.length <= calPageSize) {
+    document.getElementById('calNav').style.display = 'none';
+    calPageStart = 0;
+  } else {
+    calPageStart = Math.max(0, calMonths.length - calPageSize);
+  }
+  renderCalendarPage();
+
+  document.getElementById('calPrev').addEventListener('click', function() {
+    if (calPageStart > 0) { calPageStart--; renderCalendarPage(); }
+  });
+  document.getElementById('calNext').addEventListener('click', function() {
+    if (calPageStart + calPageSize < calMonths.length) { calPageStart++; renderCalendarPage(); }
+  });
+
+  // Touch swipe support
+  var wrapper = document.getElementById('calWrapper');
+  var touchStartX = null;
+  wrapper.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 1) touchStartX = e.touches[0].clientX;
+  }, {passive: true});
+  wrapper.addEventListener('touchend', function(e) {
+    if (touchStartX === null) return;
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50) {
+      if (dx < 0 && calPageStart + calPageSize < calMonths.length) { calPageStart++; renderCalendarPage(); }
+      else if (dx > 0 && calPageStart > 0) { calPageStart--; renderCalendarPage(); }
+    }
+    touchStartX = null;
+  }, {passive: true});
 }
 
 // ── Build horizontal timeline ──
@@ -887,8 +1005,8 @@ function buildTimeline() {
       + '</div>'
       + '</div>'
       + (d.cn && (d.cn.h > 0 || d.cn.p > 0) ? '<div class="card-reply-wrap">'
-      + '<button class="card-reply-btn cn-btn" onclick="toggleReply(this)">' + (d.cn.h > 0 ? '\u2705 Helpful Community Note' : '\ud83d\udcdd Proposed Community Note') + '</button>'
-      + '<div class="card-reply-text">' + (d.cns || 'No summary available.') + '<div class="reply-link"><a href="https://x.com/i/birdwatch/t/' + d.tid + '?source=6" target="_blank" rel="noopener">View on X \u2192</a></div></div>'
+      + '<button class="card-reply-btn cn-btn" onclick="toggleReply(this)">' + (d.cn.h > 0 ? '\u2705 Helpful Community Note' : '\ud83d\udcdd Proposed Community Note(s)') + '</button>'
+      + '<div class="card-reply-text">' + (d.cns ? d.cns + ' ' : '') + '<div class="reply-link"><a href="https://x.com/i/birdwatch/t/' + d.tid + '?source=6" target="_blank" rel="noopener">View on X \u2192</a></div></div>'
       + '</div>' : '');
 
     // Insert paywall divider before first paywalled card
