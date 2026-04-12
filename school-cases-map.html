@@ -831,9 +831,9 @@
                 const dateStr = c.monthRaw || 'Date unknown';
 
                 const popupContent = `
-                    <div class="popup-title">${c.location}, ${c.country}</div>
+                    <div class="popup-title">${c.location ? c.location + ', ' + c.country : c.country}</div>
                     <div class="popup-item"><strong>When:</strong> ${dateStr}</div>
-                    ${c.victimsRaw ? `<div class="popup-victims">${c.victimsRaw === 'unspecified' ? 'Victims reported (number unspecified)' : c.victims + ' reported victim' + (c.victims !== 1 ? 's' : '')}</div>` : ''}
+                    ${c.victimsRaw ? `<div class="popup-victims">${c.victimsRaw === 'unspecified' ? 'Number of victims not specified' : c.victims + ' reported victim' + (c.victims !== 1 ? 's' : '')}</div>` : ''}
                     ${c.notes ? `<div class="popup-item">${c.notes}</div>` : ''}
                     <div class="popup-item" style="margin-top:6px; color:#666; font-size:11.5px;">Source: ${c.source}</div>
                     ${c.sourceUrl ? `<div class="popup-link"><a href="${c.sourceUrl}" target="_blank">Read article &rarr;</a></div>` : ''}
@@ -893,7 +893,7 @@
                 const li = document.createElement('li');
                 li.dataset.country = c.country;
                 li.dataset.year = yr;
-                const label = `${c.location}, ${c.country}`;
+                const label = c.location ? `${c.location}, ${c.country}` : c.country;
                 const excerptHtml = c.notes ? `<div class="source-excerpt">${c.notes}</div>` : '';
                 if (c.sourceUrl) {
                     li.innerHTML = `<a href="${c.sourceUrl}" target="_blank">${label}</a><span class="source-meta">${c.source} &middot; ${mo}</span>${excerptHtml}`;
