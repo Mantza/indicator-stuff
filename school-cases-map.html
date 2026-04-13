@@ -230,6 +230,13 @@
             margin-bottom: 6px;
         }
 
+        .last-updated {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 20px;
+            letter-spacing: 0.3px;
+        }
+
         .sources-section {
             margin-bottom: 12px;
             padding: 0;
@@ -412,13 +419,13 @@
     <details class="methodology">
         <summary>Methodology</summary>
         <div class="meth-body">
-            <p>This tracker focuses exclusively on news reporting about AI nudifiers being used in school communities. It leaves out universities and surveys as well as any articles that are overly vague about the reported events.</p>
-            <ul>
-                <li><strong>Month:</strong> Refers to the month of the incident where reported, else we default to the month of the article.</li>
-                <li><strong>Victim numbers:</strong> We only include those when specifically mentioned in the article.</li>
-            </ul>
+            <p>This tracker collects reported incidents of school communities where AI nudifiers were used by students against students. We require articles to provide sufficient information about the incident for it to be clearly distinguished from others. 
+                The tracker does not include other cases targeting teachers, children outside of school environments, or cases where the perpetrator isn't a student themself. Please email editorial@indicator.media to flag any cases we have left out.</p>
+            <p><strong>"Month"</strong> refers to the month of the incident if it is reported in the article. <strong>"Victim numbers"</strong> are included only when specifically mentioned in the article.</p>
         </div>
     </details>
+
+    <div class="last-updated" id="lastUpdated"></div>
 
     <div class="sources-section" id="sourceSection">
         <h3>Sources</h3>
@@ -571,6 +578,17 @@
                 dynamicTyping: false
             });
             return result.data;
+        }
+
+        // Pull "last updated" date from cell M2 (col 13, row 2)
+        function extractLastUpdated(csvText) {
+            const raw = Papa.parse(csvText, { header: false, skipEmptyLines: false });
+            if (raw.data && raw.data.length >= 2 && raw.data[1].length >= 13) {
+                const val = (raw.data[1][12] || '').trim(); // M = index 12
+                if (val) {
+                    document.getElementById('lastUpdated').textContent = 'Last updated: ' + val;
+                }
+            }
         }
 
         // ============================================================
@@ -754,6 +772,7 @@
             // 1. Try cache first for instant render
             const cached = getCachedCSV();
             if (cached) {
+                extractLastUpdated(cached.csv);
                 const rows = parseCSV(cached.csv);
                 const { caseData, unmapped } = processRows(rows);
                 renderMap(caseData);
@@ -776,6 +795,7 @@
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 const csvText = await resp.text();
                 setCachedCSV(csvText);
+                extractLastUpdated(csvText);
 
                 const rows = parseCSV(csvText);
                 const { caseData, unmapped } = processRows(rows);
