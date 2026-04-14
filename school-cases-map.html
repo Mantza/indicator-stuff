@@ -13,53 +13,6 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        #gate {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            background: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            font-family: 'Roboto', sans-serif;
-        }
-
-        #gate.hidden { display: none; }
-
-        #gate input {
-            font-family: 'Roboto', sans-serif;
-            font-size: 15px;
-            padding: 10px 16px;
-            border: 2px solid #d0d0d0;
-            border-radius: 4px;
-            width: 260px;
-            text-align: center;
-            margin-bottom: 12px;
-        }
-
-        #gate input:focus { outline: none; border-color: #2451C9; }
-
-        #gate button {
-            font-family: 'Roboto', sans-serif;
-            font-size: 14px;
-            padding: 10px 28px;
-            background: #2451C9;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        #gate button:hover { background: #1a3fa0; }
-
-        #gate .gate-error {
-            color: #c0392b;
-            font-size: 13px;
-            margin-top: 8px;
-            min-height: 18px;
-        }
-
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #f5f6f8;
@@ -389,12 +342,6 @@
 </head>
 <body>
 
-    <div id="gate">
-        <input type="password" id="gatePass" placeholder="Password" autofocus />
-        <button onclick="checkGate()">Enter</button>
-        <div class="gate-error" id="gateError"></div>
-    </div>
-
     <div class="page-wrap">
 
     <div class="map-container">
@@ -421,7 +368,7 @@
         <div class="meth-body">
             <p>This tracker collects reported incidents of school communities where AI nudifiers were used by students against students. We require articles to provide sufficient information about the incident for it to be clearly distinguished from others. 
                 The tracker does not include other cases targeting teachers, children outside of school environments, or cases where the perpetrator isn't a student themself. Please email editorial@indicator.media to flag any cases we have left out.</p>
-            <p><strong>"Month"</strong> refers to the month of the incident if it is reported in the article. <strong>"Victim numbers"</strong> are included only when specifically mentioned in the article.</p>
+            <p><strong>"Month"</strong> refers to the month of the incident if it is reported in the article. <strong>"Victim numbers"</strong> are included only when specifically mentioned in the article. <strong>Location</strong> is approximated when one isn't cited in the article; purposefully inexact when a school is named; zooming into the pin doesn't actually return a precise school in any case.</p>
         </div>
     </details>
 
@@ -646,6 +593,29 @@
         let nominatimQueue = [];
         let nominatimProcessing = false;
 
+        // Deterministic ~1-mile jitter so pins don't precisely identify a school.
+        // Same seed string always produces the same offset, so the pin is stable
+        // across reloads but uniformly distributed within a ~1-mile-radius disk.
+        function jitterCoords(lat, lng, seedStr) {
+            let h1 = 2166136261 >>> 0;
+            let h2 = 52711 >>> 0;
+            const s = String(seedStr || '') + '|' + lat.toFixed(4) + ',' + lng.toFixed(4);
+            for (let i = 0; i < s.length; i++) {
+                const c = s.charCodeAt(i);
+                h1 = Math.imul(h1 ^ c, 16777619) >>> 0;
+                h2 = (Math.imul(h2, 31) + c) >>> 0;
+            }
+            const r1 = (h1 % 100000) / 100000; // 0..1
+            const r2 = (h2 % 100000) / 100000; // 0..1
+            const radiusDeg = 0.0145; // ~1 mile of latitude
+            const r = Math.sqrt(r1) * radiusDeg; // uniform in disk
+            const theta = r2 * 2 * Math.PI;
+            const dLat = r * Math.sin(theta);
+            const cosLat = Math.max(0.1, Math.cos(lat * Math.PI / 180));
+            const dLng = (r * Math.cos(theta)) / cosLat;
+            return [lat + dLat, lng + dLng];
+        }
+
         function getCoords(row) {
             // 1. Check "lat-long" column (single field, e.g. "32.85, -80.06")
             const latLong = (row['lat-long'] || '').trim();
@@ -742,12 +712,26 @@
                 const notes = (row['Excerpt'] || '').trim();
                 const sourceUrl = (row['Source URL'] || '').trim();
 
-                const coords = getCoords(row);
+                // Split on semicolons so rows with multiple outlets pair up by index.
+                const sourceNames = source.split(';').map(s => s.trim()).filter(Boolean);
+                const sourceUrls = sourceUrl.split(';').map(s => s.trim()).filter(Boolean);
+                const sources = sourceNames.map((name, i) => ({
+                    name,
+                    url: sourceUrls[i] || ''
+                }));
+                // If URLs exist without matching names, append them as name-less entries.
+                for (let i = sourceNames.length; i < sourceUrls.length; i++) {
+                    sources.push({ name: '', url: sourceUrls[i] });
+                }
+
+                const rawCoords = getCoords(row);
+                const seed = `${location}|${country}`;
+                const coords = rawCoords ? jitterCoords(rawCoords[0], rawCoords[1], seed) : null;
 
                 const caseItem = {
                     date, monthRaw, location, country,
                     victims, victimsRaw, isUnspecified,
-                    notes, source, sourceUrl,
+                    notes, source, sourceUrl, sources,
                     lat: coords ? coords[0] : null,
                     lng: coords ? coords[1] : null
                 };
@@ -756,7 +740,11 @@
                 if (!coords) {
                     unmapped.push({
                         location, country,
-                        resolve: (c) => { caseItem.lat = c[0]; caseItem.lng = c[1]; }
+                        resolve: (c) => {
+                            const j = jitterCoords(c[0], c[1], seed);
+                            caseItem.lat = j[0];
+                            caseItem.lng = j[1];
+                        }
                     });
                 }
             }
@@ -855,8 +843,8 @@
                     <div class="popup-item"><strong>When:</strong> ${dateStr}</div>
                     ${c.victimsRaw ? `<div class="popup-victims">${c.victimsRaw === 'unspecified' ? 'Number of victims not specified' : c.victims + ' reported victim' + (c.victims !== 1 ? 's' : '')}</div>` : ''}
                     ${c.notes ? `<div class="popup-item">${c.notes}</div>` : ''}
-                    <div class="popup-item" style="margin-top:6px; color:#666; font-size:11.5px;">Source: ${c.source}</div>
-                    ${c.sourceUrl ? `<div class="popup-link"><a href="${c.sourceUrl}" target="_blank">Read article &rarr;</a></div>` : ''}
+                    ${c.sources && c.sources.length ? `<div class="popup-item" style="margin-top:6px; color:#666; font-size:11.5px;">Source${c.sources.length > 1 ? 's' : ''}: ${c.sources.map(s => s.name || s.url).join(' &middot; ')}</div>` : (c.source ? `<div class="popup-item" style="margin-top:6px; color:#666; font-size:11.5px;">Source: ${c.source}</div>` : '')}
+                    ${c.sources && c.sources.some(s => s.url) ? `<div class="popup-link">${c.sources.filter(s => s.url).map((s, i) => `<a href="${s.url}" target="_blank">${c.sources.filter(x => x.url).length > 1 ? (s.name || 'Article ' + (i + 1)) : 'Read article'} &rarr;</a>`).join(' &nbsp;|&nbsp; ')}</div>` : ''}
                 `;
 
                 circle.bindPopup(popupContent, { maxWidth: 300 });
@@ -915,11 +903,20 @@
                 li.dataset.year = yr;
                 const label = c.location ? `${c.location}, ${c.country}` : c.country;
                 const excerptHtml = c.notes ? `<div class="source-excerpt">${c.notes}</div>` : '';
-                if (c.sourceUrl) {
-                    li.innerHTML = `<a href="${c.sourceUrl}" target="_blank">${label}</a><span class="source-meta">${c.source} &middot; ${mo}</span>${excerptHtml}`;
-                } else {
-                    li.innerHTML = `<span style="font-weight:500;font-size:15px;">${label}</span><span class="source-meta">${c.source} &middot; ${mo}</span>${excerptHtml}`;
-                }
+                const sourcesArr = (c.sources && c.sources.length) ? c.sources : [];
+                const firstUrl = sourcesArr.find(s => s.url);
+                // Title link: use first URL if available, else plain label
+                const titleHtml = firstUrl
+                    ? `<a href="${firstUrl.url}" target="_blank">${label}</a>`
+                    : `<span style="font-weight:500;font-size:15px;">${label}</span>`;
+                // Meta line: list each source as a link when it has a URL, plain text otherwise
+                const sourcesMeta = sourcesArr.length
+                    ? sourcesArr.map(s => s.url
+                        ? `<a href="${s.url}" target="_blank">${s.name || s.url}</a>`
+                        : (s.name || '')
+                      ).filter(Boolean).join(' &middot; ')
+                    : (c.source || '');
+                li.innerHTML = `${titleHtml}<span class="source-meta">${sourcesMeta}${sourcesMeta ? ' &middot; ' : ''}${mo}</span>${excerptHtml}`;
                 sourceList.appendChild(li);
             });
 
@@ -938,38 +935,7 @@
             filterYear.onchange = applyFilters;
         }
 
-        // ============================================================
-        // PASSWORD GATE — remove this block before publication
-        // ============================================================
-        const GATE_HASH = 'ff04c0'; // lightweight hash of password
-        function simpleHash(s) {
-            let h = 0;
-            for (let i = 0; i < s.length; i++) {
-                h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-            }
-            return (h >>> 0).toString(16).slice(0, 6);
-        }
-
-        function checkGate() {
-            const val = document.getElementById('gatePass').value;
-            if (simpleHash(val) === GATE_HASH) {
-                document.getElementById('gate').classList.add('hidden');
-                sessionStorage.setItem('indicator_gate', '1');
-                loadData();
-            } else {
-                document.getElementById('gateError').textContent = 'Incorrect password';
-            }
-        }
-
-        document.getElementById('gatePass').addEventListener('keydown', e => {
-            if (e.key === 'Enter') checkGate();
-        });
-
-        // Skip gate if already authenticated this session
-        if (sessionStorage.getItem('indicator_gate') === '1') {
-            document.getElementById('gate').classList.add('hidden');
-            loadData();
-        }
+        loadData();
     </script>
 
     <!-- pym.js child: enables responsive iframe resizing for newsroom embeds -->
