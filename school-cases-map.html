@@ -6,8 +6,6 @@
     <title>Reported cases of AI Nudifiers Targeting School Communities</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -419,26 +417,6 @@
             .map-header img { height: 22px; width: 22px; }
             .map-header .header-title { font-size: 11px; max-width: none; }
         }
-        /* Marker cluster bubbles (mobile only) */
-        .indicator-cluster { background: transparent !important; border: none !important; }
-        .indicator-cluster div { background: transparent !important; }
-        .cluster-bubble {
-            width: 100%;
-            height: 100%;
-            background: #2451C9;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-family: 'Roboto', sans-serif;
-            font-weight: 700;
-            font-size: 13px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-            line-height: 1;
-        }
-        .marker-cluster span { color: #fff; }
     </style>
 </head>
 <body>
@@ -495,7 +473,6 @@
     </div><!-- /page-wrap -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <script>
@@ -956,41 +933,9 @@
         let markersLayer = null;
         let allCases = []; // most recent caseData, used by filters and tab switcher
 
-        // Cluster only on small viewports — desktop has plenty of room for
-        // every individual circle. Re-evaluated on each render.
-        const isMobile = () => window.matchMedia('(max-width: 480px)').matches;
-
-        function buildClusterIcon(cluster) {
-            const n = cluster.getChildCount();
-            const size = n < 10 ? 32 : n < 100 ? 38 : 44;
-            return L.divIcon({
-                html: `<div class="cluster-bubble"><span>${n}</span></div>`,
-                className: 'indicator-cluster',
-                iconSize: L.point(size, size)
-            });
-        }
-
         function renderMarkers(cases) {
             if (markersLayer) map.removeLayer(markersLayer);
-            if (isMobile()) {
-                markersLayer = L.markerClusterGroup({
-                    showCoverageOnHover: false,
-                    spiderfyOnMaxZoom: true,
-                    maxClusterRadius: 45,
-                    disableClusteringAtZoom: 7,
-                    iconCreateFunction: buildClusterIcon
-                });
-                // Surface "N incidents" as a tooltip on cluster hover for clarity.
-                markersLayer.on('clustermouseover', e => {
-                    const n = e.layer.getChildCount();
-                    e.layer.bindTooltip(
-                        `${n} incidents — click to zoom in`,
-                        { direction: 'top', offset: [0, -8], sticky: false }
-                    ).openTooltip();
-                });
-            } else {
-                markersLayer = L.layerGroup();
-            }
+            markersLayer = L.layerGroup();
             markersLayer.addTo(map);
 
             cases.forEach(c => {
