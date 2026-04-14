@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reported cases of AI Nudifiers Targeting School Communities</title>
+    <title>Reported cases of AI nudifiers targeting school communities</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,7 +87,7 @@
             display: flex;
             align-items: stretch;
             gap: 14px;
-            margin: 16px 0 14px;
+            margin: 0 0 14px;
             flex-wrap: wrap;
         }
 
@@ -200,8 +200,22 @@
             letter-spacing: -0.3px;
         }
 
+        .page-title {
+            font-family: 'Roboto', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #2451C9;
+            margin: 0 0 14px;
+            letter-spacing: -0.01em;
+            line-height: 1.25;
+        }
+
+        @media (max-width: 768px) {
+            .page-title { font-size: 18px; }
+        }
+
         .methodology {
-            margin-bottom: 28px;
+            margin-bottom: 0;
         }
 
         .methodology summary {
@@ -313,9 +327,9 @@
         }
 
         .source-list li {
-            padding: 12px 16px;
+            padding: 8px 12px;
             border-left: 3px solid #ECBB2D;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             background: #f9f9fb;
             border-radius: 0 4px 4px 0;
         }
@@ -324,13 +338,24 @@
             display: none;
         }
 
+        .source-line {
+            font-size: 13px;
+            color: #444;
+            line-height: 1.4;
+        }
+
+        .source-line .loc {
+            font-weight: 500;
+            color: #222;
+        }
+
+        .source-line .date {
+            color: #888;
+        }
+
         .source-list li a {
             color: #2451C9;
             text-decoration: none;
-            font-weight: 500;
-            font-size: 15px;
-            display: block;
-            margin-bottom: 2px;
         }
 
         .source-list li a:hover {
@@ -423,12 +448,14 @@
 
     <div class="page-wrap">
 
+    <h1 class="page-title">Reported cases of AI nudifiers targeting school communities</h1>
+
     <details class="methodology">
         <summary>About</summary>
         <div class="meth-body">
             <p>This map was created in April 2026 by Alexios Mantzarlis at Indicator and Matt Burgess at Wired. It collects reported incidents of school communities where AI nudifiers were used by students against students. We require articles to provide sufficient information about the incident for it to be clearly distinguished from others.
                 The map does not include other cases targeting teachers, children outside of school environments, or cases where the perpetrator isn't a student themself. Please email editorial@indicator.media to flag any cases we have left out.</p>
-            <p><strong>"Month"</strong> refers to the month of the incident if it is reported in the article. <strong>"Victim numbers"</strong> are included only when specifically mentioned in the article. <strong>Location</strong> is approximated when one isn't cited in the article or purposefully inexact when a school is named; zooming into the pin doesn't return a precise school location in any instance.</p>
+            <p><strong>Month</strong> refers to the month of the incident if it is reported in the article. <strong>Victim numbers</strong> are included only when specifically mentioned in the article. <strong>Location</strong> is approximated when one isn't cited in the article or purposefully inexact when a school is named; zooming into the pin doesn't return a precise school location in any instance.</p>
         </div>
     </details>
 
@@ -459,7 +486,7 @@
             <div class="header-divider"></div>
             <a href="https://indicator.media/" target="_blank"><img src="data:image/webp;base64,UklGRqgQAABXRUJQVlA4WAoAAAAIAAAA5wMA5wMAVlA4IMgPAABwEgGdASroA+gDPnU6m0okoyMhoDK4aJAOiWlu4XcwbPYmb1JOOs/2T+gfsruXfUPxj/JTqWdg/jX8d/sv8z/X7tsUdenHqh+a/r/9Y/WP50fpB7PPMA/Qb/Vf1H+s/q93Hv4j6AP4//nv3Q96z/M+q/0A/5L/qv/Z2BvoAfsp6ZH7o/BX+1n/T/wH/5/////+xX9bf3c/f////QB//+A0+s7riuBLrZ2tglSpoop06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTp06dOnTYUOInRNa3tmmtbtXUDGgQIECBAgQIECBAgQIECBAgQIECBAfAKo5BwUO9lzyzbyklRQTXbLF3rjonvSQIECBAgQIECBAgQIECBAgPgFUcg4KGheljRsqQmt7Zpq0vas6KpMBakF9646J70kCBAgQIECBAgQIEBIKo5BwUNDCDidQadTsWZMtcdE96SBAgQIECBAgQIECBAgQIECA+IOmHfoXYH4TinkLMkCBAgQIECBAgQIECBAgQIECBAgQICYLxCgs++FKP2wPzp06dOnTp06dOnTp06dOnTp06dOnQuxQTJ2XeuNa3tmmq5ruvUy1x0T3pIECBAgQIECBAgQIECBAgQID4tuBph+KVCOFlGyhGAtSC+9cdE96SBAgQIECBAgQIECBATBeJJAfAQTcxAdakstJAgQIECBAgQIECBAgQIECBAgQIEB8W3A0B8BBNzEB1q2XpaSBAgQIECBAgQIECBAgQIECBAgQIEBMF4kj4CCbmIDrUllpIECBAgQIECBAgQIECBAgQIECBAgQHw8qN/aYRmmtb2zTV2SXcOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw4cOHDhw4bozSaVmEZprW9s01UYp1muOie9JAgQIECBAgQIECBAgQIECBAgPgINPB0w4awE1u83tmmtbwW1lzqu+5MmTJkyZMmTJkyZMmTJkyZMmTJkyZDBU10ZWT112KD0p2pocOHDhw4cOHDhw4cOHDhw4cOHDhw4boFV9txlC+9I7bgZMCQZYpBfeuOie9JAgQIECBAgQIECBAgQICQivm9GBJCl6F0jYH506dOnTp06dOnTp06dOnTp06dOnToUBNPxFOoNO9I2XPSQIECBAgQIECBAgQIECBAgQIECBATBeIUGgrJ6RsD86dOnTp06dOnTp06dOnTp06dOnTp0LsUE+xQelO1RBcdE96SBAgQIECBAgQIECBAgQIECA+LbgQt1EnJsHRVJgLUgvvXHRPekgQIECBAgQIECBAgJgvEKC8SItE3M99646J70kCBAgQIECBAgQIECBAgQHxbcCFuok5Ng6KpMBakF9646J70kCBAgQIECBAgQIEBMF4hQXiRFom5nvvXHRPekgQIECBAgQIECBAgQIECA+LbgQt1EnJsHRVJgLUgvvXHRPekgQIECBAgQIECBAgJgvEKC8SItE3M99646J70kCBAgQIECBAgQIECBAgQHxbcCFuok5Ng6KpMBakF9646J70kCBAgQIECBAgQIEBMF4hQXiRFom5nvvXHRPekgQIECBAgQIECBAgQIECA+LbgQt1EnJsHRVJgLUgvvXHRPekgQIECBAgQIECBAgJgvEKC8SItE3M99646J70kCBAgQIECBAgQIECBAgQHxbcCFuok5Ng6KpMBakF9646J70kCBAgQIECBAgQIEBMF4hQXiRFom5nvvXHRPekgQIECBAgQIECBAgQIECA+LbgQt1EnJsHRVJgLUgvvXHRPekgQIECBAgQIECBAgJgvEKC8SItE3M99646J70kCBAgQIECBAgQIECBAgQHxbcCFuok5Ng6KpMBakF9646J70kCBAgQIECBAgQIEBMF4hQXiRFom5nvvXHRPekgQIECBAgQIECBAgQIECA+LbgQt1EnJsHRVJgLUgvvXHRPekgQIECBAgQIECBAgJgvEKC8SItE3M99646J70kCBAgQIECBAgQIECBAgQHxbcCFuok5Ng6KpMBakF9646J70kCBAgQIECBAgQIEBMF4hQXiRFom5nvvXHRP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" alt="Indicator"></a>
             <div class="header-divider"></div>
-            <span class="header-title">Reported cases of AI Nudifiers Targeting School Communities</span>
+            <span class="header-title">Reported cases of AI nudifiers targeting school communities</span>
         </div>
         <div id="map"></div></div>
         <div id="listPanel" class="hidden">
@@ -1028,19 +1055,19 @@
                 const label = c.location ? `${c.location}, ${c.country}` : c.country;
                 const excerptHtml = c.notes ? `<div class="source-excerpt">${c.notes}</div>` : '';
                 const sourcesArr = (c.sources && c.sources.length) ? c.sources : [];
-                const firstUrl = sourcesArr.find(s => s.url);
-                // Title link: use first URL if available, else plain label
-                const titleHtml = firstUrl
-                    ? `<a href="${firstUrl.url}" target="_blank">${label}</a>`
-                    : `<span style="font-weight:500;font-size:15px;">${label}</span>`;
-                // Meta line: list each source as a link when it has a URL, plain text otherwise
-                const sourcesMeta = sourcesArr.length
+                // Source(s): the only linkable element. Plain text fallback if no URL.
+                const sourcesHtml = sourcesArr.length
                     ? sourcesArr.map(s => s.url
                         ? `<a href="${s.url}" target="_blank">${s.name || s.url}</a>`
                         : (s.name || '')
                       ).filter(Boolean).join(' &middot; ')
                     : (c.source || '');
-                li.innerHTML = `${titleHtml}<span class="source-meta">${sourcesMeta}${sourcesMeta ? ' &middot; ' : ''}${mo}</span>${excerptHtml}`;
+                const parts = [
+                    `<span class="loc">${label}</span>`,
+                    sourcesHtml ? `<span class="src">${sourcesHtml}</span>` : '',
+                    mo ? `<span class="date">${mo}</span>` : ''
+                ].filter(Boolean).join(' &middot; ');
+                li.innerHTML = `<div class="source-line">${parts}</div>${excerptHtml}`;
                 sourceList.appendChild(li);
             });
 
