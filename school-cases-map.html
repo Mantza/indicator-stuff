@@ -616,14 +616,55 @@
             return [lat + dLat, lng + dLng];
         }
 
+        // Parse a single coordinate that may be decimal ("-66.91") or
+        // DMS ("66°54'20.6\"W"). Honors N/S/E/W suffix signs.
+        function parseCoordToken(tok) {
+            if (!tok) return NaN;
+            const t = tok.trim();
+            // Detect N/S/E/W suffix or prefix
+            const dirMatch = t.match(/[NSEW]/i);
+            const dir = dirMatch ? dirMatch[0].toUpperCase() : '';
+            // DMS pattern: degrees, optional minutes, optional seconds
+            const dms = t.match(/(-?\d+(?:\.\d+)?)[°\s]+(\d+(?:\.\d+)?)?['′\s]*(\d+(?:\.\d+)?)?["″]?/);
+            let val;
+            if (dms && (dms[2] !== undefined || dms[3] !== undefined)) {
+                const deg = parseFloat(dms[1]);
+                const min = parseFloat(dms[2] || '0');
+                const sec = parseFloat(dms[3] || '0');
+                const sign = deg < 0 ? -1 : 1;
+                val = sign * (Math.abs(deg) + min / 60 + sec / 3600);
+            } else {
+                val = parseFloat(t);
+            }
+            if (isNaN(val)) return NaN;
+            // Apply hemisphere sign (S/W are negative). Strip any prior sign first.
+            if (dir === 'S' || dir === 'W') val = -Math.abs(val);
+            else if (dir === 'N' || dir === 'E') val = Math.abs(val);
+            return val;
+        }
+
         function getCoords(row) {
-            // 1. Check "lat-long" column (single field, e.g. "32.85, -80.06")
+            // 1. Check "lat-long" column. Supports decimal ("32.85, -80.06")
+            //    and DMS ("32°51'00\"N 80°03'36\"W") with N/S/E/W signs.
             const latLong = (row['lat-long'] || '').trim();
             if (latLong) {
-                const parts = latLong.split(/[,\s]+/).filter(Boolean);
-                if (parts.length >= 2) {
-                    const lat = parseFloat(parts[0]);
-                    const lng = parseFloat(parts[1]);
+                // Split into the lat half and lng half. DMS strings contain spaces,
+                // so prefer comma; if no comma, split on the boundary between the
+                // two hemisphere markers.
+                let latPart, lngPart;
+                if (latLong.includes(',')) {
+                    [latPart, lngPart] = latLong.split(',', 2).map(s => s.trim());
+                } else {
+                    const m = latLong.match(/^(.*?[NS])\s*(.*?[EW])$/i);
+                    if (m) { latPart = m[1]; lngPart = m[2]; }
+                    else {
+                        const parts = latLong.split(/\s+/).filter(Boolean);
+                        if (parts.length >= 2) { latPart = parts[0]; lngPart = parts[1]; }
+                    }
+                }
+                if (latPart && lngPart) {
+                    const lat = parseCoordToken(latPart);
+                    const lng = parseCoordToken(lngPart);
                     if (!isNaN(lat) && !isNaN(lng)) return [lat, lng];
                 }
             }
