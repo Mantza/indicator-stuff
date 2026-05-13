@@ -750,7 +750,26 @@ Reviewed (AM),Apr 2026,Hameln-Pyrmont,Germany,"52°06'17.6""N 9°22'41.5""E",Rad
         // ============================================================
         const CACHE_KEY = 'indicator_csv_data';
         const CACHE_TS_KEY = 'indicator_csv_ts';
-        const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+        const CACHE_TTL = 1 * 60 * 1000; // 1 minute
+
+        // Visible indicator when the page falls back to the baked snapshot.
+        function setOfflineBadge(isOffline) {
+            let badge = document.getElementById('offlineSnapshotBadge');
+            if (!isOffline) {
+                if (badge) badge.style.display = 'none';
+                return;
+            }
+            if (!badge) {
+                const host = document.getElementById('tallyBar');
+                if (!host) return;
+                badge = document.createElement('div');
+                badge.id = 'offlineSnapshotBadge';
+                badge.textContent = 'Showing offline snapshot — live data unavailable';
+                badge.style.cssText = 'display:inline-block;margin-left:10px;padding:3px 8px;background:#FFF3CD;color:#7A5C00;border:1px solid #F1C40F;border-radius:4px;font-size:11px;font-weight:600;';
+                host.appendChild(badge);
+            }
+            badge.style.display = 'inline-block';
+        }
 
         function getCachedCSV() {
             try {
@@ -1011,6 +1030,8 @@ Reviewed (AM),Apr 2026,Hameln-Pyrmont,Germany,"52°06'17.6""N 9°22'41.5""E",Rad
                 const rows = parseCSV(cached.csv);
                 const { caseData, unmapped } = processRows(rows);
                 renderMap(caseData);
+                console.log('[nudifier-map] rendered from sessionStorage cache (' + (cached.fresh ? 'fresh' : 'stale') + ')');
+                setOfflineBadge(false);
                 loadingEl.classList.add('hidden');
 
                 // If cache is fresh, geocode unmapped and done
@@ -1027,8 +1048,10 @@ Reviewed (AM),Apr 2026,Hameln-Pyrmont,Germany,"52°06'17.6""N 9°22'41.5""E",Rad
             // 2. Fetch fresh CSV (with timeout so embeds in restrictive CMSs fall back fast)
             try {
                 const ctrl = new AbortController();
-                const timeoutId = setTimeout(() => ctrl.abort(), 1000);
-                const resp = await fetch(CSV_URL, { signal: ctrl.signal });
+                const timeoutId = setTimeout(() => ctrl.abort(), 8000);
+                // Cache-bust: defeat browser HTTP cache & CDN intermediaries
+                const bustedUrl = CSV_URL + (CSV_URL.includes('?') ? '&' : '?') + '_=' + Date.now();
+                const resp = await fetch(bustedUrl, { signal: ctrl.signal, cache: 'no-store' });
                 clearTimeout(timeoutId);
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 const csvText = await resp.text();
@@ -1039,6 +1062,8 @@ Reviewed (AM),Apr 2026,Hameln-Pyrmont,Germany,"52°06'17.6""N 9°22'41.5""E",Rad
                 const { caseData, unmapped } = processRows(rows);
 
                 renderMap(caseData);
+                console.log('[nudifier-map] rendered from LIVE fetch — ' + caseData.length + ' cases');
+                setOfflineBadge(false);
                 loadingEl.classList.add('hidden');
 
                 if (unmapped.length > 0) {
@@ -1060,6 +1085,8 @@ Reviewed (AM),Apr 2026,Hameln-Pyrmont,Germany,"52°06'17.6""N 9°22'41.5""E",Rad
                     const rows = parseCSV(baked);
                     const { caseData, unmapped } = processRows(rows);
                     renderMap(caseData);
+                    console.warn('[nudifier-map] rendered from BAKED snapshot (offline fallback) — ' + caseData.length + ' cases. Live fetch failed.');
+                    setOfflineBadge(true);
                     loadingEl.classList.add('hidden');
                     // Geocode unmapped silently if possible (will no-op if blocked too)
                     if (unmapped.length > 0) {
