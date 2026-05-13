@@ -750,7 +750,7 @@ Reviewed (AM),Apr 2026,Hameln-Pyrmont,Germany,"52°06'17.6""N 9°22'41.5""E",Rad
         // ============================================================
         const CACHE_KEY = 'indicator_csv_data';
         const CACHE_TS_KEY = 'indicator_csv_ts';
-        const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+        const CACHE_TTL = 1 * 60 * 1000; // 1 minute
 
         function getCachedCSV() {
             try {
@@ -1001,27 +1001,73 @@ Reviewed (AM),Apr 2026,Hameln-Pyrmont,Germany,"52°06'17.6""N 9°22'41.5""E",Rad
         // ============================================================
         // MAIN — load CSV with caching, then render
         // ============================================================
-        // SANDBOX-TOLERANT VARIANT:
-        //   * No fetch() — avoids CSP/CORS/sandbox failures entirely
-        //   * No sessionStorage — avoids SecurityError in opaque-origin iframes
-        //   * No Nominatim geocoding — would fail cross-origin in sandbox
-        //   * Reads only from the inlined baked snapshot.
         async function loadData() {
             const loadingEl = document.getElementById('loading');
-            try {
-                const baked = getBakedCSV();
-                if (!baked) {
-                    loadingEl.textContent = 'Snapshot missing. Rebake and redeploy.';
-                    return;
-                }
-                try { extractLastUpdated(baked); } catch (_) {}
-                const rows = parseCSV(baked);
-                const { caseData } = processRows(rows);
+
+            // 1. Try cache first for instant render
+            const cached = getCachedCSV();
+            if (cached) {
+                extractLastUpdated(cached.csv);
+                const rows = parseCSV(cached.csv);
+                const { caseData, unmapped } = processRows(rows);
                 renderMap(caseData);
                 loadingEl.classList.add('hidden');
+
+                // If cache is fresh, geocode unmapped and done
+                if (cached.fresh) {
+                    if (unmapped.length > 0) {
+                        await geocodeAll(unmapped);
+                        renderMap(caseData);
+                    }
+                    return;
+                }
+                // If stale, fall through to fetch fresh data
+            }
+
+            // 2. Fetch fresh CSV (with timeout so embeds in restrictive CMSs fall back fast)
+            try {
+                const ctrl = new AbortController();
+                const timeoutId = setTimeout(() => ctrl.abort(), 8000);
+                const resp = await fetch(CSV_URL, { signal: ctrl.signal });
+                clearTimeout(timeoutId);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const csvText = await resp.text();
+                setCachedCSV(csvText);
+                extractLastUpdated(csvText);
+
+                const rows = parseCSV(csvText);
+                const { caseData, unmapped } = processRows(rows);
+
+                renderMap(caseData);
+                loadingEl.classList.add('hidden');
+
+                if (unmapped.length > 0) {
+                    console.log(`Geocoding ${unmapped.length} unmapped locations...`);
+                    await geocodeAll(unmapped);
+                    renderMap(caseData);
+                }
+                return;
+
             } catch (err) {
-                console.warn('Embed render failed:', err);
-                try { loadingEl.textContent = 'Failed to render map.'; } catch (_) {}
+                console.warn('Live CSV fetch failed, attempting baked snapshot:', err);
+            }
+
+            // 3. Fall back to baked-in snapshot (used when host CMS blocks the fetch)
+            if (!cached) {
+                const baked = getBakedCSV();
+                if (baked) {
+                    extractLastUpdated(baked);
+                    const rows = parseCSV(baked);
+                    const { caseData, unmapped } = processRows(rows);
+                    renderMap(caseData);
+                    loadingEl.classList.add('hidden');
+                    // Geocode unmapped silently if possible (will no-op if blocked too)
+                    if (unmapped.length > 0) {
+                        try { await geocodeAll(unmapped); renderMap(caseData); } catch (_) {}
+                    }
+                    return;
+                }
+                loadingEl.textContent = 'Failed to load data. Please refresh.';
             }
         }
 
@@ -1202,7 +1248,7 @@ Reviewed (AM),Apr 2026,Hameln-Pyrmont,Germany,"52°06'17.6""N 9°22'41.5""E",Rad
             tabList.classList.toggle('active', !showMap);
             tabMap.setAttribute('aria-selected', showMap);
             tabList.setAttribute('aria-selected', !showMap);
-            try { sessionStorage.setItem('indicator_view', which); } catch (_) {}
+            sessionStorage.setItem('indicator_view', which);
             // Leaflet needs a nudge after its container becomes visible again
             if (showMap && typeof map !== 'undefined') {
                 setTimeout(() => map.invalidateSize(), 0);
@@ -1213,8 +1259,7 @@ Reviewed (AM),Apr 2026,Hameln-Pyrmont,Germany,"52°06'17.6""N 9°22'41.5""E",Rad
         document.getElementById('tabList').addEventListener('click', () => switchTab('list'));
 
         // Default to map; respect a stored choice if the user already toggled.
-        let storedView = null;
-        try { storedView = sessionStorage.getItem('indicator_view'); } catch (_) {}
+        const storedView = sessionStorage.getItem('indicator_view');
         switchTab(storedView || 'map');
 
         loadData();
