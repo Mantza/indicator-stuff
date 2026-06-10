@@ -2,164 +2,131 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{--blue:#2451C9;--yellow:#ECBB2D;--ink:#1A1D24;}
+:root{--blue:#2451C9;--yellow:#ECBB2D;--ink:#1A1D24;--line:#E5E7EB;}
 *{box-sizing:border-box}
-.pg{font-family:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:660px;margin:0 auto;padding:6px 16px 18px}
+.pg{font-family:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:var(--ink);max-width:660px;margin:0 auto;padding:6px 16px 16px}
 .stage{position:relative}
-.card{display:none}
-.card.active{display:block}
-.r-ai,.r-hu{position:absolute;opacity:0;pointer-events:none}
-.panel{border-radius:16px;padding:20px 22px;background:var(--blue);color:#fff;transition:background .25s ease,color .25s ease;box-shadow:0 2px 8px rgba(26,29,36,.12)}
-.r-hu:checked ~ .panel{background:var(--yellow);color:var(--ink)}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.topic{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.92}
-.seg{display:inline-flex;background:rgba(255,255,255,.18);border-radius:999px;padding:3px;flex:none}
-.r-hu:checked ~ .panel .seg{background:rgba(0,0,0,.12)}
-.seg label{font-size:13px;font-weight:700;padding:5px 14px;border-radius:999px;cursor:pointer;line-height:1;transition:.18s;user-select:none;color:#fff;opacity:.8}
-.seg .seg-ai{background:#fff;color:var(--blue);opacity:1}
-.r-hu:checked ~ .panel .seg .seg-ai{background:transparent;color:var(--ink);opacity:.65}
-.r-hu:checked ~ .panel .seg .seg-hu{background:var(--ink);color:var(--yellow);opacity:1}
-.verdict{margin-bottom:12px;font-size:14px}
-.verdict .v{display:none}.verdict .v.ai{display:inline}
-.r-hu:checked ~ .panel .verdict .v.ai{display:none}
-.r-hu:checked ~ .panel .verdict .v.hu{display:inline}
-.verdict b{font-weight:700}
-.para{font-size:16px;line-height:1.6;margin:0 0 14px;min-height:120px}
-.hu-text{display:none}
-.r-hu:checked ~ .panel .ai-text{display:none}
-.r-hu:checked ~ .panel .hu-text{display:inline}
-.chg{background:rgba(255,255,255,.20);border-radius:3px;padding:.02em .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone;text-decoration:underline;text-decoration-color:rgba(255,255,255,.55);text-underline-offset:3px}
-.r-hu:checked ~ .panel .chg{background:rgba(0,0,0,.10);text-decoration-color:rgba(26,29,36,.45)}
-.hint{font-size:12px;opacity:.82;border-top:1px solid rgba(255,255,255,.25);padding-top:9px}
-.r-hu:checked ~ .panel .hint{border-top-color:rgba(0,0,0,.18)}
+.card{display:none}.card.active{display:block}
+.rw,.re{position:absolute;opacity:0;pointer-events:none}
+.body{border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:#fff;box-shadow:0 1px 3px rgba(26,29,36,.05)}
+.topic{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9ca3af;margin-bottom:12px}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.chip{cursor:pointer;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;transition:.15s;background:#fff;opacity:.55}
+.cA{flex:40 1 0}
+.cB{flex:60 1 0}
+.chip .t{display:block;font-size:9px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:#4b5563;margin-bottom:3px}
+.chip .v{font-size:13.5px}.chip .v b{font-weight:700}
+/* active states */
+.rw:checked ~ .body .cA{opacity:1;border-color:var(--blue);background:rgba(36,81,201,.06)}
+.rw:checked ~ .body .cA .v b{color:var(--blue)}
+.re:checked ~ .body .cB.hu{opacity:1;border-color:var(--yellow);background:rgba(236,187,45,.14)}
+.re:checked ~ .body .cB.hu .v b{color:#7a5e00}
+.re:checked ~ .body .cB.mx{opacity:1;border-color:var(--yellow);background:rgba(236,187,45,.10)}
+.re:checked ~ .body .cB.mx .v b{color:#7a5e00}
+.para{font-size:16px;line-height:1.64;margin:0;min-height:150px}
+.p-edit{display:none}
+.re:checked ~ .body .p-base{display:none}
+.re:checked ~ .body .p-edit{display:inline}
+ins{text-decoration:none;background:rgba(236,187,45,.45);border-radius:3px;padding:0 2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+del{color:#c0362c;text-decoration:line-through;opacity:.45}
 .nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px}
-.nav button{appearance:none;border:1.5px solid var(--blue);background:#fff;color:var(--blue);width:38px;height:38px;border-radius:50%;font-size:18px;line-height:1;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center}
+.nav button{appearance:none;border:1.5px solid var(--blue);background:#fff;color:var(--blue);width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center}
 .nav button:hover{background:var(--blue);color:#fff}
-.counter{font-size:13px;font-weight:700;color:var(--ink);min-width:54px;text-align:center;letter-spacing:.03em}
+.counter{font-size:13px;font-weight:700;min-width:54px;text-align:center}
+.hint{text-align:center;font-size:12px;color:#9ca3af;margin-top:8px}
+@media(max-width:520px){.chip{flex-basis:100%}}
 </style></head><body><div class="pg">
 <div class="stage">
-    <div class="card" data-i="0">
-      <input type="radio" name="r0" id="r0a" class="r-ai" checked>
-      <input type="radio" name="r0" id="r0h" class="r-hu">
-      <div class="panel">
-        <div class="top">
-          <span class="topic">Parallel parking</span>
-          <div class="seg"><label for="r0a" class="seg-ai">AI</label><label for="r0h" class="seg-hu">Human</label></div>
-        </div>
-        <div class="verdict">
-          <span class="v ai"><b>Pangram&nbsp;&middot;&nbsp;AI</b> &nbsp;99% confident</span>
-          <span class="v hu"><b>Pangram&nbsp;&middot;&nbsp;Human</b> &nbsp;94% confident</span>
-        </div>
-        <p class="para"><span class="ai-text">I have been driving for twelve years and I still cannot parallel park to save my life. <span class="chg">I will circle an entire block four times to find a space I can pull straight into.</span> <span class="chg">Once I abandoned a perfectly legal spot because a man was watching from a cafe.</span> My car is small and my shame, somehow, is enormous.</span><span class="hu-text">I have been driving for twelve years and I still cannot parallel park to save my life. <span class="chg">Four times I will circle an entire block, to find a space I can pull straight into.</span> <span class="chg">Once, because a man was watching from a cafe, I abandoned a perfectly legal spot.</span> My car is small and my shame, somehow, is enormous.</span></p>
-        <div class="hint">Flip the switch &mdash; only the highlighted sentence changes word order. Not one word is added or removed.</div>
+  <div class="card" data-i="0">
+    <input type="radio" name="m0" id="m0w" class="rw" checked>
+    <input type="radio" name="m0" id="m0e" class="re">
+    <div class="body">
+      <div class="topic">Parallel parking</div>
+      <div class="chips">
+        <label for="m0w" class="chip cA"><span class="t">AI-written</span><span class="v">Pangram: <b>AI</b> &middot; 99% confidence</span></label>
+        <label for="m0e" class="chip cB hu"><span class="t">AI-written and edited to invert word order</span><span class="v">Pangram: <b>Human</b> &middot; 94% confidence</span></label>
       </div>
+      <p class="para"><span class="p-base">I have been driving for twelve years and I still cannot parallel park to save my life. I will circle an entire block four times to find a space I can pull straight into. Once I abandoned a perfectly legal spot because a man was watching from a cafe. My car is small and my shame, somehow, is enormous.</span><span class="p-edit">I have been driving for twelve years and I still cannot parallel park to save my life. <ins>Four times</ins> I will circle an entire block,<del> four times</del> to find a space I can pull straight into. Once, <ins>because a man was watching from a cafe,</ins> I abandoned a perfectly legal spot<del> because a man was watching from a cafe</del>. My car is small and my shame, somehow, is enormous.</span></p>
     </div>
-    <div class="card" data-i="1">
-      <input type="radio" name="r1" id="r1a" class="r-ai" checked>
-      <input type="radio" name="r1" id="r1h" class="r-hu">
-      <div class="panel">
-        <div class="top">
-          <span class="topic">Lost umbrellas</span>
-          <div class="seg"><label for="r1a" class="seg-ai">AI</label><label for="r1h" class="seg-hu">Human</label></div>
-        </div>
-        <div class="verdict">
-          <span class="v ai"><b>Pangram&nbsp;&middot;&nbsp;AI</b> &nbsp;95% confident</span>
-          <span class="v hu"><b>Pangram&nbsp;&middot;&nbsp;Human</b> &nbsp;85% confident</span>
-        </div>
-        <p class="para"><span class="ai-text"><span class="chg">I have personally purchased somewhere around forty umbrellas in my adult life.</span> I currently own exactly zero, which tells you everything about how that has gone. <span class="chg">I leave them on trains, in cafes, and once, memorably, inside an umbrella shop.</span> At this point I just accept the rain as a recurring personal arrangement.</span><span class="hu-text"><span class="chg">In my adult life, I have personally purchased somewhere around forty umbrellas.</span> I currently own exactly zero, which tells you everything about how that has gone. <span class="chg">On trains, in cafes, and once, memorably, inside an umbrella shop, I leave them.</span> At this point I just accept the rain as a recurring personal arrangement.</span></p>
-        <div class="hint">Flip the switch &mdash; only the highlighted sentence changes word order. Not one word is added or removed.</div>
+  </div>
+  <div class="card" data-i="1">
+    <input type="radio" name="m1" id="m1w" class="rw" checked>
+    <input type="radio" name="m1" id="m1e" class="re">
+    <div class="body">
+      <div class="topic">Lost umbrellas</div>
+      <div class="chips">
+        <label for="m1w" class="chip cA"><span class="t">AI-written</span><span class="v">Pangram: <b>AI</b> &middot; 95% confidence</span></label>
+        <label for="m1e" class="chip cB hu"><span class="t">AI-written and edited to invert word order</span><span class="v">Pangram: <b>Human</b> &middot; 85% confidence</span></label>
       </div>
+      <p class="para"><span class="p-base">I have personally purchased somewhere around forty umbrellas in my adult life. I currently own exactly zero, which tells you everything about how that has gone. I leave them on trains, in cafes, and once, memorably, inside an umbrella shop. At this point I just accept the rain as a recurring personal arrangement.</span><span class="p-edit"><ins>In my adult life,</ins> I have personally purchased somewhere around forty umbrellas<del> in my adult life</del>. I currently own exactly zero, which tells you everything about how that has gone. <ins>On trains, in cafes, and once, memorably, inside an umbrella shop,</ins> I leave them<del> on trains, in cafes, and once, memorably, inside an umbrella shop</del>. At this point I just accept the rain as a recurring personal arrangement.</span></p>
     </div>
-    <div class="card" data-i="2">
-      <input type="radio" name="r2" id="r2a" class="r-ai" checked>
-      <input type="radio" name="r2" id="r2h" class="r-hu">
-      <div class="panel">
-        <div class="top">
-          <span class="topic">The sauce-packet drawer</span>
-          <div class="seg"><label for="r2a" class="seg-ai">AI</label><label for="r2h" class="seg-hu">Human</label></div>
-        </div>
-        <div class="verdict">
-          <span class="v ai"><b>Pangram&nbsp;&middot;&nbsp;AI</b> &nbsp;99% confident</span>
-          <span class="v hu"><b>Pangram&nbsp;&middot;&nbsp;Mixed</b> &nbsp;63% human / 37% AI</span>
-        </div>
-        <p class="para"><span class="ai-text">I have a kitchen drawer that is eighty percent soy sauce packets I will never use. <span class="chg">Every takeout order, I add three more to the hoard like a very sad little dragon.</span> I cannot throw them away because what if, someday, there is a sauce emergency. <span class="chg">There has never once, in all of human history, been a sauce emergency.</span></span><span class="hu-text">I have a kitchen drawer that is eighty percent soy sauce packets I will never use. <span class="chg">Like a very sad little dragon, every takeout order I add three more to the hoard.</span> I cannot throw them away because what if, someday, there is a sauce emergency. <span class="chg">In all of human history, there has never once been a sauce emergency.</span></span></p>
-        <div class="hint">Flip the switch &mdash; only the highlighted sentence changes word order. Not one word is added or removed.</div>
+  </div>
+  <div class="card" data-i="2">
+    <input type="radio" name="m2" id="m2w" class="rw" checked>
+    <input type="radio" name="m2" id="m2e" class="re">
+    <div class="body">
+      <div class="topic">The sauce-packet drawer</div>
+      <div class="chips">
+        <label for="m2w" class="chip cA"><span class="t">AI-written</span><span class="v">Pangram: <b>AI</b> &middot; 99% confidence</span></label>
+        <label for="m2e" class="chip cB mx"><span class="t">AI-written and edited to invert word order</span><span class="v">Pangram: <b>Mixed</b></span></label>
       </div>
+      <p class="para"><span class="p-base">I have a kitchen drawer that is eighty percent soy sauce packets I will never use. Every takeout order, I add three more to the hoard like a very sad little dragon. I cannot throw them away because what if, someday, there is a sauce emergency. There has never once, in all of human history, been a sauce emergency.</span><span class="p-edit">I have a kitchen drawer that is eighty percent soy sauce packets I will never use. <ins>Like a very sad little dragon,</ins> every takeout order I add three more to the hoard<del> like a very sad little dragon</del>. I cannot throw them away because what if, someday, there is a sauce emergency. <ins>In all of human history,</ins> there has never once<del>, in all of human history,</del> been a sauce emergency.</span></p>
     </div>
-    <div class="card" data-i="3">
-      <input type="radio" name="r3" id="r3a" class="r-ai" checked>
-      <input type="radio" name="r3" id="r3h" class="r-hu">
-      <div class="panel">
-        <div class="top">
-          <span class="topic">A podcast about ranking sandwiches</span>
-          <div class="seg"><label for="r3a" class="seg-ai">AI</label><label for="r3h" class="seg-hu">Human</label></div>
-        </div>
-        <div class="verdict">
-          <span class="v ai"><b>Pangram&nbsp;&middot;&nbsp;AI</b> &nbsp;79% confident</span>
-          <span class="v hu"><b>Pangram&nbsp;&middot;&nbsp;Human</b> &nbsp;97% confident</span>
-        </div>
-        <p class="para"><span class="ai-text">I am embarrassingly attached to a podcast about two guys ranking sandwiches. <span class="chg">It has no educational value whatsoever and I have heard every single episode twice.</span> <span class="chg">On bad days, their dumb laughter is the closest thing I have to a reset button.</span> I&#x27;d be mortified if my coworkers knew, so naturally I&#x27;m telling the internet.</span><span class="hu-text">I am embarrassingly attached to a podcast about two guys ranking sandwiches. <span class="chg">It has no educational value whatsoever, and twice I have heard every single episode.</span> <span class="chg">Their dumb laughter is the closest thing I have to a reset button on bad days.</span> I&#x27;d be mortified if my coworkers knew, so naturally I&#x27;m telling the internet.</span></p>
-        <div class="hint">Flip the switch &mdash; only the highlighted sentence changes word order. Not one word is added or removed.</div>
+  </div>
+  <div class="card" data-i="3">
+    <input type="radio" name="m3" id="m3w" class="rw" checked>
+    <input type="radio" name="m3" id="m3e" class="re">
+    <div class="body">
+      <div class="topic">A podcast about ranking sandwiches</div>
+      <div class="chips">
+        <label for="m3w" class="chip cA"><span class="t">AI-written</span><span class="v">Pangram: <b>AI</b> &middot; 79% confidence</span></label>
+        <label for="m3e" class="chip cB hu"><span class="t">AI-written and edited to invert word order</span><span class="v">Pangram: <b>Human</b> &middot; 97% confidence</span></label>
       </div>
+      <p class="para"><span class="p-base">I am embarrassingly attached to a podcast about two guys ranking sandwiches. It has no educational value whatsoever and I have heard every single episode twice. On bad days, their dumb laughter is the closest thing I have to a reset button. If my coworkers knew, I&#x27;d be mortified, so naturally I&#x27;m telling the internet.</span><span class="p-edit">I am embarrassingly attached to a podcast about two guys ranking sandwiches. It has no educational value whatsoever, and <ins>twice</ins> I have heard every single episode<del> twice</del>. <del>On bad days,</del> Their dumb laughter is the closest thing I have to a reset button<ins> on bad days</ins>. If my coworkers knew, I&#x27;d be mortified, so naturally I&#x27;m telling the internet.</span></p>
     </div>
-    <div class="card" data-i="4">
-      <input type="radio" name="r4" id="r4a" class="r-ai" checked>
-      <input type="radio" name="r4" id="r4h" class="r-hu">
-      <div class="panel">
-        <div class="top">
-          <span class="topic">Always cold</span>
-          <div class="seg"><label for="r4a" class="seg-ai">AI</label><label for="r4h" class="seg-hu">Human</label></div>
-        </div>
-        <div class="verdict">
-          <span class="v ai"><b>Pangram&nbsp;&middot;&nbsp;AI</b> &nbsp;84% confident</span>
-          <span class="v hu"><b>Pangram&nbsp;&middot;&nbsp;Human</b> &nbsp;98% confident</span>
-        </div>
-        <p class="para"><span class="ai-text"><span class="chg">I am cold all the time and have accepted that I will die in a cardigan.</span> I own approximately nine blankets and consider each of them load-bearing. <span class="chg">People hand me drinks and I hold them mostly for the warmth, not the taste.</span> <span class="chg">My ideal temperature does not exist anywhere outside of a freshly run bath.</span></span><span class="hu-text"><span class="chg">All the time, I am cold and have accepted that I will die in a cardigan.</span> I own approximately nine blankets and consider each of them load-bearing. <span class="chg">People hand me drinks, and mostly for the warmth, not the taste, I hold them.</span> <span class="chg">Anywhere outside of a freshly run bath, my ideal temperature does not exist.</span></span></p>
-        <div class="hint">Flip the switch &mdash; only the highlighted sentence changes word order. Not one word is added or removed.</div>
+  </div>
+  <div class="card" data-i="4">
+    <input type="radio" name="m4" id="m4w" class="rw" checked>
+    <input type="radio" name="m4" id="m4e" class="re">
+    <div class="body">
+      <div class="topic">Always cold</div>
+      <div class="chips">
+        <label for="m4w" class="chip cA"><span class="t">AI-written</span><span class="v">Pangram: <b>AI</b> &middot; 84% confidence</span></label>
+        <label for="m4e" class="chip cB hu"><span class="t">AI-written and edited to invert word order</span><span class="v">Pangram: <b>Human</b> &middot; 98% confidence</span></label>
       </div>
+      <p class="para"><span class="p-base">I am cold all the time and have accepted that I will die in a cardigan. I own approximately nine blankets and consider each of them load-bearing. People hand me drinks and I hold them mostly for the warmth, not the taste. My ideal temperature does not exist anywhere outside of a freshly run bath.</span><span class="p-edit"><ins>All the time,</ins> I am cold<del> all the time</del> and have accepted that I will die in a cardigan. I own approximately nine blankets and consider each of them load-bearing. People hand me drinks, and <ins>mostly for the warmth, not the taste,</ins> I hold them<del> mostly for the warmth, not the taste</del>. <ins>Anywhere outside of a freshly run bath,</ins> my ideal temperature does not exist<del> anywhere outside of a freshly run bath</del>.</span></p>
     </div>
-    <div class="card" data-i="5">
-      <input type="radio" name="r5" id="r5a" class="r-ai" checked>
-      <input type="radio" name="r5" id="r5h" class="r-hu">
-      <div class="panel">
-        <div class="top">
-          <span class="topic">The snooze button</span>
-          <div class="seg"><label for="r5a" class="seg-ai">AI</label><label for="r5h" class="seg-hu">Human</label></div>
-        </div>
-        <div class="verdict">
-          <span class="v ai"><b>Pangram&nbsp;&middot;&nbsp;AI</b> &nbsp;95% confident</span>
-          <span class="v hu"><b>Pangram&nbsp;&middot;&nbsp;Human</b> &nbsp;89% confident</span>
-        </div>
-        <p class="para"><span class="ai-text"><span class="chg">I have hit the snooze button every morning for about fifteen years now.</span> <span class="chg">My alarm goes off at six and I negotiate with it until seven.</span> I keep telling myself tomorrow will be different, and tomorrow keeps disagreeing. <span class="chg">The nine extra minutes never actually help, but I take them like medicine anyway.</span></span><span class="hu-text"><span class="chg">For about fifteen years now, I have hit the snooze button every morning.</span> <span class="chg">At six, my alarm goes off, and I negotiate with it until seven.</span> I keep telling myself tomorrow will be different, and tomorrow keeps disagreeing. <span class="chg">Like medicine, I take them anyway, but the nine extra minutes never actually help.</span></span></p>
-        <div class="hint">Flip the switch &mdash; only the highlighted sentence changes word order. Not one word is added or removed.</div>
+  </div>
+  <div class="card" data-i="5">
+    <input type="radio" name="m5" id="m5w" class="rw" checked>
+    <input type="radio" name="m5" id="m5e" class="re">
+    <div class="body">
+      <div class="topic">The snooze button</div>
+      <div class="chips">
+        <label for="m5w" class="chip cA"><span class="t">AI-written</span><span class="v">Pangram: <b>AI</b> &middot; 95% confidence</span></label>
+        <label for="m5e" class="chip cB hu"><span class="t">AI-written and edited to invert word order</span><span class="v">Pangram: <b>Human</b> &middot; 89% confidence</span></label>
       </div>
+      <p class="para"><span class="p-base">I have hit the snooze button every morning for about fifteen years now. My alarm goes off at six and I negotiate with it until seven. I keep telling myself tomorrow will be different, and tomorrow keeps disagreeing. The nine extra minutes never actually help, but I take them like medicine anyway.</span><span class="p-edit"><ins>For about fifteen years now,</ins> I have hit the snooze button every morning<del> for about fifteen years now</del>. <ins>At six,</ins> my alarm goes off<del> at six</del>, and I negotiate with it until seven. I keep telling myself tomorrow will be different, and tomorrow keeps disagreeing. <ins>Like medicine, I take them anyway, but</ins> the nine extra minutes never actually help<del>, but I take them like medicine anyway</del>.</span></p>
     </div>
-    <div class="card" data-i="6">
-      <input type="radio" name="r6" id="r6a" class="r-ai" checked>
-      <input type="radio" name="r6" id="r6h" class="r-hu">
-      <div class="panel">
-        <div class="top">
-          <span class="topic">Accidental coffee snob</span>
-          <div class="seg"><label for="r6a" class="seg-ai">AI</label><label for="r6h" class="seg-hu">Human</label></div>
-        </div>
-        <div class="verdict">
-          <span class="v ai"><b>Pangram&nbsp;&middot;&nbsp;AI</b> &nbsp;98% confident</span>
-          <span class="v hu"><b>Pangram&nbsp;&middot;&nbsp;Human</b> &nbsp;94% confident</span>
-        </div>
-        <p class="para"><span class="ai-text"><span class="chg">I became a coffee snob entirely by accident and now I cannot go back.</span> <span class="chg">It started with one decent grinder and spiraled into scales and timers and shame.</span> <span class="chg">I judge a city by its cafes within about eleven minutes of arriving.</span> My morning cup is the one small thing I refuse, absolutely refuse, to rush.</span><span class="hu-text"><span class="chg">Entirely by accident, I became a coffee snob, and now I cannot go back.</span> <span class="chg">With one decent grinder, it started and spiraled into scales and timers and shame.</span> <span class="chg">Within about eleven minutes of arriving, I judge a city by its cafes.</span> My morning cup is the one small thing I refuse, absolutely refuse, to rush.</span></p>
-        <div class="hint">Flip the switch &mdash; only the highlighted sentence changes word order. Not one word is added or removed.</div>
+  </div>
+  <div class="card" data-i="6">
+    <input type="radio" name="m6" id="m6w" class="rw" checked>
+    <input type="radio" name="m6" id="m6e" class="re">
+    <div class="body">
+      <div class="topic">Accidental coffee snob</div>
+      <div class="chips">
+        <label for="m6w" class="chip cA"><span class="t">AI-written</span><span class="v">Pangram: <b>AI</b> &middot; 98% confidence</span></label>
+        <label for="m6e" class="chip cB hu"><span class="t">AI-written and edited to invert word order</span><span class="v">Pangram: <b>Human</b> &middot; 94% confidence</span></label>
       </div>
-    </div></div>
+      <p class="para"><span class="p-base">I became a coffee snob entirely by accident and now I cannot go back. It started with one decent grinder and spiraled into scales and timers and shame. I judge a city by its cafes within about eleven minutes of arriving. My morning cup is the one small thing I refuse, absolutely refuse, to rush.</span><span class="p-edit"><ins>Entirely by accident,</ins> I became a coffee snob<del> entirely by accident</del>, and now I cannot go back. <ins>With one decent grinder,</ins> it started<del> with one decent grinder</del> and spiraled into scales and timers and shame. <ins>Within about eleven minutes of arriving,</ins> I judge a city by its cafes<del> within about eleven minutes of arriving</del>. My morning cup is the one small thing I refuse, absolutely refuse, to rush.</span></p>
+    </div>
+  </div></div>
 <div class="nav"><button id="prev" aria-label="Previous">&#8249;</button><span class="counter" id="counter">1 / 7</span><button id="next" aria-label="Next">&#8250;</button></div>
 </div><script>
-(function(){
-  var cards=[].slice.call(document.querySelectorAll('.card'));
-  var counter=document.getElementById('counter');
-  var i=0;
-  function show(n){ i=(n+cards.length)%cards.length; cards.forEach(function(c,j){c.classList.toggle('active',j===i);}); counter.textContent=(i+1)+' / '+cards.length; }
-  document.getElementById('prev').addEventListener('click',function(){show(i-1);});
-  document.getElementById('next').addEventListener('click',function(){show(i+1);});
-  document.addEventListener('keydown',function(e){ if(e.key==='ArrowLeft')show(i-1); if(e.key==='ArrowRight')show(i+1); });
-  show(0);
-})();
+(function(){var cards=[].slice.call(document.querySelectorAll('.card'));var c=document.getElementById('counter');var i=0;
+function show(n){i=(n+cards.length)%cards.length;cards.forEach(function(x,j){x.classList.toggle('active',j===i);});c.textContent=(i+1)+' / '+cards.length;}
+document.getElementById('prev').addEventListener('click',function(){show(i-1);});
+document.getElementById('next').addEventListener('click',function(){show(i+1);});
+document.addEventListener('keydown',function(e){if(e.key==='ArrowLeft')show(i-1);if(e.key==='ArrowRight')show(i+1);});
+show(0);})();
 </script></body></html>
