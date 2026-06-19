@@ -352,5 +352,76 @@ render(0);
     }
   </script>
 
+  <!-- In-page screenshot modal (replaces target=_blank data: URI tab) -->
+  <style>
+    .ss-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; z-index: 99999; overflow: auto; }
+    .ss-modal.open { display: block; }
+    .ss-modal-bar { position: sticky; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; color: #fff; font: 13px -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 2; }
+    .ss-modal-title { opacity: 0.9; }
+    .ss-modal-actions { display: flex; gap: 10px; align-items: center; }
+    .ss-modal-actions a, .ss-modal-actions button { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.5); padding: 5px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; text-decoration: none; font-family: inherit; }
+    .ss-modal-actions a:hover, .ss-modal-actions button:hover { background: rgba(255,255,255,0.18); }
+    .ss-modal-hint { opacity: 0.55; font-size: 11px; padding-right: 8px; }
+    .ss-modal-stage { padding: 24px; display: flex; justify-content: center; }
+    .ss-modal-img { display: block; width: min(95vw, 1600px); height: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.5); border-radius: 4px; background: #fff; cursor: zoom-in; }
+    .ss-modal-img.zoomed { width: auto; max-width: none; cursor: zoom-out; }
+  </style>
+  <div id="ss-modal" class="ss-modal" role="dialog" aria-modal="true" aria-label="SRP screenshot">
+    <div class="ss-modal-bar">
+      <span class="ss-modal-title" id="ss-modal-title"></span>
+      <div class="ss-modal-actions">
+        <span class="ss-modal-hint">click image to zoom · esc to close</span>
+        <a id="ss-modal-download" download="srp-screenshot.png">Download</a>
+        <button id="ss-modal-close-2">Close</button>
+      </div>
+    </div>
+    <div class="ss-modal-stage">
+      <img id="ss-modal-img" class="ss-modal-img" alt="SRP screenshot as scraped">
+    </div>
+  </div>
+  <script>
+    (function(){
+      const modal = document.getElementById('ss-modal');
+      const img = document.getElementById('ss-modal-img');
+      const title = document.getElementById('ss-modal-title');
+      const dl = document.getElementById('ss-modal-download');
+      const link = document.getElementById('screenshot-link');
+      function open(src, label){
+        if (!src || src === '#') return;
+        img.src = src;
+        title.textContent = label ? ('SRP screenshot — ' + label) : 'SRP screenshot';
+        const ext = (src.match(/^data:image\/(\w+)/) || [,'png'])[1];
+        dl.href = src;
+        dl.download = 'srp-screenshot.' + ext;
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      function close(){
+        modal.classList.remove('open');
+        img.removeAttribute('src');
+        img.classList.remove('zoomed');
+        modal.scrollTop = 0;
+        document.body.style.overflow = '';
+      }
+      img.addEventListener('click', function(){ img.classList.toggle('zoomed'); });
+      if (link) {
+        link.addEventListener('click', function(e){
+          const href = link.getAttribute('href') || '';
+          if (href && href !== '#') {
+            e.preventDefault();
+            const picker = document.getElementById('picker');
+            const label = picker && picker.options[picker.selectedIndex] ? picker.options[picker.selectedIndex].text : '';
+            open(href, label);
+          }
+        });
+        link.removeAttribute('target');
+        link.removeAttribute('rel');
+      }
+      document.getElementById('ss-modal-close-2').addEventListener('click', close);
+      modal.addEventListener('click', function(e){ if (e.target === modal || (e.target.classList && e.target.classList.contains('ss-modal-stage'))) close(); });
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+    })();
+  </script>
+
 </body>
 </html>
