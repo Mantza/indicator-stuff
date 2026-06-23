@@ -37,24 +37,9 @@
     box-shadow:0 1px 3px rgba(0,0,0,0.04);
   }
 
-  /* TOP STRIP */
-  .top-strip{
-    background:#1A1D24;color:#fff;
-    padding:7px 16px;
-    font-size:10.5px;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    display:flex;align-items:center;justify-content:center;gap:10px;
-    font-weight:500;
-  }
-  .top-strip .x{opacity:.5;font-weight:400}
-  .top-strip img{height:14px;filter:brightness(0) invert(1);display:inline-block;vertical-align:middle}
-  .top-strip .brand-name{font-weight:700;letter-spacing:.04em;color:#fff}
-  .top-strip .maldita{font-weight:700;letter-spacing:.04em}
-
   /* HEADER — minimal */
   .hd{
-    padding:18px 22px 12px;border-bottom:1px solid var(--ind-line);
+    padding:12px 20px 10px;border-bottom:1px solid var(--ind-line);
   }
   .kicker{
     color:var(--ind-blue);font-weight:700;font-size:11px;
@@ -62,7 +47,7 @@
     margin-bottom:6px;
   }
   .hd h2{
-    font-size:18px;line-height:1.3;margin:0;font-weight:700;
+    font-size:16px;line-height:1.3;margin:0;font-weight:700;
   }
   .hd h2 mark{
     background:var(--ind-yellow);color:var(--ind-ink);
@@ -72,13 +57,12 @@
   /* CAROUSEL */
   .carousel{
     position:relative;
-    min-height:380px;
     padding:0;
   }
   .slide{
     display:none;
-    flex-direction:column;gap:11px;
-    padding:20px 22px 16px;
+    flex-direction:column;gap:8px;
+    padding:12px 20px 10px;
     animation:fadeIn .25s ease;
   }
   @keyframes fadeIn{
@@ -109,11 +93,27 @@
     display:inline-block;
   }
   .quote{
-    font-size:14px;line-height:1.6;color:#2a2e35;margin:0;
+    font-size:14px;line-height:1.55;color:#2a2e35;margin:0;
     border-left:3px solid var(--ind-line);padding-left:13px;
     font-weight:400;
-    max-height:280px;overflow:auto;
+    max-height:110px;overflow:hidden;position:relative;
+    transition:max-height .25s ease;
   }
+  .quote.expanded{ max-height:480px;overflow:auto; }
+  .quote:not(.expanded).is-long::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;
+    height:34px;
+    background:linear-gradient(rgba(255,255,255,0), rgba(255,255,255,1));
+    pointer-events:none;
+  }
+  .read-more{
+    background:none;border:none;color:var(--ind-blue);
+    font-size:12px;font-weight:600;cursor:pointer;
+    padding:2px 0 0;
+    font-family:inherit;text-decoration:underline;
+    align-self:flex-start;
+  }
+  .read-more:hover{color:#1a3b8f}
   .quote mark{
     background:var(--ind-yellow);color:var(--ind-ink);
     padding:1px 4px;border-radius:2px;font-weight:600;
@@ -124,14 +124,14 @@
   /* NAV */
   .nav{
     display:flex;align-items:center;justify-content:space-between;
-    padding:10px 16px;
+    padding:6px 14px;
     background:var(--ind-soft);
     border-top:1px solid var(--ind-line);
   }
   .nav button{
     background:#fff;border:1px solid var(--ind-line);color:var(--ind-ink);
-    width:36px;height:36px;border-radius:50%;
-    font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    width:28px;height:28px;border-radius:50%;
+    font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;
     transition:all .15s ease;
     font-family:inherit;
   }
@@ -139,38 +139,34 @@
   .nav button:disabled{opacity:.3;cursor:not-allowed}
   .nav button:disabled:hover{background:#fff;color:var(--ind-ink);border-color:var(--ind-line)}
   .counter{
-    font-size:12px;color:var(--ind-mute);font-weight:500;
+    font-size:11px;color:var(--ind-mute);font-weight:500;
     letter-spacing:.05em;
   }
-  .counter strong{color:var(--ind-ink);font-weight:700;font-size:14px}
+  .counter strong{color:var(--ind-ink);font-weight:700;font-size:12px}
 
   /* DOT INDICATORS */
   .dots{
-    display:flex;gap:5px;justify-content:center;
-    padding:8px 16px 12px;background:var(--ind-soft);
+    display:flex;gap:4px;justify-content:center;
+    padding:4px 16px 8px;background:var(--ind-soft);
   }
   .dot{
-    width:7px;height:7px;border-radius:50%;
+    width:6px;height:6px;border-radius:50%;
     background:#cdd1d8;cursor:pointer;
     transition:all .15s ease;
   }
   .dot:hover{background:var(--ind-blue)}
-  .dot.active{background:var(--ind-blue);width:18px;border-radius:4px}
+  .dot.active{background:var(--ind-blue);width:14px;border-radius:3px}
 
   /* RESPONSIVE */
   @media (max-width:520px){
     .widget{margin:0;border-radius:0;border-left:0;border-right:0}
     .hd h2{font-size:16px}
-    .quote{font-size:13.5px;max-height:240px}
+    .quote{font-size:13.5px;max-height:100px}
   }
 </style>
 </head>
 <body>
   <div class="widget">
-        <div class="top-strip">
-      <span>An <strong class="brand-name">Indicator</strong> × <span class="maldita">Maldita.es</span> investigation</span>
-    </div>
-
     <div class="hd">
       <div class="kicker">Heritage hijackers</div>
       <h2>What victims say about <mark>Google</mark>'s role</h2>
@@ -726,6 +722,28 @@ Absolute mis-selling and misrepresentation - DO NOT USE THIS SITE it is not legi
       if (dx > 0) show(idx - 1); else show(idx + 1);
     }
   }, {passive:true});
+
+
+  // Add Read more / Read less toggle to long quotes
+  document.querySelectorAll('.quote').forEach(q => {
+    // Wait a frame so layout is computed
+    requestAnimationFrame(() => {
+      // Measure full content height
+      const computedMax = parseFloat(getComputedStyle(q).maxHeight) || 110;
+      const isLong = q.scrollHeight - 4 > computedMax; // 4px tolerance
+      if (!isLong) return;
+      q.classList.add('is-long');
+      const btn = document.createElement('button');
+      btn.className = 'read-more';
+      btn.type = 'button';
+      btn.textContent = 'Read more';
+      btn.addEventListener('click', () => {
+        const expanded = q.classList.toggle('expanded');
+        btn.textContent = expanded ? 'Read less' : 'Read more';
+      });
+      q.insertAdjacentElement('afterend', btn);
+    });
+  });
 
   show(0);
 })();
