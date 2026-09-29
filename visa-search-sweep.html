@@ -61,25 +61,30 @@ h1{font-size:clamp(24px,3.4vw,34px);line-height:1.15;font-weight:900;letter-spac
 .c-gov{background:var(--gov-soft);border-color:var(--gov)}
 .c-other{background:var(--other-soft);border-color:var(--other)}
 .grid-cell.c-official{background:var(--green)} .grid-cell.c-ad-labelled{background:var(--amber)} .grid-cell.c-ad-unlabelled{background:var(--red)} .grid-cell.c-gov{background:var(--gov)} .grid-cell.c-other{background:var(--other)}
-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:28px;align-items:start}
-@media (max-width:860px){main{grid-template-columns:1fr}}
+main{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:600px){main{grid-template-columns:1fr}}
 h2{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 10px}
 .overview{display:flex;flex-direction:column;gap:18px}
-.group h3{font-size:14px;font-weight:700;margin:0 0 6px}
+.group h3{font-size:12px;font-weight:400;color:var(--mute);margin:0 0 6px}
+.group[hidden]{display:none}
+.seg{display:flex;flex-direction:column;gap:6px}
+.seg label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.seg select{font:inherit;font-size:14px;height:38px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer;width:100%}
+.seg select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .group h3 small{font-weight:400;color:var(--mute)}
 .rows{display:flex;flex-direction:column;gap:3px}
-.qrow{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:10px;padding:5px 8px;border-radius:8px;border:1px solid transparent;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;width:100%}
+.qrow{display:grid;grid-template-columns:1fr;align-items:center;gap:4px;padding:6px 8px;border-radius:8px;border:1px solid transparent;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;width:100%}
 .qrow:hover{background:var(--card);border-color:var(--line)}
 .qrow[aria-pressed="true"]{background:var(--card);border-color:var(--blue);box-shadow:inset 3px 0 0 var(--blue)}
 .qrow:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .qlabel{font-size:13px;font-family:'Roboto Mono',ui-monospace,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cells{display:flex;gap:3px;flex-wrap:nowrap}
-.grid-cell{width:16px;height:16px;border-radius:3px;flex-shrink:0}
+.cells{display:flex;gap:2px;flex-wrap:nowrap}
+.grid-cell{width:12px;height:12px;border-radius:2px;flex-shrink:0}
 @media (max-width:460px){.qrow{grid-template-columns:1fr;gap:4px}.grid-cell{width:14px;height:14px}}
-.axis{display:grid;grid-template-columns:150px 1fr;gap:10px;padding:0 8px;font-size:11px;color:var(--mute)}
+.axis{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:0 8px;font-size:11px;color:var(--mute)}
 @media (max-width:460px){.axis{display:none}}
 .serp{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 10px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
-@media (max-width:860px){.serp{position:static}}
+@media (max-width:600px){.serp{position:static}}
 .searchbox{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:24px;height:44px;padding:0 16px;font-size:16px;margin-bottom:6px}
 .gdot{width:16px;height:16px;border-radius:50%;flex-shrink:0;background:conic-gradient(#4285F4 0 25%,#EA4335 0 50%,#FBBC04 0 75%,#34A853 0)}
 .runline{font-size:12px;color:var(--mute);margin:0 0 12px 4px}
@@ -148,6 +153,7 @@ footer a{color:var(--link)}
 
 <main>
   <section class="overview" aria-label="All 26 searches">
+    <div class="seg"><label for="locsel">Location and language</label><select id="locsel"></select></div>
     <div id="groups" class="overview"></div>
   </section>
   <section class="serp" aria-live="polite">
@@ -185,8 +191,8 @@ let current = null;
 RUNS.forEach(g => {
   const items = DATA.filter(d => d.run === g.run && d.lang === g.lang);
   const el = document.createElement('div');
-  el.className = 'group';
-  el.innerHTML = `<h3>${g.title} <small>· ${g.date} · ${items.length} searches</small></h3><div class="rows"></div>`;
+  el.className = 'group'; el.dataset.key = g.key;
+  el.innerHTML = `<h3>${g.date} · ${items.length} searches</h3><div class="rows"></div>`;
   const rows = el.querySelector('.rows');
   items.forEach(d => {
     const b = document.createElement('button');
@@ -196,12 +202,16 @@ RUNS.forEach(g => {
     const nAds = d.res.filter(r => r.kind === 'ad').length;
     b.setAttribute('aria-label', `${d.q}: ${nAds} ads, official site at position ${d.firstOfficial}`);
     b.innerHTML = `<span class="qlabel" title="${esc(d.scheme)}">${esc(d.q)}</span><span class="cells">${d.res.map(r => `<i class="grid-cell c-${r.cat}" title="${r.pos}. ${esc(r.host)}"></i>`).join('')}</span>`;
-    b.addEventListener('click', () => { select(d, b); if (window.matchMedia('(max-width:860px)').matches) document.querySelector('.serp').scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start'}); });
+    b.addEventListener('click', () => { select(d, b); if (window.matchMedia('(max-width:600px)').matches) document.querySelector('.serp').scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start'}); });
     rows.appendChild(b);
     d._btn = b;
   });
   groups.appendChild(el);
 });
+const locsel = document.getElementById('locsel');
+RUNS.forEach(g => { const o = document.createElement('option'); o.value = g.key; o.textContent = g.title; locsel.appendChild(o); });
+function showGroup(key){ locsel.value = key; groups.querySelectorAll('.group').forEach(el => { el.hidden = el.dataset.key !== key; }); }
+locsel.addEventListener('change', () => { showGroup(locsel.value); const g = RUNS.find(x => x.key === locsel.value); const first = DATA.find(d => d.run === g.run && d.lang === g.lang); if (first) select(first, first._btn); });
 
 document.getElementById('lbopen').addEventListener('click',function(e){e.preventDefault();if(!curShot)return;fetch(SHOTS[curShot.file]).then(r=>r.blob()).then(b=>window.open(URL.createObjectURL(b),'_blank'));});
 const lb=document.getElementById('lb'), lbimg=document.getElementById('lbimg');
@@ -240,6 +250,7 @@ function select(d, btn){
     </div>`).join('');
 }
 const start = DATA.find(d => d.run === 'rome' && d.lang === 'it' && d.q === 'eta regno unito') || DATA[0];
+showGroup(RUNS.find(g => g.run === start.run && g.lang === start.lang).key);
 select(start, start._btn);
 </script>
 
