@@ -1,0 +1,89 @@
+{
+  "_source": "Jay Baxter (X Community Notes lead), https://x.com/jaybaxter/status/2105734746945081786, Oct 1 2026. Tweet IDs captured from each alias profile on Oct 14 2026, for mapping alias -> participantId once data covering Oct 2026 is downloaded.",
+  "accounts": {
+    "celebrated-ocean-seagull": {
+      "writing_impact_oct14": 5212,
+      "tweet_ids": [
+        "2110273420034203864",
+        "1576356985812832256",
+        "2110272418530902462",
+        "2109784176371122594",
+        "2110238263298715839",
+        "2110325910712832200",
+        "2110364054111826095",
+        "2078147670057582666",
+        "1850711965796343878",
+        "2108869333363679363"
+      ]
+    },
+    "cheery-nutmeg-towhee": {
+      "writing_impact_oct14": 4466,
+      "tweet_ids": [
+        "2110290090421281257",
+        "2110388756230312081",
+        "2110303169922412843",
+        "2106002585010540896",
+        "2110324849696714855",
+        "2110342506894213565",
+        "2110382012330619085"
+      ]
+    },
+    "great-mountain-brushturkey": {
+      "writing_impact_oct14": 4571,
+      "tweet_ids": [
+        "2110344572471484675",
+        "2110360721615642928",
+        "2110354012004327691",
+        "2110339837513310419"
+      ]
+    },
+    "zappy-winter-thicketbird": {
+      "writing_impact_oct14": 4975,
+      "tweet_ids": [
+        "2097191637302772036",
+        "2110139208358568210",
+        "2108049035571671297",
+        "2110187898545053905",
+        "2110279294316581285",
+        "2110240971518775340"
+      ]
+    },
+    "neighborly-rhubarb-chickadee": {
+      "writing_impact_oct14": 4700,
+      "tweet_ids": [
+        "2077752750289404313",
+        "2110326956558532929",
+        "2110054372445143093",
+        "2110086281661190571"
+      ]
+    },
+    "diligent-brook-thrasher": {
+      "writing_impact_oct14": 4545,
+      "tweet_ids": [
+        "2110359087820988694",
+        "1699128180106260826",
+        "2080213829925921179",
+        "1945320782600491198",
+        "2110050618567954556",
+        "2110344674426703987",
+        "2110126632572756339"
+      ]
+    }
+  },
+  "retired_x_accounts_confirmed": {
+    "zesty-walnut-grackle": "321BEBF06B9C14296569E1A26D2EB521A2B16AB2039AB99CDF8716BB34DD293D",
+    "humble-redwood-blackbird": "C2C00FEB287C99086A70BBE390BDACAF7B5514669CCCD029CD610F44CE67CFBF"
+  },
+  "_mapping_method": "See account_verification/METHOD.md",
+  "collab_account_alias": "cosmic-root-grackle (runs Collaborative Notes; already counted as AI + Human)",
+  "_repo": "https://github.com/xai-org/community-writer/blob/main/ACCOUNTS.md",
+  "current_six_participant_ids": {
+    "celebrated-ocean-seagull": "A9CD635B3039333BE6A70CDA85EAFE27FA13CFCF9031819B797887C80BFA3366",
+    "great-mountain-brushturkey": "F14ECB41C233875132EBFAC0D72206681017FDA097BDE992E887E10E2EB398A7",
+    "neighborly-rhubarb-chickadee": "B3E2C89FD19296525A8117746AFB6E96AEF503E4EB9B1C1DF5E112D2E2D0BE3C",
+    "diligent-brook-thrasher": "A0A7C54DAD6E5E83B3862F3B499C5019EBA29A8A5142765275BCCC5BDEC32215",
+    "cheery-nutmeg-towhee": "D6D5E740F63DC34D81BD735B2AFCB39D253A6AC476710B31032419C2E47BD85B",
+    "zappy-winter-thicketbird": "3DB2C88F21A0C5421B373B4CAAC2C507807F2D85C8914D0565E67AF1746267FE"
+  },
+  "_current_six_source": "Verified 2026-10-19: for each account, 2 helpful notes picked from the data were opened at x.com/i/birdwatch/n/<noteId>; the author alias on the note page and the full note text matched the data exactly (12/12). See account_verification/METHOD.md and 2026-10-19_captured.json."
+}
